@@ -1,0 +1,34 @@
+# Gemini 2.5 Flash Model Configuration
+# Model: gemini-2.5-flash
+# Publisher: Google
+# Priority: P1
+# Use Case: Fastest Gemini model for high-volume requests
+
+model_name: gemini-2.5-flash
+litellm_params:
+  model: vertex_ai/gemini-2.5-flash
+  vertex_project: YOUR_PROJECT_ID        # Replace with your GCP project ID
+  vertex_location: us-central1           # Supported: us-central1, us-east1, us-west1, europe-west1
+  
+  # Authentication (choose one)
+  # Option 1: Use gcloud auth (recommended for development)
+  # vertex_credentials: default
+  
+  # Option 2: Use service account JSON (recommended for production)
+  # vertex_credentials: /path/to/service-account-key.json
+
+# Model capabilities
+model_info:
+  supports_function_calling: true
+  supports_vision: true
+  supports_system_messages: true
+  supports_json_mode: true
+  max_input_tokens: 1048576              # 1M+ context window
+  max_output_tokens: 8192
+
+# Rate limiting (optional)
+# rpm: 60                                # Requests per minute
+# tpm: 1000000                           # Tokens per minute
+
+# Load balancing (optional)
+# priority: 10                           # Higher = preferred (1-10 scale)

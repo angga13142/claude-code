@@ -67,30 +67,30 @@ All artifacts go in `/specs/001-llm-gateway-config/` - no changes to Claude Code
 
 ### Configuration Templates for User Story 1
 
-- [ ] T014 [P] [US1] Create Gemini 2.5 Flash model config in templates/models/gemini-2.5-flash.yaml
-- [ ] T015 [P] [US1] Create Gemini 2.5 Pro model config in templates/models/gemini-2.5-pro.yaml
-- [ ] T016 [P] [US1] Create DeepSeek R1 model config in templates/models/deepseek-r1.yaml
-- [ ] T017 [P] [US1] Create Llama3 405B model config in templates/models/llama3-405b.yaml
-- [ ] T018 [P] [US1] Create Codestral model config in templates/models/codestral.yaml
-- [ ] T019 [P] [US1] Create Qwen3 Coder 480B model config in templates/models/qwen3-coder-480b.yaml
-- [ ] T020 [P] [US1] Create Qwen3 235B model config in templates/models/qwen3-235b.yaml
-- [ ] T021 [P] [US1] Create GPT-OSS 20B model config in templates/models/gpt-oss-20b.yaml
-- [ ] T022 [US1] Create complete LiteLLM proxy config with all 8 models in templates/litellm-complete.yaml
-- [ ] T023 [US1] Create Claude Code environment variables setup guide in examples/us1-env-vars-setup.md
+- [X] T014 [P] [US1] Create Gemini 2.5 Flash model config in templates/models/gemini-2.5-flash.yaml
+- [X] T015 [P] [US1] Create Gemini 2.5 Pro model config in templates/models/gemini-2.5-pro.yaml
+- [X] T016 [P] [US1] Create DeepSeek R1 model config in templates/models/deepseek-r1.yaml
+- [X] T017 [P] [US1] Create Llama3 405B model config in templates/models/llama3-405b.yaml
+- [X] T018 [P] [US1] Create Codestral model config in templates/models/codestral.yaml
+- [X] T019 [P] [US1] Create Qwen3 Coder 480B model config in templates/models/qwen3-coder-480b.yaml
+- [X] T020 [P] [US1] Create Qwen3 235B model config in templates/models/qwen3-235b.yaml
+- [X] T021 [P] [US1] Create GPT-OSS 20B model config in templates/models/gpt-oss-20b.yaml
+- [X] T022 [US1] Create complete LiteLLM proxy config with all 8 models in templates/litellm-complete.yaml
+- [X] T023 [US1] Create Claude Code environment variables setup guide in examples/us1-env-vars-setup.md
 
 ### Scripts for User Story 1
 
-- [ ] T024 [P] [US1] Create LiteLLM startup script in scripts/start-litellm-proxy.sh
-- [ ] T025 [P] [US1] Create model availability checker in scripts/check-model-availability.py
-- [ ] T026 [US1] Create end-to-end test script for all 8 models in tests/test-all-models.py
-- [ ] T027 [US1] Create usage logging verification script in tests/verify-usage-logging.sh
+- [X] T024 [P] [US1] Create LiteLLM startup script in scripts/start-litellm-proxy.sh
+- [X] T025 [P] [US1] Create model availability checker in scripts/check-model-availability.py
+- [X] T026 [US1] Create end-to-end test script for all 8 models in tests/test-all-models.py
+- [X] T027 [US1] Create usage logging verification script in tests/verify-usage-logging.sh
 
 ### Documentation for User Story 1
 
-- [ ] T028 [US1] Create step-by-step setup guide (10-15 min target) in examples/us1-quickstart-basic.md
-- [ ] T029 [US1] Document gcloud auth setup procedure in examples/us1-gcloud-auth.md
-- [ ] T030 [US1] Document troubleshooting for common setup issues in examples/us1-troubleshooting.md
-- [ ] T031 [US1] Create verification checklist in examples/us1-verification-checklist.md
+- [X] T028 [US1] Create step-by-step setup guide (10-15 min target) in examples/us1-quickstart-basic.md
+- [X] T029 [US1] Document gcloud auth setup procedure in examples/us1-gcloud-auth.md
+- [X] T030 [US1] Document troubleshooting for common setup issues in examples/us1-troubleshooting.md
+- [X] T031 [US1] Create verification checklist in examples/us1-verification-checklist.md
 
 **Checkpoint**: User Story 1 complete - developers can set up local LiteLLM gateway independently
 

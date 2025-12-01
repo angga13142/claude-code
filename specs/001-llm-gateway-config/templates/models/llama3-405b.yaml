@@ -1,0 +1,33 @@
+# Llama 3 405B Instruct Model Configuration
+# Model: llama3-405b-instruct-maas
+# Publisher: Meta
+# Priority: P2
+# Use Case: Large parameter model for complex reasoning and analysis
+
+model_name: llama3-405b
+litellm_params:
+  model: vertex_ai/meta/llama3-405b-instruct-maas
+  vertex_project: YOUR_PROJECT_ID        # Replace with your GCP project ID
+  vertex_location: us-central1           # Check availability in your region
+  
+  # Authentication (choose one)
+  # Option 1: Use gcloud auth (recommended for development)
+  # vertex_credentials: default
+  
+  # Option 2: Use service account JSON (recommended for production)
+  # vertex_credentials: /path/to/service-account-key.json
+
+# Model capabilities
+model_info:
+  supports_function_calling: true
+  supports_multilingual: true            # 8+ languages
+  max_input_tokens: 128000               # 128K context window
+  max_output_tokens: 4096
+  parameter_count: 405B                  # Largest open-source model
+
+# Rate limiting (optional)
+# rpm: 15                                # Large model = slower processing
+# tpm: 800000                            # Tokens per minute
+
+# Load balancing (optional)
+# priority: 8                            # High priority for quality

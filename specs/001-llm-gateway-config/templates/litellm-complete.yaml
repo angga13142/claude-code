@@ -1,0 +1,151 @@
+# Complete LiteLLM Configuration - All 8 Vertex AI Models
+# Purpose: Production-ready configuration with all supported models
+# Usage: litellm --config litellm-complete.yaml --port 4000
+
+model_list:
+  # === Google Models (P1 - Highest Priority) ===
+  
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: vertex_ai/gemini-2.5-flash
+      vertex_project: YOUR_PROJECT_ID
+      vertex_location: us-central1
+    rpm: 60
+    tpm: 1000000
+
+  - model_name: gemini-2.5-pro
+    litellm_params:
+      model: vertex_ai/gemini-2.5-pro
+      vertex_project: YOUR_PROJECT_ID
+      vertex_location: us-central1
+    rpm: 30
+    tpm: 2000000
+
+  # === Reasoning & Large Models (P2) ===
+  
+  - model_name: deepseek-r1
+    litellm_params:
+      model: vertex_ai/deepseek-ai/deepseek-r1-0528-maas
+      vertex_project: YOUR_PROJECT_ID
+      vertex_location: us-central1
+    rpm: 20
+    tpm: 500000
+
+  - model_name: llama3-405b
+    litellm_params:
+      model: vertex_ai/meta/llama3-405b-instruct-maas
+      vertex_project: YOUR_PROJECT_ID
+      vertex_location: us-central1
+    rpm: 15
+    tpm: 800000
+
+  - model_name: codestral
+    litellm_params:
+      model: vertex_ai/codestral@latest
+      vertex_project: YOUR_PROJECT_ID
+      vertex_location: us-central1
+    rpm: 30
+    tpm: 600000
+
+  # === Specialized Models (P3) ===
+  
+  - model_name: qwen3-coder-480b
+    litellm_params:
+      model: vertex_ai/qwen/qwen3-coder-480b-a35b-instruct-maas
+      vertex_project: YOUR_PROJECT_ID
+      vertex_location: us-central1
+    rpm: 10
+    tpm: 500000
+
+  - model_name: qwen3-235b
+    litellm_params:
+      model: vertex_ai/qwen/qwen3-235b-a22b-instruct-2507-maas
+      vertex_project: YOUR_PROJECT_ID
+      vertex_location: us-central1
+    rpm: 15
+    tpm: 600000
+
+  - model_name: gpt-oss-20b
+    litellm_params:
+      model: vertex_ai/openai/gpt-oss-20b-maas
+      vertex_project: YOUR_PROJECT_ID
+      vertex_location: us-central1
+    rpm: 40
+    tpm: 400000
+
+# LiteLLM Settings
+litellm_settings:
+  # Drop unsupported parameters gracefully
+  drop_params: true
+  
+  # Enable debug logging (set to false in production)
+  set_verbose: false
+  
+  # Global timeout and retries
+  num_retries: 3
+  timeout: 30
+  
+  # Request logging (optional - requires database)
+  # success_callback: ["langfuse"]
+  # failure_callback: ["langfuse"]
+
+# Router Settings
+router_settings:
+  # Routing strategy
+  routing_strategy: simple-shuffle        # Options: simple-shuffle, least-busy, usage-based-routing
+  
+  # Retry policy
+  retry_policy:
+    TimeoutErrorRetries: 2
+    RateLimitErrorRetries: 3
+    AuthenticationErrorRetries: 0         # Don't retry auth failures
+    ContentPolicyViolationErrorRetries: 0 # Don't retry policy violations
+  
+  # Fallback configuration (optional)
+  # Example: If gemini-2.5-pro fails, try gemini-2.5-flash
+  # fallbacks:
+  #   - gemini-2.5-pro: [gemini-2.5-flash]
+  #   - llama3-405b: [qwen3-235b, gpt-oss-20b]
+  
+  # Cooldown after failures
+  cooldown_time: 60                       # Seconds to wait before retrying failed deployment
+
+# General Settings
+general_settings:
+  # Master key for authentication (REQUIRED)
+  master_key: os.environ/LITELLM_MASTER_KEY
+  
+  # Database for request logging (optional)
+  # database_url: postgresql://user:pass@host:5432/litellm
+  
+  # Admin UI settings (optional)
+  # ui_access_mode: admin_only
+  
+  # Enable CORS (optional - for web dashboards)
+  # cors_allowed_origins: ["http://localhost:3000"]
+
+# Environment Variables Required:
+# - LITELLM_MASTER_KEY: Master key for proxy authentication
+# - GOOGLE_APPLICATION_CREDENTIALS: Path to service account JSON (if not using gcloud auth)
+#
+# Optional:
+# - LITELLM_LOG: DEBUG (for troubleshooting)
+# - DATABASE_URL: PostgreSQL connection string (for request logging)
+
+# Startup Command:
+# litellm --config litellm-complete.yaml --port 4000
+
+# Health Check:
+# curl http://localhost:4000/health
+
+# List Models:
+# curl http://localhost:4000/models
+
+# Test Completion:
+# curl http://localhost:4000/chat/completions \
+#   -H "Content-Type: application/json" \
+#   -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
+#   -d '{
+#     "model": "gemini-2.5-flash",
+#     "messages": [{"role": "user", "content": "Hello!"}]
+#   }'
