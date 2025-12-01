@@ -119,8 +119,10 @@ if [ -n "$STAGED_FILES" ]; then
     FOUND_SENSITIVE=false
     for file in $STAGED_FILES; do
         if [ -f "$file" ]; then
-            if grep -nE "$SENSITIVE_PATTERNS" "$file" 2>/dev/null | head -1; then
+            MATCH_OUTPUT=$(grep -nE "$SENSITIVE_PATTERNS" "$file" 2>/dev/null | head -1)
+            if [ -n "$MATCH_OUTPUT" ]; then
                 echo -e "${RED}✗ Found potential sensitive data in: $file${NC}"
+                echo "  $MATCH_OUTPUT"
                 FOUND_SENSITIVE=true
             fi
         fi

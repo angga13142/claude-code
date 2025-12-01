@@ -534,7 +534,7 @@ Each user story is independently deliverable:
 
 ## File Structure (Final State)
 
-```
+```text
 specs/001-llm-gateway-config/
 ├── plan.md ✅
 ├── spec.md ✅

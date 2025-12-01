@@ -1,0 +1,19 @@
+{
+  "default": true,
+  "MD034": false,
+  "MD033": false,
+  "MD036": false,
+  "MD040": false,
+  "MD013": {
+    "line_length": 200,
+    "code_blocks": false,
+    "tables": false,
+    "headings": false
+  },
+  "MD041": false,
+  "MD024": {
+    "allow_different_nesting": true
+  },
+  "MD025": false,
+  "MD026": false
+}
