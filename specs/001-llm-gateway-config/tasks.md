@@ -28,10 +28,10 @@ All artifacts go in `/specs/001-llm-gateway-config/` - no changes to Claude Code
 
 **Purpose**: Create project structure for documentation, templates, and scripts
 
-- [X] T001 Create templates directory structure in specs/001-llm-gateway-config/templates/
-- [X] T002 [P] Create scripts directory structure in specs/001-llm-gateway-config/scripts/
-- [X] T003 [P] Create examples directory structure in specs/001-llm-gateway-config/examples/
-- [X] T004 [P] Create tests directory structure in specs/001-llm-gateway-config/tests/
+- [x] T001 Create templates directory structure in specs/001-llm-gateway-config/templates/
+- [x] T002 [P] Create scripts directory structure in specs/001-llm-gateway-config/scripts/
+- [x] T003 [P] Create examples directory structure in specs/001-llm-gateway-config/examples/
+- [x] T004 [P] Create tests directory structure in specs/001-llm-gateway-config/tests/
 
 **Checkpoint**: Directory structure ready for template and script creation
 
@@ -43,15 +43,15 @@ All artifacts go in `/specs/001-llm-gateway-config/` - no changes to Claude Code
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [X] T005 Create base LiteLLM configuration template (minimal) in templates/litellm-base.yaml
-- [X] T006 [P] Create environment variables reference template in templates/env-vars-reference.md
-- [X] T007 [P] Create settings.json schema template in templates/settings-schema.json
-- [X] T008 Create configuration validation script in scripts/validate-config.py
-- [X] T009 [P] Create health check verification script in scripts/health-check.sh
-- [X] T010 [P] Create status check helper script in scripts/check-status.sh
-- [X] T011 Create common troubleshooting functions in scripts/troubleshooting-utils.sh
-- [X] T012 [P] Create prerequisite checker script in scripts/check-prerequisites.sh
-- [X] T013 Document deployment pattern decision tree in templates/deployment-patterns.md
+- [x] T005 Create base LiteLLM configuration template (minimal) in templates/litellm-base.yaml
+- [x] T006 [P] Create environment variables reference template in templates/env-vars-reference.md
+- [x] T007 [P] Create settings.json schema template in templates/settings-schema.json
+- [x] T008 Create configuration validation script in scripts/validate-config.py
+- [x] T009 [P] Create health check verification script in scripts/health-check.sh
+- [x] T010 [P] Create status check helper script in scripts/check-status.sh
+- [x] T011 Create common troubleshooting functions in scripts/troubleshooting-utils.sh
+- [x] T012 [P] Create prerequisite checker script in scripts/check-prerequisites.sh
+- [x] T013 Document deployment pattern decision tree in templates/deployment-patterns.md
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -67,30 +67,30 @@ All artifacts go in `/specs/001-llm-gateway-config/` - no changes to Claude Code
 
 ### Configuration Templates for User Story 1
 
-- [X] T014 [P] [US1] Create Gemini 2.5 Flash model config in templates/models/gemini-2.5-flash.yaml
-- [X] T015 [P] [US1] Create Gemini 2.5 Pro model config in templates/models/gemini-2.5-pro.yaml
-- [X] T016 [P] [US1] Create DeepSeek R1 model config in templates/models/deepseek-r1.yaml
-- [X] T017 [P] [US1] Create Llama3 405B model config in templates/models/llama3-405b.yaml
-- [X] T018 [P] [US1] Create Codestral model config in templates/models/codestral.yaml
-- [X] T019 [P] [US1] Create Qwen3 Coder 480B model config in templates/models/qwen3-coder-480b.yaml
-- [X] T020 [P] [US1] Create Qwen3 235B model config in templates/models/qwen3-235b.yaml
-- [X] T021 [P] [US1] Create GPT-OSS 20B model config in templates/models/gpt-oss-20b.yaml
-- [X] T022 [US1] Create complete LiteLLM proxy config with all 8 models in templates/litellm-complete.yaml
-- [X] T023 [US1] Create Claude Code environment variables setup guide in examples/us1-env-vars-setup.md
+- [x] T014 [P] [US1] Create Gemini 2.5 Flash model config in templates/models/gemini-2.5-flash.yaml
+- [x] T015 [P] [US1] Create Gemini 2.5 Pro model config in templates/models/gemini-2.5-pro.yaml
+- [x] T016 [P] [US1] Create DeepSeek R1 model config in templates/models/deepseek-r1.yaml
+- [x] T017 [P] [US1] Create Llama3 405B model config in templates/models/llama3-405b.yaml
+- [x] T018 [P] [US1] Create Codestral model config in templates/models/codestral.yaml
+- [x] T019 [P] [US1] Create Qwen3 Coder 480B model config in templates/models/qwen3-coder-480b.yaml
+- [x] T020 [P] [US1] Create Qwen3 235B model config in templates/models/qwen3-235b.yaml
+- [x] T021 [P] [US1] Create GPT-OSS 20B model config in templates/models/gpt-oss-20b.yaml
+- [x] T022 [US1] Create complete LiteLLM proxy config with all 8 models in templates/litellm-complete.yaml
+- [x] T023 [US1] Create Claude Code environment variables setup guide in examples/us1-env-vars-setup.md
 
 ### Scripts for User Story 1
 
-- [X] T024 [P] [US1] Create LiteLLM startup script in scripts/start-litellm-proxy.sh
-- [X] T025 [P] [US1] Create model availability checker in scripts/check-model-availability.py
-- [X] T026 [US1] Create end-to-end test script for all 8 models in tests/test-all-models.py
-- [X] T027 [US1] Create usage logging verification script in tests/verify-usage-logging.sh
+- [x] T024 [P] [US1] Create LiteLLM startup script in scripts/start-litellm-proxy.sh
+- [x] T025 [P] [US1] Create model availability checker in scripts/check-model-availability.py
+- [x] T026 [US1] Create end-to-end test script for all 8 models in tests/test-all-models.py
+- [x] T027 [US1] Create usage logging verification script in tests/verify-usage-logging.sh
 
 ### Documentation for User Story 1
 
-- [X] T028 [US1] Create step-by-step setup guide (10-15 min target) in examples/us1-quickstart-basic.md
-- [X] T029 [US1] Document gcloud auth setup procedure in examples/us1-gcloud-auth.md
-- [X] T030 [US1] Document troubleshooting for common setup issues in examples/us1-troubleshooting.md
-- [X] T031 [US1] Create verification checklist in examples/us1-verification-checklist.md
+- [x] T028 [US1] Create step-by-step setup guide (10-15 min target) in examples/us1-quickstart-basic.md
+- [x] T029 [US1] Document gcloud auth setup procedure in examples/us1-gcloud-auth.md
+- [x] T030 [US1] Document troubleshooting for common setup issues in examples/us1-troubleshooting.md
+- [x] T031 [US1] Create verification checklist in examples/us1-verification-checklist.md
 
 **Checkpoint**: User Story 1 complete - developers can set up local LiteLLM gateway independently
 
@@ -104,26 +104,26 @@ All artifacts go in `/specs/001-llm-gateway-config/` - no changes to Claude Code
 
 ### Configuration Templates for User Story 2
 
-- [X] T032 [P] [US2] Create TrueFoundry gateway config template in templates/enterprise/truefoundry-config.yaml
-- [X] T033 [P] [US2] Create Zuplo gateway config template in templates/enterprise/zuplo-config.yaml
-- [X] T034 [P] [US2] Create custom enterprise gateway config template in templates/enterprise/custom-gateway-config.yaml
-- [X] T035 [US2] Create header forwarding configuration guide in templates/enterprise/header-forwarding.md
-- [X] T036 [US2] Create authentication token setup template in templates/enterprise/auth-token-setup.md
+- [x] T032 [P] [US2] Create TrueFoundry gateway config template in templates/enterprise/truefoundry-config.yaml
+- [x] T033 [P] [US2] Create Zuplo gateway config template in templates/enterprise/zuplo-config.yaml
+- [x] T034 [P] [US2] Create custom enterprise gateway config template in templates/enterprise/custom-gateway-config.yaml
+- [x] T035 [US2] Create header forwarding configuration guide in templates/enterprise/header-forwarding.md
+- [x] T036 [US2] Create authentication token setup template in templates/enterprise/auth-token-setup.md
 
 ### Scripts for User Story 2
 
-- [X] T037 [P] [US2] Create gateway compatibility validator in scripts/validate-gateway-compatibility.py
-- [X] T038 [P] [US2] Create header verification test script in tests/test-header-forwarding.sh
-- [X] T039 [US2] Create rate limiting verification script in tests/test-rate-limiting.py
-- [X] T040 [US2] Create authentication troubleshooting helper in scripts/debug-auth.sh
+- [x] T037 [P] [US2] Create gateway compatibility validator in scripts/validate-gateway-compatibility.py
+- [x] T038 [P] [US2] Create header verification test script in tests/test-header-forwarding.sh
+- [x] T039 [US2] Create rate limiting verification script in tests/test-rate-limiting.py
+- [x] T040 [US2] Create authentication troubleshooting helper in scripts/debug-auth.sh
 
 ### Documentation for User Story 2
 
-- [X] T041 [US2] Create enterprise integration guide in examples/us2-enterprise-integration.md
-- [X] T042 [US2] Document security best practices for enterprise deployments in examples/us2-security-best-practices.md
-- [X] T043 [US2] Create gateway compatibility criteria checklist in examples/us2-compatibility-checklist.md
-- [X] T044 [US2] Document compliance considerations (SOC2, HIPAA) in examples/us2-compliance-guide.md
-- [X] T045 [US2] Create third-party gateway warning template in templates/enterprise/third-party-warning.md
+- [x] T041 [US2] Create enterprise integration guide in examples/us2-enterprise-integration.md
+- [x] T042 [US2] Document security best practices for enterprise deployments in examples/us2-security-best-practices.md
+- [x] T043 [US2] Create gateway compatibility criteria checklist in examples/us2-compatibility-checklist.md
+- [x] T044 [US2] Document compliance considerations (SOC2, HIPAA) in examples/us2-compliance-guide.md
+- [x] T045 [US2] Create third-party gateway warning template in templates/enterprise/third-party-warning.md
 
 **Checkpoint**: User Story 2 complete - enterprise architects can integrate with existing gateways independently
 
@@ -137,26 +137,26 @@ All artifacts go in `/specs/001-llm-gateway-config/` - no changes to Claude Code
 
 ### Configuration Templates for User Story 3
 
-- [ ] T046 [P] [US3] Create multi-provider LiteLLM config template in templates/multi-provider/multi-provider-config.yaml
-- [ ] T047 [P] [US3] Create Bedrock provider config template in templates/multi-provider/bedrock-config.yaml
-- [ ] T048 [P] [US3] Create Vertex AI provider config template in templates/multi-provider/vertex-ai-config.yaml
-- [ ] T049 [P] [US3] Create Anthropic direct provider config template in templates/multi-provider/anthropic-config.yaml
-- [ ] T050 [US3] Create provider routing strategy guide in templates/multi-provider/routing-strategies.md
+- [x] T046 [P] [US3] Create multi-provider LiteLLM config template in templates/multi-provider/multi-provider-config.yaml
+- [x] T047 [P] [US3] Create Bedrock provider config template in templates/multi-provider/bedrock-config.yaml
+- [x] T048 [P] [US3] Create Vertex AI provider config template in templates/multi-provider/vertex-ai-config.yaml
+- [x] T049 [P] [US3] Create Anthropic direct provider config template in templates/multi-provider/anthropic-config.yaml
+- [x] T050 [US3] Create provider routing strategy guide in templates/multi-provider/routing-strategies.md
 
 ### Scripts for User Story 3
 
-- [ ] T051 [P] [US3] Create provider-specific env vars validator in scripts/validate-provider-env-vars.py
-- [ ] T052 [P] [US3] Create authentication bypass verification script in tests/test-auth-bypass.sh
-- [ ] T053 [US3] Create multi-provider routing test in tests/test-multi-provider-routing.py
-- [ ] T054 [US3] Create provider fallback verification script in tests/test-provider-fallback.py
+- [x] T051 [P] [US3] Create provider-specific env vars validator in scripts/validate-provider-env-vars.py
+- [x] T052 [P] [US3] Create authentication bypass verification script in tests/test-auth-bypass.sh
+- [x] T053 [US3] Create multi-provider routing test in tests/test-multi-provider-routing.py
+- [x] T054 [US3] Create provider fallback verification script in tests/test-provider-fallback.py
 
 ### Documentation for User Story 3
 
-- [ ] T055 [US3] Create multi-provider setup guide in examples/us3-multi-provider-setup.md
-- [ ] T056 [US3] Document provider-specific environment variables in examples/us3-provider-env-vars.md
-- [ ] T057 [US3] Create cost optimization guide for multi-provider scenarios in examples/us3-cost-optimization.md
-- [ ] T058 [US3] Document provider selection decision tree in examples/us3-provider-selection.md
-- [ ] T059 [US3] Create authentication bypass use cases guide in examples/us3-auth-bypass-guide.md
+- [x] T055 [US3] Create multi-provider setup guide in examples/us3-multi-provider-setup.md
+- [x] T056 [US3] Document provider-specific environment variables in examples/us3-provider-env-vars.md
+- [x] T057 [US3] Create cost optimization guide for multi-provider scenarios in examples/us3-cost-optimization.md
+- [x] T058 [US3] Document provider selection decision tree in examples/us3-provider-selection.md
+- [x] T059 [US3] Create authentication bypass use cases guide in examples/us3-auth-bypass-guide.md
 
 **Checkpoint**: User Story 3 complete - platform engineers can configure multi-provider gateways independently
 
@@ -271,7 +271,8 @@ graph TD
 
 ### User Story Dependencies
 
-- **User Story 1 (P1) - Basic LiteLLM Setup**: 
+- **User Story 1 (P1) - Basic LiteLLM Setup**:
+
   - No dependencies on other stories
   - Recommended MVP scope
   - Templates: 8 model configs + complete proxy config
@@ -279,6 +280,7 @@ graph TD
   - Docs: 4 guides
 
 - **User Story 2 (P2) - Enterprise Gateway**:
+
   - Independent from US1
   - Can use foundational validation scripts
   - Templates: 5 enterprise configs
@@ -286,6 +288,7 @@ graph TD
   - Docs: 5 guides
 
 - **User Story 3 (P3) - Multi-Provider**:
+
   - Independent from US1, US2
   - May reference routing concepts from US1
   - Templates: 5 provider configs
@@ -302,6 +305,7 @@ graph TD
 ### Within Each User Story
 
 **Recommended Order**:
+
 1. Configuration templates FIRST (enables testing during creation)
 2. Scripts in parallel with templates (can test templates immediately)
 3. Documentation LAST (captures lessons learned during implementation)
@@ -309,33 +313,40 @@ graph TD
 ### Parallel Opportunities
 
 #### Phase 1: Setup
+
 - All 4 directory creation tasks can run in parallel
 
 #### Phase 2: Foundational
+
 - T006, T007, T009, T010, T012 can all run in parallel
 - T005, T008 should complete before T013
 
 #### Phase 3: User Story 1
+
 - **Templates**: T014-T021 (all 8 model configs) can run in parallel
 - **Scripts**: T024, T025, T026, T027 can run in parallel after templates
 - **Docs**: T028-T031 can run in parallel after scripts
 
 #### Phase 4: User Story 2
+
 - **Templates**: T032-T034 can run in parallel
 - **Scripts**: T037, T038 can run in parallel
 - **Docs**: T041-T044 can run in parallel
 
 #### Phase 5: User Story 3
+
 - **Templates**: T046-T049 can run in parallel
 - **Scripts**: T051, T052 can run in parallel
 - **Docs**: T055-T059 can run in parallel
 
 #### Phase 6: User Story 4
+
 - **Templates**: T060, T061 can run in parallel
 - **Scripts**: T064, T065 can run in parallel
 - **Docs**: T068-T072 can run in parallel
 
 #### Phase 7: Polish
+
 - **Docs**: T073-T078 can all run in parallel
 - **Tests**: T084-T086 can run in parallel
 - **Advanced Docs**: T089-T094 can all run in parallel
@@ -361,18 +372,21 @@ To deliver **User Story 1 (Basic LiteLLM Setup)** as MVP:
 ### Example 1: Full Team (4 developers)
 
 **Week 1: Foundation**
+
 - Dev A: Phase 1 + T005, T008, T013 (foundational configs)
 - Dev B: T006, T007 (templates)
 - Dev C: T009, T010, T011 (scripts)
 - Dev D: T012 (prerequisites checker)
 
 **Week 2: All User Stories in Parallel**
+
 - Dev A: User Story 1 (Basic LiteLLM) - 18 tasks
 - Dev B: User Story 2 (Enterprise) - 14 tasks
 - Dev C: User Story 3 (Multi-Provider) - 14 tasks
 - Dev D: User Story 4 (Corporate Proxy) - 13 tasks
 
 **Week 3: Polish**
+
 - All devs: Phase 7 tasks in parallel (15 tasks)
 
 **Timeline**: 3 weeks with 4 developers
@@ -382,16 +396,19 @@ To deliver **User Story 1 (Basic LiteLLM Setup)** as MVP:
 ### Example 2: Solo Developer (MVP-focused)
 
 **Day 1-2: Foundation**
+
 - Complete Phase 1: Setup
 - Complete Phase 2: Foundational
 
 **Day 3-5: User Story 1 Only (MVP)**
+
 - T014-T021: Model configs (prioritize Gemini models first)
 - T022-T023: Complete proxy config + env vars
 - T024-T027: Essential scripts
 - T028-T031: Core documentation
 
 **Day 6: Testing & Polish**
+
 - T082, T083: Documentation updates
 - T088: US1 verification
 - T084: Basic testing
@@ -403,15 +420,18 @@ To deliver **User Story 1 (Basic LiteLLM Setup)** as MVP:
 ### Example 3: Two Developers (Balanced Approach)
 
 **Sprint 1 (Week 1): Foundation + US1**
+
 - Dev A: Phase 1 + Phase 2 foundational
 - Dev B: Phase 2 scripts
 - Both: User Story 1 in parallel (split templates vs scripts)
 
 **Sprint 2 (Week 2): US2 + US3**
+
 - Dev A: User Story 2 (Enterprise)
 - Dev B: User Story 3 (Multi-Provider)
 
 **Sprint 3 (Week 3): US4 + Polish**
+
 - Dev A: User Story 4 (Corporate Proxy)
 - Dev B: Phase 7 polish tasks
 - Both: Final validation and testing
@@ -427,12 +447,14 @@ To deliver **User Story 1 (Basic LiteLLM Setup)** as MVP:
 **MVP = User Story 1 Only**
 
 Delivers immediate value:
+
 - ✅ 8 Vertex AI models configured
 - ✅ Local development setup working
 - ✅ Basic usage tracking functional
 - ✅ Verification procedures in place
 
 **Then iterate**:
+
 - P2: Add enterprise gateway support (US2)
 - P3: Add multi-provider support (US3)
 - P4: Add corporate proxy support (US4)
@@ -440,6 +462,7 @@ Delivers immediate value:
 ### Incremental Delivery
 
 Each user story is independently deliverable:
+
 - Ship US1 → Users can start using local LiteLLM
 - Ship US2 → Enterprise customers can integrate
 - Ship US3 → Advanced users get multi-provider
@@ -448,6 +471,7 @@ Each user story is independently deliverable:
 ### Testing Strategy
 
 **Per User Story**:
+
 1. Create templates
 2. Write validation scripts
 3. Test templates with scripts
@@ -456,6 +480,7 @@ Each user story is independently deliverable:
 6. Mark story complete
 
 **No tests requested in spec** - Focus on:
+
 - Configuration validation
 - Health checks
 - End-to-end verification scripts
@@ -465,35 +490,43 @@ Each user story is independently deliverable:
 
 ## Success Criteria Mapping
 
-**SC-001** (Setup <10 min): 
+**SC-001** (Setup <10 min):
+
 - Addressed by: T028 (US1 quickstart guide)
 - Validation: T088 (run verification checklist)
 
 **SC-002** (90% first-attempt success):
+
 - Addressed by: T008 (validation script), T031 (verification checklist)
 - Validation: T084 (integration test suite)
 
 **SC-003** (Templates work without modification):
+
 - Addressed by: All template tasks (T014-T021, etc.)
 - Validation: T085 (YAML schema validation)
 
 **SC-004** (Deployment pattern clarity <3 sentences):
+
 - Addressed by: T013 (deployment patterns doc), T074 (patterns comparison)
 - Validation: Manual review
 
 **SC-005** (All required env vars included):
+
 - Addressed by: T006 (env vars reference), T075 (env vars complete reference)
 - Validation: T086 (env vars validation tests)
 
 **SC-006** (100% security warnings):
+
 - Addressed by: T042 (security best practices), T076 (consolidated security guide)
 - Validation: Grep test in documentation
 
 **SC-007** (Gateway compatibility validation):
+
 - Addressed by: T037 (compatibility validator), T043 (compatibility checklist)
 - Validation: T037 script execution
 
 **SC-008** (80% issue resolution):
+
 - Addressed by: T077 (troubleshooting master guide), T011 (troubleshooting utils)
 - Validation: Issue tracking analysis
 

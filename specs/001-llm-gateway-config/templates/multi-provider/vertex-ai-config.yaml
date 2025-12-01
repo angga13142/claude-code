@@ -1,0 +1,276 @@
+# Google Vertex AI Provider Configuration
+# Purpose: Access Claude models via Vertex AI and Vertex AI Model Garden models
+# Usage: litellm --config vertex-ai-config.yaml --port 4000
+# User Story: US3 - Multi-Provider Gateway Configuration (Priority: P3)
+# Provider: Google Cloud Vertex AI
+
+model_list:
+  # === Claude Models via Vertex AI ===
+  # Anthropic models available through Vertex AI partnership
+
+  - model_name: claude-3-5-sonnet-vertex
+    litellm_params:
+      model: vertex_ai/claude-3-5-sonnet@20241022
+      vertex_project: os.environ/VERTEX_PROJECT_ID
+      vertex_location: os.environ/VERTEX_LOCATION
+      # vertex_credentials: os.environ/GOOGLE_APPLICATION_CREDENTIALS  # Optional if using gcloud auth
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 8192
+      max_input_tokens: 200000
+    rpm: 50
+    tpm: 2000000
+
+  - model_name: claude-3-opus-vertex
+    litellm_params:
+      model: vertex_ai/claude-3-opus@20240229
+      vertex_project: os.environ/VERTEX_PROJECT_ID
+      vertex_location: os.environ/VERTEX_LOCATION
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 4096
+      max_input_tokens: 200000
+    rpm: 30
+    tpm: 1500000
+
+  - model_name: claude-3-sonnet-vertex
+    litellm_params:
+      model: vertex_ai/claude-3-sonnet@20240229
+      vertex_project: os.environ/VERTEX_PROJECT_ID
+      vertex_location: os.environ/VERTEX_LOCATION
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 4096
+      max_input_tokens: 200000
+    rpm: 60
+    tpm: 2000000
+
+  - model_name: claude-3-haiku-vertex
+    litellm_params:
+      model: vertex_ai/claude-3-haiku@20240307
+      vertex_project: os.environ/VERTEX_PROJECT_ID
+      vertex_location: os.environ/VERTEX_LOCATION
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 4096
+      max_input_tokens: 200000
+    rpm: 100
+    tpm: 3000000
+
+  # === Google Native Models ===
+  # Gemini models from Google
+
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: vertex_ai/gemini-2.5-flash
+      vertex_project: os.environ/VERTEX_PROJECT_ID
+      vertex_location: os.environ/VERTEX_LOCATION
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 8192
+    rpm: 60
+    tpm: 1000000
+
+  - model_name: gemini-2.5-pro
+    litellm_params:
+      model: vertex_ai/gemini-2.5-pro
+      vertex_project: os.environ/VERTEX_PROJECT_ID
+      vertex_location: os.environ/VERTEX_LOCATION
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 8192
+    rpm: 30
+    tpm: 2000000
+
+  # === Vertex AI Model Garden Models ===
+  # Third-party models available through Model Garden
+
+  - model_name: deepseek-r1
+    litellm_params:
+      model: vertex_ai/deepseek-ai/deepseek-r1-0528-maas
+      vertex_project: os.environ/VERTEX_PROJECT_ID
+      vertex_location: os.environ/VERTEX_LOCATION
+    model_info:
+      mode: chat
+      supports_reasoning: true
+      max_tokens: 8192
+    rpm: 20
+    tpm: 500000
+
+  - model_name: llama3-405b
+    litellm_params:
+      model: vertex_ai/meta/llama3-405b-instruct-maas
+      vertex_project: os.environ/VERTEX_PROJECT_ID
+      vertex_location: os.environ/VERTEX_LOCATION
+    model_info:
+      mode: chat
+      max_tokens: 8192
+    rpm: 15
+    tpm: 800000
+
+  - model_name: codestral
+    litellm_params:
+      model: vertex_ai/codestral@latest
+      vertex_project: os.environ/VERTEX_PROJECT_ID
+      vertex_location: os.environ/VERTEX_LOCATION
+    model_info:
+      mode: chat
+      supports_fim: true
+      max_tokens: 8192
+    rpm: 30
+    tpm: 600000
+
+# Multi-Region Configuration (High Availability)
+# Uncomment to enable automatic failover across GCP regions
+#
+# - model_name: claude-3-5-sonnet-us-central1
+#   litellm_params:
+#     model: vertex_ai/claude-3-5-sonnet@20241022
+#     vertex_project: os.environ/VERTEX_PROJECT_ID
+#     vertex_location: us-central1
+#   rpm: 50
+#   tpm: 2000000
+#
+# - model_name: claude-3-5-sonnet-us-east1
+#   litellm_params:
+#     model: vertex_ai/claude-3-5-sonnet@20241022
+#     vertex_project: os.environ/VERTEX_PROJECT_ID
+#     vertex_location: us-east1
+#   rpm: 50
+#   tpm: 2000000
+
+# LiteLLM Settings
+litellm_settings:
+  # Drop unsupported parameters gracefully
+  drop_params: true
+
+  # Enable debug logging for troubleshooting (set to false in production)
+  set_verbose: false
+
+  # Global timeout and retries
+  num_retries: 3
+  timeout: 30
+
+  # Request logging (optional - requires database)
+  # success_callback: ["langfuse"]
+  # failure_callback: ["langfuse"]
+
+# Router Settings
+router_settings:
+  # Routing strategy
+  routing_strategy: least-busy # Options: simple-shuffle, least-busy, usage-based-routing
+
+  # Retry policy
+  retry_policy:
+    TimeoutErrorRetries: 2
+    RateLimitErrorRetries: 3
+    InternalServerErrorRetries: 2
+
+  # Fallback configuration
+  allowed_fails: 3 # Number of failures before marking model unhealthy
+  cooldown_time: 60 # Seconds before retrying failed model
+
+# General Settings
+general_settings:
+  # API Configuration
+  master_key: os.environ/LITELLM_MASTER_KEY # Required for proxy authentication
+
+  # Enable Admin UI
+  ui: true
+
+  # Set port
+  port: 4000
+# Google Cloud Authentication Methods:
+#
+# Method 1: gcloud CLI (Recommended for local development)
+#   gcloud auth application-default login
+#   gcloud config set project <PROJECT_ID>
+#   - Automatic credential refresh
+#   - User-based authentication
+#
+# Method 2: Service Account JSON (Recommended for production)
+#   export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account.json"
+#   export VERTEX_PROJECT_ID="<project-id>"
+#   export VERTEX_LOCATION="us-central1"
+#   - Fine-grained IAM control
+#   - Portable across environments
+#
+# Method 3: Workload Identity (Recommended for GKE)
+#   - No explicit credentials needed
+#   - Automatic credential injection
+#   - Least privilege via Kubernetes service accounts
+
+# Required IAM Permissions:
+#
+# Service Account must have one of:
+# - roles/aiplatform.user (broad access to Vertex AI)
+# - roles/ml.developer (ML-focused permissions)
+# Or custom role with:
+#   - aiplatform.endpoints.predict
+#   - aiplatform.endpoints.get
+#   - aiplatform.models.get
+
+# Claude Code Integration:
+#
+# 1. Set Claude Code environment variables:
+#    export ANTHROPIC_BASE_URL="http://localhost:4000"
+#    export ANTHROPIC_API_KEY="<litellm-master-key>"
+#    export CLAUDE_CODE_SKIP_VERTEX_AUTH=1  # Optional: Skip Claude Code's Vertex AI auth
+#
+# 2. Or add to ~/.claude/settings.json:
+#    {
+#      "anthropicBaseUrl": "http://localhost:4000",
+#      "anthropicAuthToken": "<litellm-master-key>"
+#    }
+#
+# 3. Verify with: claude /status
+#
+# See examples/us3-provider-env-vars.md for complete environment variable reference
+
+# Available Vertex AI Regions:
+# - us-central1 (Iowa, USA) - Default, most models available
+# - us-east1 (South Carolina, USA)
+# - us-west1 (Oregon, USA)
+# - europe-west1 (Belgium, Europe)
+# - europe-west4 (Netherlands, Europe)
+# - asia-northeast1 (Tokyo, Asia)
+# - asia-southeast1 (Singapore, Asia)
+#
+# Note: Model availability varies by region. Check Vertex AI documentation for current status.
+# Claude models on Vertex AI: Currently available in us-central1, europe-west1, asia-southeast1
+
+# Vertex AI Model Garden Availability:
+# - DeepSeek: us-central1
+# - Llama 3: us-central1, europe-west1
+# - Codestral: us-central1, europe-west1
+# - Qwen: us-central1
+# - GPT-OSS: us-central1
+#
+# Check https://console.cloud.google.com/vertex-ai/model-garden for latest availability
+
+# Troubleshooting:
+# - Authentication errors: Verify credentials with `gcloud auth list`
+# - Project errors: Check project ID with `gcloud config get-value project`
+# - Region errors: Ensure model is available in target region
+# - Quota errors: Check quotas in GCP Console > IAM & Admin > Quotas
+# - Connection errors: Verify network connectivity to *.googleapis.com
+#
+# See examples/us3-multi-provider-setup.md for detailed troubleshooting guide
+
+# Performance Optimization:
+# - Use us-central1 for lowest latency in North America
+# - Enable connection pooling with GRPC_ENABLE_FORK_SUPPORT=0
+# - Set ANTHROPIC_LOG=debug for detailed request tracing
+# - Monitor with Vertex AI Prediction logs in Cloud Logging

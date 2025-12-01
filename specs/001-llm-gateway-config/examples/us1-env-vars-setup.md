@@ -196,15 +196,74 @@ Use the provided script to verify all prerequisites:
 
 ```bash
 cd specs/001-llm-gateway-config
+source ../../.env  # Load environment variables first
 ./scripts/check-status.sh
 ```
 
-**Expected output**:
-```
+**Expected output** (when everything is configured correctly):
+
+```text
+==========================================
+Claude Code Gateway Configuration Check
+==========================================
+
+Check 1: Claude Code Installation
+----------------------------------
+✓ Claude Code is installed (version: 2.0.55 (Claude Code))
+
+Check 2: Environment Variables
+-------------------------------
 ✓ ANTHROPIC_BASE_URL is set
+  Value: http://localhost:4000
+✓ URL format is valid
+
 ✓ ANTHROPIC_AUTH_TOKEN is set
+  Value: sk-0****ab91 (masked)
+✓ Token length appears valid (35 characters)
+
+Check 3: Provider Auth Bypass Flags
+------------------------------------
+ℹ CLAUDE_CODE_SKIP_BEDROCK_AUTH not set (default behavior)
+ℹ CLAUDE_CODE_SKIP_VERTEX_AUTH not set (default behavior)
+
+Check 4: Proxy Configuration
+----------------------------
+ℹ HTTPS_PROXY not set (direct connection)
+
+Check 5: Google Cloud Credentials
+----------------------------------
 ✓ Using gcloud application-default credentials
+
+Check 6: Gateway Connectivity
+-----------------------------
+✓ Gateway is reachable at http://localhost:4000
+
+==========================================
+Summary & Next Steps
+==========================================
+
 ✓ Configuration looks complete!
+
+Your setup:
+  Gateway: http://localhost:4000
+  Authentication: ✓ Configured
+
+Next steps:
+  1. Test health: ./health-check.sh
+  2. Test completion: claude "Hello, world!"
+  3. Check logs: claude /status (within Claude Code)
+```
+
+**Note**: If gateway is not running, Check 6 will show:
+
+```text
+✗ Cannot reach gateway at http://localhost:4000
+  Check if gateway is running: ./health-check.sh
+```
+
+This is normal if you haven't started the gateway yet. Start it with:
+```bash
+litellm --config templates/litellm-complete.yaml --port 4000
 ```
 
 ---
