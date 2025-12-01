@@ -11,6 +11,7 @@
 This guide walks you through setting up a local LiteLLM proxy with 8 Vertex AI models and configuring Claude Code to use it.
 
 **What you'll achieve**:
+
 - ✅ LiteLLM proxy running with 8 Vertex AI models
 - ✅ Claude Code routing requests through the gateway
 - ✅ Usage tracking and cost monitoring
@@ -30,6 +31,7 @@ Before starting, ensure you have:
 - [ ] **10-15 minutes** of focused time
 
 **Run automated check**:
+
 ```bash
 cd specs/001-llm-gateway-config
 ./scripts/check-prerequisites.sh
@@ -49,6 +51,7 @@ python3 -c "import google.cloud.aiplatform; print('✓ GCP SDK installed')"
 ```
 
 **Troubleshooting**:
+
 - If `pip` not found: Use `pip3` instead
 - If permission denied: Add `--user` flag: `pip install --user litellm`
 
@@ -121,11 +124,13 @@ vertex_project: my-gcp-project-123
 ```
 
 **Quick replace** (Linux/Mac):
+
 ```bash
 sed -i 's/YOUR_PROJECT_ID/my-gcp-project-123/g' ~/litellm-config.yaml
 ```
 
 **Validate configuration**:
+
 ```bash
 cd specs/001-llm-gateway-config
 python3 scripts/validate-config.py ~/litellm-config.yaml
@@ -158,6 +163,7 @@ export ANTHROPIC_AUTH_TOKEN="$LITELLM_MASTER_KEY"
 ### Make environment variables persistent
 
 **Option 1: .env file (recommended)**
+
 ```bash
 # Create .env file
 cat > ~/.litellm.env << EOF
@@ -174,6 +180,7 @@ echo "source ~/.litellm.env" >> ~/.bashrc  # or ~/.zshrc
 ```
 
 **Option 2: Add to shell profile directly**
+
 ```bash
 echo "export LITELLM_MASTER_KEY=\"$LITELLM_MASTER_KEY\"" >> ~/.bashrc
 echo "export ANTHROPIC_BASE_URL=\"http://localhost:4000\"" >> ~/.bashrc
@@ -195,6 +202,7 @@ cd specs/001-llm-gateway-config
 ```
 
 **Expected output**:
+
 ```
 ========================================
 LiteLLM Proxy Startup
@@ -228,6 +236,7 @@ cd specs/001-llm-gateway-config
 ```
 
 **Expected output**:
+
 ```
 ✓ Claude Code is installed
 ✓ ANTHROPIC_BASE_URL is set
@@ -243,6 +252,7 @@ cd specs/001-llm-gateway-config
 ```
 
 **Expected output**:
+
 ```
 ✓ Gateway is reachable
 ✓ Health endpoint returned 200 OK
@@ -288,6 +298,7 @@ python3 tests/test-all-models.py
 ```
 
 **Expected output**:
+
 ```
 ======================================================================
 End-to-End Model Testing
@@ -343,6 +354,7 @@ cd specs/001-llm-gateway-config
 ## Success! 🎉
 
 You now have:
+
 - ✅ LiteLLM gateway running with 8 Vertex AI models
 - ✅ Claude Code configured to use the gateway
 - ✅ All models tested and working
@@ -355,6 +367,7 @@ You now have:
 ### Issue: "Connection refused" on http://localhost:4000
 
 **Solution**:
+
 ```bash
 # Check if LiteLLM is running
 ps aux | grep litellm
@@ -367,6 +380,7 @@ cd specs/001-llm-gateway-config
 ### Issue: "403 Forbidden" for Vertex AI models
 
 **Solution**:
+
 ```bash
 # Re-authenticate with gcloud
 gcloud auth application-default login
@@ -378,6 +392,7 @@ gcloud auth application-default print-access-token
 ### Issue: "YOUR_PROJECT_ID" not replaced
 
 **Solution**:
+
 ```bash
 # Verify your project ID
 gcloud config get-value project
@@ -391,6 +406,7 @@ sed -i 's/YOUR_PROJECT_ID/your-actual-project-id/g' ~/litellm-config.yaml
 ### Issue: "Unauthorized" when calling gateway
 
 **Solution**:
+
 ```bash
 # Verify tokens match
 echo "LiteLLM Key: ${LITELLM_MASTER_KEY:0:10}..."

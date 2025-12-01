@@ -19,6 +19,7 @@ This contract defines the interaction interface for the LLM Gateway Configuratio
 **User Intent**: "How do I set up LiteLLM with Claude Code?"
 
 **Input Contract**:
+
 ```typescript
 interface SetupRequest {
   gateway_type?: "litellm" | "truefoundry" | "zuplo" | "mintmcp" | "custom";
@@ -28,6 +29,7 @@ interface SetupRequest {
 ```
 
 **Output Contract**:
+
 ```typescript
 interface SetupResponse {
   quick_answer: string;  // 2-3 sentence summary
@@ -55,6 +57,7 @@ interface SetupResponse {
 ```
 
 **Example Output**:
+
 ```json
 {
   "quick_answer": "Configure LiteLLM as a local proxy, then point Claude Code to it via environment variables.",
@@ -117,6 +120,7 @@ interface SetupResponse {
 **User Intent**: "Add Vertex AI Model Garden models to LiteLLM"
 
 **Input Contract**:
+
 ```typescript
 interface VertexModelRequest {
   models: {
@@ -132,6 +136,7 @@ interface VertexModelRequest {
 ```
 
 **Output Contract**:
+
 ```typescript
 interface VertexModelResponse {
   quick_answer: string;
@@ -165,6 +170,7 @@ interface VertexModelResponse {
 ```
 
 **Example Output**:
+
 ```json
 {
   "quick_answer": "Add Vertex AI models to your litellm_config.yaml with vertex_ai_project and vertex_ai_location parameters.",
@@ -226,6 +232,7 @@ interface VertexModelResponse {
 **User Intent**: "Configure Claude Code with multiple LLM providers through gateway"
 
 **Input Contract**:
+
 ```typescript
 interface MultiProviderRequest {
   providers: {
@@ -238,6 +245,7 @@ interface MultiProviderRequest {
 ```
 
 **Output Contract**:
+
 ```typescript
 interface MultiProviderResponse {
   quick_answer: string;
@@ -273,6 +281,7 @@ interface MultiProviderResponse {
 **User Intent**: "My gateway setup isn't working, error: [ERROR_MESSAGE]"
 
 **Input Contract**:
+
 ```typescript
 interface TroubleshootRequest {
   error_message: string;
@@ -287,6 +296,7 @@ interface TroubleshootRequest {
 ```
 
 **Output Contract**:
+
 ```typescript
 interface TroubleshootResponse {
   quick_answer: string;  // Root cause summary
@@ -312,6 +322,7 @@ interface TroubleshootResponse {
 ```
 
 **Example Output**:
+
 ```json
 {
   "quick_answer": "Model not found error indicates the model isn't deployed in your GCP region. Check Model Garden console and deploy to the correct region.",
@@ -396,6 +407,7 @@ general_settings:  # OPTIONAL
 ```
 
 **Validation Rules**:
+
 1. At least one entry in `model_list` is required
 2. Each `model_name` must be unique within the file
 3. For Vertex AI models, both `vertex_ai_project` and `vertex_ai_location` are mandatory
@@ -427,6 +439,7 @@ general_settings:  # OPTIONAL
 ```
 
 **Validation Rules**:
+
 1. `anthropic.baseURL` must be a valid HTTP/HTTPS URL
 2. `anthropic.authToken` must not be empty if gateway requires authentication
 3. `*.baseURL` must include protocol (http:// or https://)
@@ -474,6 +487,7 @@ general_settings:  # OPTIONAL
 **Command**: `claude /status`
 
 **Expected Output Fields**:
+
 ```typescript
 interface StatusOutput {
   base_url: {
@@ -492,6 +506,7 @@ interface StatusOutput {
 ```
 
 **Success Criteria**:
+
 - Both `base_url.status` and `auth_token.status` show "✓"
 - `base_url.value` matches expected gateway URL
 - `auth_token.present` is `true`
@@ -503,6 +518,7 @@ interface StatusOutput {
 **Command**: `curl http://localhost:4000/chat/completions -H "Authorization: Bearer $TOKEN" -d '{"model": "gemini-2.5-flash", "messages": [{"role": "user", "content": "Hello"}]}'`
 
 **Expected Response**:
+
 ```typescript
 interface CompletionResponse {
   id: string;
@@ -526,6 +542,7 @@ interface CompletionResponse {
 ```
 
 **Success Criteria**:
+
 - HTTP status code is 200
 - Response contains `choices` array with at least one entry
 - `choices[0].message.content` is non-empty

@@ -415,10 +415,12 @@ RESULTS: 8/8 models working
 **Solution**:
 
 1. Verify model is deployed in Model Garden:
+
    ```bash
    # Open Model Garden console
    open https://console.cloud.google.com/vertex-ai/model-garden
    ```
+
 2. Check model availability in your region
 3. Deploy model to correct region if needed
 
@@ -429,13 +431,16 @@ RESULTS: 8/8 models working
 **Solution**:
 
 1. Verify service account has correct IAM role:
+
    ```bash
    gcloud projects get-iam-policy YOUR_PROJECT_ID \
      --flatten="bindings[].members" \
      --filter="bindings.members:litellm-sa@*"
    ```
+
 2. Ensure `roles/aiplatform.user` is present
 3. Re-authenticate if using gcloud auth:
+
    ```bash
    gcloud auth application-default login --force
    ```
@@ -447,9 +452,11 @@ RESULTS: 8/8 models working
 **Solution**:
 
 1. Check current quotas:
+
    ```bash
    gcloud compute project-info describe --project=YOUR_PROJECT_ID | grep quota
    ```
+
 2. Request quota increase in GCP Console → IAM & Admin → Quotas
 3. Reduce `rpm` and `tpm` values in config temporarily
 
@@ -460,15 +467,20 @@ RESULTS: 8/8 models working
 **Solution**:
 
 1. Verify LiteLLM proxy is running:
+
    ```bash
    ps aux | grep litellm
    ```
+
 2. Check if port 4000 is listening:
+
    ```bash
    lsof -i :4000  # macOS/Linux
    netstat -an | grep 4000  # Windows
    ```
+
 3. Try restarting proxy:
+
    ```bash
    pkill -f litellm
    litellm --config litellm_config.yaml --port 4000
@@ -481,13 +493,17 @@ RESULTS: 8/8 models working
 **Solution**:
 
 1. Verify environment variable is set:
+
    ```bash
    echo $GOOGLE_APPLICATION_CREDENTIALS
    ```
+
 2. Check service account key file exists and is readable:
+
    ```bash
    cat $GOOGLE_APPLICATION_CREDENTIALS | jq .
    ```
+
 3. Regenerate service account key if corrupted
 
 ---
@@ -505,11 +521,13 @@ RESULTS: 8/8 models working
 
 - ✅ Use service accounts with minimal IAM roles
 - ✅ Store secrets in Google Secret Manager:
+
   ```bash
   # Store master key in Secret Manager
   echo -n "sk-random-key" | gcloud secrets create litellm-master-key \
     --data-file=- --replication-policy="automatic"
   ```
+
 - ✅ Rotate service account keys every 90 days
 - ✅ Use separate GCP projects for dev/staging/prod
 - ✅ Enable audit logging for all API calls

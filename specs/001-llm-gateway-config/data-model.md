@@ -19,6 +19,7 @@ This document defines the logical data entities for the LLM Gateway Configuratio
 Represents the complete setup for connecting Claude Code to an LLM gateway.
 
 **Attributes:**
+
 - **gateway_url** (string, required): Base URL of the LLM gateway (e.g., "http://localhost:4000")
 - **authentication_token** (string, required): API key or auth token for gateway access
 - **gateway_type** (enum, required): Type of gateway solution
@@ -31,11 +32,13 @@ Represents the complete setup for connecting Claude Code to an LLM gateway.
 - **last_verified_at** (timestamp): Last successful verification via `/status`
 
 **Relationships:**
+
 - Has many: Model Deployments
 - Has one: Authentication Method
 - May have many: Provider Configurations
 
 **Validation Rules:**
+
 - `gateway_url` must be valid HTTP/HTTPS URL
 - `authentication_token` must not be empty if gateway requires auth
 - `gateway_type = litellm` requires at least one Model Deployment
@@ -47,10 +50,11 @@ Represents the complete setup for connecting Claude Code to an LLM gateway.
 Represents a specific model configuration within a gateway.
 
 **Attributes:**
+
 - **model_name** (string, required): Logical name exposed by gateway (e.g., "gemini-2.5-flash")
 - **provider_model_id** (string, required): Full provider-specific identifier
   - Format: `vertex_ai/<publisher>/<model-id>` or `vertex_ai/<model-id>`
-  - Examples: 
+  - Examples:
     - `vertex_ai/gemini-2.5-flash`
     - `vertex_ai/deepseek-ai/deepseek-r1-0528-maas`
 - **publisher** (string, required): Model publisher
@@ -72,10 +76,12 @@ Represents a specific model configuration within a gateway.
 - **enabled** (boolean, default: true): Whether deployment is active
 
 **Relationships:**
+
 - Belongs to: Gateway Configuration
 - May have one: Fallback Model Deployment (for failover)
 
 **Validation Rules:**
+
 - `model_name` must be unique within a Gateway Configuration
 - `vertex_location` must be a valid GCP region where model is available
 - `rpm` and `tpm` must be positive integers if specified
@@ -88,6 +94,7 @@ Represents a specific model configuration within a gateway.
 Represents provider-specific settings (Bedrock, Vertex AI, etc.).
 
 **Attributes:**
+
 - **provider_name** (enum, required): Cloud provider
   - Values: `anthropic`, `bedrock`, `vertex_ai`
 - **base_url** (string): Custom provider endpoint URL
@@ -101,10 +108,12 @@ Represents provider-specific settings (Bedrock, Vertex AI, etc.).
 - **credentials_path** (string): Path to service account JSON (Vertex AI) or AWS credentials
 
 **Relationships:**
+
 - Belongs to: Gateway Configuration
 - May support multiple: Model Deployments
 
 **Validation Rules:**
+
 - `authentication_bypass = true` requires gateway to handle authentication
 - `credentials_path` must point to readable file if specified
 - `region` must be valid for the specified provider
@@ -116,6 +125,7 @@ Represents provider-specific settings (Bedrock, Vertex AI, etc.).
 Represents how the gateway authenticates requests.
 
 **Attributes:**
+
 - **auth_type** (enum, required): Authentication mechanism
   - Values: `bearer_token`, `api_key`, `service_account`, `gcloud_auth`, `none`
 - **token_source** (enum): Where auth credentials come from
@@ -128,9 +138,11 @@ Represents how the gateway authenticates requests.
   - **interval_days** (integer): How often to rotate (e.g., 90 days)
 
 **Relationships:**
+
 - Belongs to: Gateway Configuration
 
 **Validation Rules:**
+
 - `token_source = environment_variable` requires `environment_variable_name`
 - `token_source = secret_manager` requires `secret_manager_path`
 - `rotation_policy.interval_days` should not exceed 365 for security
@@ -142,6 +154,7 @@ Represents how the gateway authenticates requests.
 Represents load balancing and fallback configuration.
 
 **Attributes:**
+
 - **strategy_type** (enum, required): Routing algorithm
   - Values: `simple_shuffle`, `least_busy`, `usage_based`, `latency_based`
 - **fallback_chain** (array of strings): Ordered list of model names to try
@@ -155,10 +168,12 @@ Represents load balancing and fallback configuration.
 - **cooldown_period_seconds** (integer, default: 60): Time to wait before retrying failed endpoint
 
 **Relationships:**
+
 - Belongs to: Gateway Configuration
 - References many: Model Deployments (via fallback chain)
 
 **Validation Rules:**
+
 - `max_retries` must be between 0-10
 - `timeout_seconds` must be positive
 - Models in `fallback_chain` must exist in Model Deployments
@@ -171,6 +186,7 @@ Represents load balancing and fallback configuration.
 Represents the outcome of configuration verification.
 
 **Attributes:**
+
 - **verified_at** (timestamp, required): When verification was performed
 - **verification_method** (enum, required): How it was verified
   - Values: `claude_status`, `gateway_health`, `end_to_end_test`, `manual`
@@ -184,9 +200,11 @@ Represents the outcome of configuration verification.
 - **warnings** (array of strings): Non-fatal issues detected
 
 **Relationships:**
+
 - Belongs to: Gateway Configuration
 
 **Validation Rules:**
+
 - `status = success` requires all boolean flags to be true
 - `status = failure` requires `error_message` to be populated
 - `latency_ms` should be measured for successful verifications
@@ -214,12 +232,14 @@ Gateway Configuration (1)
 Not stored, but generated from user requirements assessment.
 
 **Inputs:**
+
 - Team size (1-10, 10-100, 100+)
 - Security requirements (basic, enterprise, compliance)
 - Multi-provider needs (yes/no)
 - Cost tracking priority (low, medium, high)
 
 **Outputs:**
+
 - Recommended gateway type
 - Suggested deployment pattern
 - Configuration YAML skeleton
@@ -230,11 +250,13 @@ Not stored, but generated from user requirements assessment.
 Computed from verification results and error patterns.
 
 **Inputs:**
+
 - Verification Result with status = failure
 - Error message text
 - Gateway Configuration details
 
 **Outputs:**
+
 - Root cause analysis
 - Suggested resolution steps
 - Related documentation links
@@ -373,6 +395,7 @@ Computed from verification results and error patterns.
 ## State Transitions
 
 ### Gateway Configuration States
+
 1. **Draft** → Configuration created but not verified
 2. **Verified** → Successfully tested via `/status` or end-to-end test
 3. **Active** → Currently in use by Claude Code
@@ -381,6 +404,7 @@ Computed from verification results and error patterns.
 6. **Deprecated** → Old configuration, user should migrate
 
 ### Model Deployment States
+
 1. **Enabled** → Available for routing
 2. **Cooldown** → Temporarily disabled after failures, will retry after cooldown period
 3. **Disabled** → Manually disabled by user
@@ -391,11 +415,13 @@ Computed from verification results and error patterns.
 ## Implementation Notes
 
 ### Configuration Storage
+
 - **User-level**: `~/.claude/settings.json` (JSON format)
 - **Project-level**: `.claude/settings.json` (JSON format, can be committed to git)
 - **Gateway-level**: `litellm_config.yaml` (YAML format, read by LiteLLM proxy)
 
 ### Configuration Mapping
+
 Claude Code settings.json → LiteLLM YAML mapping:
 
 ```javascript

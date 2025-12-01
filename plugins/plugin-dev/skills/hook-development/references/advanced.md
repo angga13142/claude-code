@@ -31,6 +31,7 @@ Combine command and prompt hooks for layered validation:
 **Use case:** Fast deterministic checks followed by intelligent analysis
 
 **Example quick-check.sh:**
+
 ```bash
 #!/bin/bash
 input=$(cat)
@@ -65,11 +66,13 @@ input=$(cat)
 ```
 
 **Use cases:**
+
 - Different behavior in CI vs local development
 - Project-specific validation
 - User-specific rules
 
 **Example: Skip certain checks for trusted users:**
+
 ```bash
 #!/bin/bash
 # Skip detailed checks for admin users
@@ -135,6 +138,7 @@ fi
 ```
 
 **Example .claude-hooks-config.json:**
+
 ```json
 {
   "strict_mode": true,
@@ -231,6 +235,7 @@ All three hooks run simultaneously, reducing total latency.
 Coordinate hooks across different events:
 
 **SessionStart - Set up tracking:**
+
 ```bash
 #!/bin/bash
 # Initialize session tracking
@@ -239,6 +244,7 @@ echo "0" > /tmp/build-count-$$
 ```
 
 **PostToolUse - Track events:**
+
 ```bash
 #!/bin/bash
 input=$(cat)
@@ -254,6 +260,7 @@ fi
 ```
 
 **Stop - Verify based on tracking:**
+
 ```bash
 #!/bin/bash
 test_count=$(cat /tmp/test-count-$$ 2>/dev/null || echo "0")

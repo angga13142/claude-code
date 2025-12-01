@@ -7,6 +7,7 @@ Use this template to generate agents using Claude with the agent creation system
 ### Step 1: Describe Your Agent Need
 
 Think about:
+
 - What task should the agent handle?
 - When should it be triggered?
 - Should it be proactive or reactive?
@@ -55,11 +56,13 @@ tools: ["Read", "Write", "Grep"]  # Optional: restrict tools
 ## Example 1: Code Review Agent
 
 **Your request:**
+
 ```
 I need an agent that reviews code changes for quality issues, security vulnerabilities, and adherence to best practices. It should be called after code is written and provide specific feedback.
 ```
 
 **Claude generates:**
+
 ```json
 {
   "identifier": "code-quality-reviewer",
@@ -134,11 +137,13 @@ Include file names and line numbers for all findings.
 ## Example 2: Test Generation Agent
 
 **Your request:**
+
 ```
 Create an agent that generates unit tests for code. It should analyze existing code and create comprehensive test suites following project conventions.
 ```
 
 **Claude generates:**
+
 ```json
 {
   "identifier": "test-generator",
@@ -152,6 +157,7 @@ Create an agent that generates unit tests for code. It should analyze existing c
 ## Example 3: Documentation Agent
 
 **Your request:**
+
 ```
 Build an agent that writes and updates API documentation. It should analyze code and generate clear, comprehensive docs.
 ```
@@ -163,11 +169,13 @@ Build an agent that writes and updates API documentation. It should analyze code
 ### Be Specific in Your Request
 
 **Vague:**
+
 ```
 "I need an agent that helps with code"
 ```
 
 **Specific:**
+
 ```
 "I need an agent that reviews pull requests for type safety issues in TypeScript, checking for proper type annotations, avoiding 'any', and ensuring correct generic usage"
 ```
@@ -229,6 +237,7 @@ If generated agent needs improvement:
 ## When to Edit Manually
 
 Edit generated agents when:
+
 - Need very specific project patterns
 - Require custom tool combinations
 - Want unique persona or style

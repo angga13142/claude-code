@@ -23,6 +23,7 @@ Claude Code requires specific HTTP headers to communicate with the Anthropic API
 **Default**: If not provided by client, gateway should inject `2023-06-01`
 
 **Why Critical**:
+
 - Anthropic API uses versioning to maintain backward compatibility
 - Different versions may have different request/response schemas
 - Missing this header causes `400 Bad Request: Missing required header 'anthropic-version'`
@@ -32,6 +33,7 @@ Claude Code requires specific HTTP headers to communicate with the Anthropic API
 **Purpose**: Enables beta features like extended thinking, prompt caching, etc.  
 **Format**: `anthropic-beta: feature-name-YYYY-MM-DD[,feature2-YYYY-MM-DD]`  
 **Examples**:
+
 - `anthropic-beta: messages-2025-01-01`
 - `anthropic-beta: prompt-caching-2024-07-31,extended-thinking-2024-12-12`
 
@@ -39,6 +41,7 @@ Claude Code requires specific HTTP headers to communicate with the Anthropic API
 **Default**: Can be omitted if no beta features are used
 
 **Why Critical**:
+
 - Beta features like extended thinking require this header
 - Missing this header when using beta features causes `400 Bad Request: Beta feature not enabled`
 
@@ -50,6 +53,7 @@ Claude Code requires specific HTTP headers to communicate with the Anthropic API
 **Required**: Optional but recommended for telemetry
 
 **Why Useful**:
+
 - Helps Anthropic identify client-specific issues
 - Enables version-specific support and troubleshooting
 - Does not affect request processing
@@ -62,24 +66,28 @@ Claude Code requires specific HTTP headers to communicate with the Anthropic API
 **Required**: Yes, for ALL requests
 
 **Gateway Handling**:
+
 - Client sends gateway API key: `Authorization: Bearer gateway-key`
 - Gateway validates gateway key
 - Gateway replaces with provider API key: `Authorization: Bearer sk-ant-api03-xxxxx`
 - Gateway forwards to Anthropic API
 
 **Why Critical**:
+
 - Without valid provider API key, Anthropic returns `401 Unauthorized`
 
 ### 5. `Content-Type` and `Accept`
 
 **Purpose**: Specifies request/response format  
 **Format**:
+
 - `Content-Type: application/json`
 - `Accept: application/json` (non-streaming) or `Accept: text/event-stream` (streaming)
 
 **Required**: Yes, for ALL requests
 
 **Why Critical**:
+
 - Anthropic API requires JSON requests
 - Streaming responses use Server-Sent Events (SSE) format
 
@@ -92,6 +100,7 @@ Claude Code requires specific HTTP headers to communicate with the Anthropic API
 Some gateways use `x-api-key` header instead of `Authorization: Bearer`.
 
 **Handling**:
+
 ```
 Client: x-api-key: gateway-key
 Gateway: Authorization: Bearer sk-ant-api03-xxxxx (to Anthropic)
@@ -100,6 +109,7 @@ Gateway: Authorization: Bearer sk-ant-api03-xxxxx (to Anthropic)
 ### 7. Custom Tracking Headers
 
 Preserve any custom headers for request tracing:
+
 - `x-request-id`
 - `x-correlation-id`
 - `x-session-id`
@@ -280,6 +290,7 @@ curl -v -X POST "${GATEWAY_URL}/v1/messages" \
 ### Expected Response
 
 **Success (200 OK)**:
+
 ```json
 {
   "id": "msg_xxxxx",
@@ -301,6 +312,7 @@ curl -v -X POST "${GATEWAY_URL}/v1/messages" \
 ```
 
 **Failure (400 Bad Request)** - Missing Headers:
+
 ```json
 {
   "type": "error",
@@ -336,6 +348,7 @@ Use this checklist to verify header forwarding:
 
 **Cause**: Gateway is not forwarding `anthropic-version` header  
 **Solution**:
+
 1. Verify gateway configuration forwards `anthropic-version`
 2. Check gateway logs to see if header is present in upstream request
 3. Add default `anthropic-version: 2023-06-01` in gateway config
@@ -345,6 +358,7 @@ Use this checklist to verify header forwarding:
 
 **Cause**: Gateway is not forwarding `anthropic-beta` header  
 **Solution**:
+
 1. Verify gateway configuration forwards `anthropic-beta`
 2. Check client is sending correct `anthropic-beta` value
 3. Confirm Anthropic API supports the requested beta feature
@@ -354,10 +368,12 @@ Use this checklist to verify header forwarding:
 
 **Cause**: Gateway is not replacing client auth with provider API key  
 **Solution**:
+
 1. Verify gateway has valid Anthropic API key configured
 2. Check gateway logs for authorization header transformation
 3. Confirm provider key starts with `sk-ant-api03-`
 4. Test provider key directly against Anthropic API:
+
    ```bash
    curl -X POST https://api.anthropic.com/v1/messages \
      -H "Authorization: Bearer sk-ant-api03-xxxxx" \
@@ -370,10 +386,12 @@ Use this checklist to verify header forwarding:
 
 **Cause**: Gateway is buffering responses or not forwarding `Accept: text/event-stream`  
 **Solution**:
+
 1. Disable response buffering in gateway config
 2. Verify gateway forwards `Accept: text/event-stream` header
 3. Check gateway supports Server-Sent Events (SSE) passthrough
 4. Test streaming with curl:
+
    ```bash
    curl -N -X POST "${GATEWAY_URL}/v1/messages" \
      -H "Authorization: Bearer ${GATEWAY_API_KEY}" \
@@ -388,6 +406,7 @@ Use this checklist to verify header forwarding:
 ## Security Considerations
 
 ### DO:
+
 - ✅ Validate client authentication before forwarding to Anthropic
 - ✅ Replace client `Authorization` with provider API key
 - ✅ Store provider API key in secret manager (not config files)
@@ -395,6 +414,7 @@ Use this checklist to verify header forwarding:
 - ✅ Rotate provider API keys every 90 days
 
 ### DON'T:
+
 - ❌ Forward client `Authorization` directly to Anthropic (security risk)
 - ❌ Log full `Authorization` header values (exposes API keys)
 - ❌ Hardcode provider API key in gateway config

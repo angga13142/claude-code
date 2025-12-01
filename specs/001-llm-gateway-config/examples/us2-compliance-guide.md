@@ -11,6 +11,7 @@
 Enterprise gateway deployments must comply with organizational and regulatory security standards. This guide covers common compliance frameworks and requirements for Claude Code gateway configurations.
 
 **Supported Frameworks**:
+
 - SOC 2 Type II (Security, Availability, Confidentiality)
 - HIPAA (Healthcare data protection)
 - GDPR (EU data protection)
@@ -33,6 +34,7 @@ SOC 2 is an auditing standard for service organizations that store customer data
 **Requirement**: Implement controls to limit access to systems and data
 
 **Implementation**:
+
 ```yaml
 # Gateway access control
 authentication:
@@ -58,6 +60,7 @@ ip_restrictions:
 ```
 
 **Evidence for Auditor**:
+
 - [ ] Access control policy documented
 - [ ] Role-based access control (RBAC) configured
 - [ ] IP allowlisting implemented
@@ -69,6 +72,7 @@ ip_restrictions:
 **Requirement**: Monitor systems and maintain audit trails
 
 **Implementation**:
+
 ```yaml
 # Audit logging configuration
 logging:
@@ -109,6 +113,7 @@ alerts:
 ```
 
 **Evidence for Auditor**:
+
 - [ ] Audit logging enabled for all security-relevant events
 - [ ] Logs retained for 7+ years
 - [ ] Log integrity protected (immutable storage)
@@ -121,6 +126,7 @@ alerts:
 **Requirement**: Identify and remediate system vulnerabilities
 
 **Implementation**:
+
 ```bash
 # Regular vulnerability scanning
 # Run weekly with Trivy, Snyk, or similar
@@ -141,6 +147,7 @@ zap-cli quick-scan https://gateway.example.com
 ```
 
 **Evidence for Auditor**:
+
 - [ ] Vulnerability scanning policy documented
 - [ ] Regular scan schedule (weekly minimum)
 - [ ] Patching SLA documented (7/30/90 days)
@@ -152,6 +159,7 @@ zap-cli quick-scan https://gateway.example.com
 **Requirement**: Encrypt data in transit using TLS 1.2+
 
 **Implementation**:
+
 ```nginx
 # Nginx TLS configuration
 server {
@@ -174,6 +182,7 @@ server {
 ```
 
 **Evidence for Auditor**:
+
 - [ ] TLS 1.2+ enforced (TLS 1.0/1.1 disabled)
 - [ ] Strong cipher suites configured
 - [ ] Valid certificates from trusted CA
@@ -185,6 +194,7 @@ server {
 **Requirement**: Implement formal change management process
 
 **Implementation**:
+
 ```yaml
 # Example change request for gateway update
 change_request:
@@ -216,6 +226,7 @@ change_request:
 ```
 
 **Evidence for Auditor**:
+
 - [ ] Change management policy documented
 - [ ] Change requests for all production changes
 - [ ] Testing procedures before deployment
@@ -237,6 +248,7 @@ HIPAA (Health Insurance Portability and Accountability Act) requires protection 
 **Requirement**: Implement technical policies to restrict access to PHI
 
 **Implementation**:
+
 ```yaml
 # User-level access control
 access_control:
@@ -261,6 +273,7 @@ access_control:
 ```
 
 **Evidence for Auditor**:
+
 - [ ] Access control policy documented
 - [ ] Multi-factor authentication required
 - [ ] Session timeout ≤ 15 minutes
@@ -272,6 +285,7 @@ access_control:
 **Requirement**: Encrypt PHI in transit and at rest
 
 **Implementation**:
+
 ```yaml
 # Encryption configuration
 encryption:
@@ -290,6 +304,7 @@ encryption:
 ```
 
 **Evidence for Auditor**:
+
 - [ ] TLS 1.2+ for all data in transit
 - [ ] AES-256 encryption for data at rest
 - [ ] Encryption key management (KMS)
@@ -301,6 +316,7 @@ encryption:
 **Requirement**: Implement hardware/software to record and examine activity
 
 **Implementation**:
+
 ```yaml
 # HIPAA audit logging
 audit_logging:
@@ -330,6 +346,7 @@ audit_logging:
 ```
 
 **Evidence for Auditor**:
+
 - [ ] Audit logs capture all PHI access
 - [ ] Logs retained for 6+ years
 - [ ] PHI in logs encrypted
@@ -341,6 +358,7 @@ audit_logging:
 **Requirement**: Protect PHI from improper alteration or destruction
 
 **Implementation**:
+
 ```yaml
 # Data integrity
 integrity_controls:
@@ -364,6 +382,7 @@ integrity_controls:
 ```
 
 **Evidence for Auditor**:
+
 - [ ] Data integrity verification (checksums)
 - [ ] Versioning and audit trails
 - [ ] Regular backups (daily minimum)
@@ -375,6 +394,7 @@ integrity_controls:
 **Requirement**: Execute BAA with any entity that processes PHI
 
 **Action Items**:
+
 1. ✅ Execute BAA with Anthropic (if processing PHI)
 2. ✅ Execute BAA with gateway provider (TrueFoundry, Zuplo, etc.)
 3. ✅ Execute BAA with cloud provider (AWS, GCP, Azure)
@@ -382,6 +402,7 @@ integrity_controls:
 5. ✅ Maintain BAA documentation
 
 **Key BAA Terms**:
+
 - Permitted uses and disclosures of PHI
 - Safeguards to prevent unauthorized disclosure
 - Reporting requirements for breaches
@@ -389,6 +410,7 @@ integrity_controls:
 - Liability and indemnification
 
 **Evidence for Auditor**:
+
 - [ ] Signed BAA with Anthropic
 - [ ] Signed BAA with gateway provider
 - [ ] Signed BAA with cloud provider
@@ -410,6 +432,7 @@ GDPR (General Data Protection Regulation) protects personal data of EU residents
 **Requirement**: Implement data protection from the outset
 
 **Implementation**:
+
 ```yaml
 # Privacy-by-design configuration
 privacy_settings:
@@ -430,6 +453,7 @@ privacy_settings:
 **Requirement**: Maintain records of data processing
 
 **Documentation Required**:
+
 ```markdown
 # Processing Activity Record
 
@@ -468,6 +492,7 @@ privacy_settings:
 ```
 
 **Evidence for Auditor**:
+
 - [ ] Processing activity records documented
 - [ ] Legal basis for processing identified
 - [ ] Data flow diagrams created
@@ -479,6 +504,7 @@ privacy_settings:
 **Requirement**: Implement appropriate technical and organizational measures
 
 **Implementation**:
+
 ```yaml
 # GDPR security measures
 security_measures:
@@ -504,6 +530,7 @@ security_measures:
 ```
 
 **Evidence for Auditor**:
+
 - [ ] Security measures documented
 - [ ] Encryption implemented (transit and rest)
 - [ ] Access controls tested
@@ -515,6 +542,7 @@ security_measures:
 **Requirement**: Notify authorities within 72 hours of breach
 
 **Breach Response Plan**:
+
 ```markdown
 # Data Breach Response Plan
 
@@ -550,6 +578,7 @@ security_measures:
 ```
 
 **Evidence for Auditor**:
+
 - [ ] Breach response plan documented
 - [ ] 72-hour notification timeline
 - [ ] Breach notification templates
@@ -561,6 +590,7 @@ security_measures:
 **Requirement**: Ensure adequate safeguards for data transfers outside EU
 
 **Implementation**:
+
 ```yaml
 # Data transfer safeguards
 data_transfers:
@@ -583,6 +613,7 @@ data_transfers:
 ```
 
 **Required Documents**:
+
 - [ ] Standard Contractual Clauses (SCCs) with Anthropic
 - [ ] Data Processing Agreement (DPA) with gateway provider
 - [ ] Data transfer impact assessment (DTIA)

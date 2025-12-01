@@ -5,6 +5,7 @@ This directory contains example CI/CD pipeline configurations for deploying and 
 ## Available Examples
 
 ### GitHub Actions
+
 - **File**: `github-actions.yml`
 - **Usage**: Copy to `.github/workflows/litellm-gateway.yml`
 - **Features**:
@@ -14,6 +15,7 @@ This directory contains example CI/CD pipeline configurations for deploying and 
   - Staging and production deployments
 
 ### GitLab CI
+
 - **File**: `gitlab-ci.yml`
 - **Usage**: Copy to `.gitlab-ci.yml` or include in your existing pipeline
 - **Features**:
@@ -22,6 +24,7 @@ This directory contains example CI/CD pipeline configurations for deploying and 
   - Manual deployment gates
 
 ### Jenkins Pipeline
+
 - **File**: `jenkins-pipeline.groovy`
 - **Usage**: Create a new Jenkins Pipeline job and paste this script
 - **Features**:
@@ -52,6 +55,7 @@ All CI/CD examples require:
 ### Environment Variables
 
 All examples use these default values:
+
 - `LITELLM_PORT`: `4000`
 - `PYTHON_VERSION`: `3.9`
 
@@ -62,12 +66,14 @@ Modify these in your pipeline configuration as needed.
 The deployment stages (`deploy-staging`, `deploy-production`) are placeholders. Replace with your actual deployment commands:
 
 **Kubernetes Example**:
+
 ```bash
 kubectl apply -f k8s/gateway-deployment.yaml
 kubectl rollout status deployment/litellm-gateway
 ```
 
 **Terraform Example**:
+
 ```bash
 terraform init
 terraform plan
@@ -75,6 +81,7 @@ terraform apply -auto-approve
 ```
 
 **Docker Example**:
+
 ```bash
 docker build -t litellm-gateway:latest .
 docker push litellm-gateway:latest
@@ -122,4 +129,3 @@ kubectl set image deployment/litellm-gateway litellm-gateway=litellm-gateway:lat
 - [LiteLLM Documentation](https://docs.litellm.ai/)
 - [Google Cloud AI Platform](https://cloud.google.com/vertex-ai/docs)
 - [Gateway Configuration Guide](../README.md)
-

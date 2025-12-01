@@ -77,6 +77,7 @@ Interpret creatively and make unexpected choices that feel genuinely designed fo
 **Problem**: When extended thinking is not enabled (the default), Opus 4.5 is particularly sensitive to the word "think" and its variants.
 
 Extended thinking is not enabled by default. It is only enabled if the API request contains a `thinking` parameter:
+
 ```json
 "thinking": {
     "type": "enabled",

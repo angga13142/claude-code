@@ -23,11 +23,13 @@ export LITELLM_MASTER_KEY="sk-1234567890abcdef"
 ```
 
 **Recommendations**:
+
 - Use a strong, random string (at least 20 characters)
 - Start with `sk-` prefix for clarity
 - Store in `.env` file (gitignored) for persistence
 
 **Generate a secure key**:
+
 ```bash
 # Option 1: Using openssl
 export LITELLM_MASTER_KEY="sk-$(openssl rand -hex 16)"
@@ -64,12 +66,14 @@ gcloud auth application-default login
 gcloud config set project YOUR_PROJECT_ID
 ```
 
-**Pros**: 
+**Pros**:
+
 - No credential files to manage
 - Automatic token refresh
 - Easy to set up
 
 **Cons**:
+
 - Requires gcloud CLI installed
 - Per-user setup
 
@@ -84,11 +88,13 @@ chmod 600 "$GOOGLE_APPLICATION_CREDENTIALS"
 ```
 
 **Pros**:
+
 - Portable across environments
 - Works in CI/CD
 - Fine-grained IAM control
 
 **Cons**:
+
 - Requires secure secret management
 
 ---
@@ -140,6 +146,7 @@ export ANTHROPIC_AUTH_TOKEN="sk-dev-1234567890abcdef"
 ```
 
 **Load environment variables**:
+
 ```bash
 source .env
 ```
@@ -262,6 +269,7 @@ Next steps:
 ```
 
 This is normal if you haven't started the gateway yet. Start it with:
+
 ```bash
 litellm --config templates/litellm-complete.yaml --port 4000
 ```
@@ -273,6 +281,7 @@ litellm --config templates/litellm-complete.yaml --port 4000
 ### macOS/Linux
 
 **Temporary (current session only)**:
+
 ```bash
 export LITELLM_MASTER_KEY="sk-1234567890abcdef"
 export ANTHROPIC_BASE_URL="http://localhost:4000"
@@ -280,6 +289,7 @@ export ANTHROPIC_AUTH_TOKEN="sk-1234567890abcdef"
 ```
 
 **Permanent (add to shell profile)**:
+
 ```bash
 # Add to ~/.bashrc or ~/.zshrc
 echo 'export LITELLM_MASTER_KEY="sk-1234567890abcdef"' >> ~/.bashrc
@@ -293,6 +303,7 @@ source ~/.bashrc
 ### Windows (PowerShell)
 
 **Temporary (current session only)**:
+
 ```powershell
 $env:LITELLM_MASTER_KEY="sk-1234567890abcdef"
 $env:ANTHROPIC_BASE_URL="http://localhost:4000"
@@ -300,6 +311,7 @@ $env:ANTHROPIC_AUTH_TOKEN="sk-1234567890abcdef"
 ```
 
 **Permanent (user-level)**:
+
 ```powershell
 [System.Environment]::SetEnvironmentVariable('LITELLM_MASTER_KEY', 'sk-1234567890abcdef', 'User')
 [System.Environment]::SetEnvironmentVariable('ANTHROPIC_BASE_URL', 'http://localhost:4000', 'User')
@@ -309,6 +321,7 @@ $env:ANTHROPIC_AUTH_TOKEN="sk-1234567890abcdef"
 ### Windows (Command Prompt)
 
 **Temporary (current session only)**:
+
 ```cmd
 set LITELLM_MASTER_KEY=sk-1234567890abcdef
 set ANTHROPIC_BASE_URL=http://localhost:4000
@@ -316,6 +329,7 @@ set ANTHROPIC_AUTH_TOKEN=sk-1234567890abcdef
 ```
 
 **Permanent (system-level)**:
+
 ```cmd
 setx LITELLM_MASTER_KEY "sk-1234567890abcdef"
 setx ANTHROPIC_BASE_URL "http://localhost:4000"
@@ -366,6 +380,7 @@ stringData:
 ### ✅ DO
 
 1. **Use `.env` files** and add them to `.gitignore`
+
    ```bash
    echo ".env" >> .gitignore
    echo ".env.*" >> .gitignore
@@ -381,6 +396,7 @@ stringData:
    - HashiCorp Vault
 
 4. **Restrict file permissions**
+
    ```bash
    chmod 600 .env
    chmod 600 service-account-key.json
@@ -389,12 +405,14 @@ stringData:
 ### ❌ DON'T
 
 1. **Never commit secrets to git**
+
    ```bash
    # Check for accidental commits
    git log -p | grep -i "LITELLM_MASTER_KEY"
    ```
 
 2. **Never hardcode secrets in YAML files**
+
    ```yaml
    # BAD:
    master_key: sk-1234567890abcdef
@@ -418,6 +436,7 @@ stringData:
 **Cause**: Environment variable not exported or gateway can't read it
 
 **Solution**:
+
 ```bash
 # Verify variable is set
 echo $LITELLM_MASTER_KEY
@@ -434,6 +453,7 @@ litellm --config litellm-complete.yaml --port 4000
 **Cause**: `ANTHROPIC_AUTH_TOKEN` doesn't match `LITELLM_MASTER_KEY`
 
 **Solution**:
+
 ```bash
 # Ensure they match
 export ANTHROPIC_AUTH_TOKEN="$LITELLM_MASTER_KEY"
@@ -447,6 +467,7 @@ export ANTHROPIC_AUTH_TOKEN="$LITELLM_MASTER_KEY"
 **Cause**: Google Cloud credentials missing or invalid
 
 **Solution**:
+
 ```bash
 # Re-authenticate with gcloud
 gcloud auth application-default login

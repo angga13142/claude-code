@@ -521,7 +521,7 @@ export CLAUDE_CODE_SKIP_VERTEX_AUTH=1
    ```
 ````
 
-3. Verify: `claude /status`
+1. Verify: `claude /status`
 
 ````
 

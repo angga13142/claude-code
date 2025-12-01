@@ -27,6 +27,7 @@ This guide covers authentication setup for accessing Vertex AI models through Li
 ### Step 1: Install gcloud CLI
 
 **macOS**:
+
 ```bash
 # Using Homebrew
 brew install google-cloud-sdk
@@ -36,6 +37,7 @@ gcloud --version
 ```
 
 **Linux**:
+
 ```bash
 # Download and install
 curl https://sdk.cloud.google.com | bash
@@ -48,6 +50,7 @@ gcloud --version
 ```
 
 **Windows**:
+
 ```powershell
 # Download installer from:
 # https://cloud.google.com/sdk/docs/install
@@ -117,6 +120,7 @@ gcloud services list --enabled | grep aiplatform
 ### Troubleshooting gcloud Auth
 
 **Issue**: "Could not find a valid project"
+
 ```bash
 # List available projects
 gcloud projects list
@@ -126,6 +130,7 @@ gcloud config set project PROJECT_ID
 ```
 
 **Issue**: "Application Default Credentials are not available"
+
 ```bash
 # Re-run authentication
 gcloud auth application-default login
@@ -135,6 +140,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=~/.config/gcloud/application_default_crede
 ```
 
 **Issue**: Token expired
+
 ```bash
 # Revoke and re-authenticate
 gcloud auth application-default revoke
@@ -179,6 +185,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 ```
 
 **IAM Roles Explained**:
+
 - `roles/aiplatform.user`: **Required** - Access Vertex AI models
 - `roles/logging.logWriter`: **Optional** - Write logs to Cloud Logging
 - `roles/monitoring.metricWriter`: **Optional** - Write metrics to Cloud Monitoring
@@ -201,6 +208,7 @@ cat ~/litellm-sa-key.json | jq .client_email
 ### Step 4: Set Environment Variable
 
 **Linux/macOS**:
+
 ```bash
 # Set for current session
 export GOOGLE_APPLICATION_CREDENTIALS=~/litellm-sa-key.json
@@ -211,6 +219,7 @@ source ~/.bashrc
 ```
 
 **Windows (PowerShell)**:
+
 ```powershell
 # Set for current session
 $env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\litellm-sa-key.json"
@@ -240,6 +249,7 @@ EOF
 ### Troubleshooting Service Account
 
 **Issue**: "Permission denied"
+
 ```bash
 # Check IAM bindings
 gcloud projects get-iam-policy $PROJECT_ID \
@@ -256,6 +266,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 ```
 
 **Issue**: "Key file not found"
+
 ```bash
 # Verify file exists
 ls -lh $GOOGLE_APPLICATION_CREDENTIALS
@@ -268,6 +279,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=/full/path/to/key.json
 ```
 
 **Issue**: "Invalid key JSON"
+
 ```bash
 # Validate JSON format
 cat $GOOGLE_APPLICATION_CREDENTIALS | jq .
@@ -293,6 +305,7 @@ gcloud iam service-accounts keys create ~/litellm-sa-key-new.json \
 | **Team Sharing** | ❌ No | ✅ Yes |
 
 **Recommendation**:
+
 - **Development**: Use gcloud auth for simplicity
 - **Production**: Use service accounts for security and portability
 - **CI/CD**: Must use service accounts
@@ -304,6 +317,7 @@ gcloud iam service-accounts keys create ~/litellm-sa-key-new.json \
 ### ✅ DO
 
 1. **Rotate service account keys regularly**
+
    ```bash
    # Create new key
    gcloud iam service-accounts keys create ~/new-key.json \
@@ -318,6 +332,7 @@ gcloud iam service-accounts keys create ~/litellm-sa-key-new.json \
    ```
 
 2. **Use least-privilege IAM roles**
+
    ```bash
    # Minimum required role
    gcloud projects add-iam-policy-binding $PROJECT_ID \
@@ -326,11 +341,13 @@ gcloud iam service-accounts keys create ~/litellm-sa-key-new.json \
    ```
 
 3. **Secure key files with proper permissions**
+
    ```bash
    chmod 600 ~/litellm-sa-key.json  # Owner read/write only
    ```
 
 4. **Use Google Secret Manager for production**
+
    ```bash
    # Store key in Secret Manager
    gcloud secrets create litellm-sa-key \
@@ -345,6 +362,7 @@ gcloud iam service-accounts keys create ~/litellm-sa-key-new.json \
 ### ❌ DON'T
 
 1. **Never commit service account keys to git**
+
    ```bash
    # Add to .gitignore
    echo "*-sa-key.json" >> .gitignore
@@ -352,6 +370,7 @@ gcloud iam service-accounts keys create ~/litellm-sa-key-new.json \
    ```
 
 2. **Don't use overly permissive roles**
+
    ```bash
    # ❌ BAD: Too much access
    # roles/owner

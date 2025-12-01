@@ -56,6 +56,7 @@ Reply with your choice and I'll help complete the action.
 ```
 
 **Key features:**
+
 - Numbered steps for clarity
 - Bash execution for context
 - Decision points for user input
@@ -104,6 +105,7 @@ State saved. Run `/deploy-test` to continue.
 ```
 
 **Next command** (`/deploy-test`):
+
 ```markdown
 ---
 description: Run deployment tests
@@ -120,6 +122,7 @@ Tests complete. Run `/deploy-build` to continue.
 ```
 
 **Pattern benefits:**
+
 - Persistent state across commands
 - Clear workflow progression
 - Safety checkpoints
@@ -196,6 +199,7 @@ Starting sequence...
 ```
 
 **Individual commands** are simple:
+
 - `/format-code` - Just formats
 - `/lint-code` - Just lints
 - `/test-all` - Just tests

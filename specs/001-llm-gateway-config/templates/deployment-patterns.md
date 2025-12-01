@@ -58,12 +58,14 @@ Pattern D   Pattern C        Pattern B  Pattern A
 ### When to Use
 
 ✅ **Use this pattern when:**
+
 - You only need a single provider (Anthropic, Bedrock, or Vertex AI)
 - You don't need centralized cost tracking or usage analytics
 - You're doing personal development or small-scale usage
 - You want the simplest possible setup
 
 ❌ **Don't use this pattern when:**
+
 - You need to track costs across teams or projects
 - You want to use multiple model providers
 - You need load balancing or fallback strategies
@@ -88,12 +90,14 @@ gcloud auth application-default login
 ### Pros & Cons
 
 **Advantages:**
+
 - 🚀 Minimal configuration (works out of the box)
 - ⚡ Lowest latency (direct connection)
 - 🔒 Simple security model (just API keys)
 - 💰 No additional infrastructure costs
 
 **Disadvantages:**
+
 - 📊 No usage tracking or cost analytics
 - 🔄 No automatic failover or load balancing
 - 👥 Manual API key distribution for teams
@@ -132,12 +136,14 @@ gcloud auth application-default login
 ### When to Use
 
 ✅ **Use this pattern when:**
+
 - Your organization requires all internet traffic through a proxy
 - You need network-level audit trails and compliance
 - You want to enforce security policies at the network layer
 - Your firewall blocks direct API access
 
 ❌ **Don't use this pattern when:**
+
 - You're on an open network (Pattern A is simpler)
 - You need usage analytics (add Pattern C for gateway)
 - Proxy adds unacceptable latency to API calls
@@ -161,12 +167,14 @@ export HTTPS_PROXY="http://username:password@proxy.company.com:8080"
 ### Pros & Cons
 
 **Advantages:**
+
 - 🔒 Network-level security enforcement
 - 📝 Centralized audit logs at proxy level
 - 🏢 Complies with corporate security policies
 - 🛡️ Can inspect/filter traffic (if SSL interception configured)
 
 **Disadvantages:**
+
 - 🐌 Adds latency (proxy hop overhead)
 - ⚙️ Requires proxy infrastructure and maintenance
 - 🔧 More complex troubleshooting (network layer issues)
@@ -205,6 +213,7 @@ export HTTPS_PROXY="http://username:password@proxy.company.com:8080"
 ### When to Use
 
 ✅ **Use this pattern when:**
+
 - You need cost tracking and usage analytics
 - You want to use multiple model providers
 - You need load balancing or automatic failover
@@ -212,6 +221,7 @@ export HTTPS_PROXY="http://username:password@proxy.company.com:8080"
 - You want centralized rate limiting and quotas
 
 ❌ **Don't use this pattern when:**
+
 - You only need a single API call occasionally (Pattern A is simpler)
 - You can't run an additional service (resource constraints)
 - Your network forbids local proxies (use enterprise gateway)
@@ -219,11 +229,13 @@ export HTTPS_PROXY="http://username:password@proxy.company.com:8080"
 ### Configuration
 
 **1. Install LiteLLM:**
+
 ```bash
 pip install litellm google-cloud-aiplatform
 ```
 
 **2. Create config file (`litellm_config.yaml`):**
+
 ```yaml
 model_list:
   - model_name: gemini-2.5-flash
@@ -237,12 +249,14 @@ general_settings:
 ```
 
 **3. Start gateway:**
+
 ```bash
 export LITELLM_MASTER_KEY="sk-1234567890"
 litellm --config litellm_config.yaml --port 4000
 ```
 
 **4. Configure Claude Code:**
+
 ```bash
 export ANTHROPIC_BASE_URL="http://localhost:4000"
 export ANTHROPIC_AUTH_TOKEN="sk-1234567890"
@@ -251,6 +265,7 @@ export ANTHROPIC_AUTH_TOKEN="sk-1234567890"
 ### Pros & Cons
 
 **Advantages:**
+
 - 📊 Complete usage tracking and cost analytics
 - 🔄 Automatic load balancing and failover
 - 🌍 Multi-provider support (Anthropic, Bedrock, Vertex, OpenAI)
@@ -260,6 +275,7 @@ export ANTHROPIC_AUTH_TOKEN="sk-1234567890"
 - 📈 Real-time monitoring and dashboards
 
 **Disadvantages:**
+
 - ⚙️ Additional service to run and maintain
 - 💻 Requires compute resources (minimal: ~100MB RAM)
 - 🔍 One more component to troubleshoot
@@ -302,6 +318,7 @@ export ANTHROPIC_AUTH_TOKEN="sk-1234567890"
 ### When to Use
 
 ✅ **Use this pattern when:**
+
 - You need BOTH proxy compliance AND gateway features
 - Your organization has strict network security policies
 - You want centralized LLM access control across the enterprise
@@ -309,6 +326,7 @@ export ANTHROPIC_AUTH_TOKEN="sk-1234567890"
 - Multiple teams need shared gateway infrastructure
 
 ❌ **Don't use this pattern when:**
+
 - You're doing personal development (Pattern C is simpler)
 - You don't have proxy requirements (use Pattern C directly)
 - Setup complexity outweighs benefits for your use case
@@ -316,12 +334,14 @@ export ANTHROPIC_AUTH_TOKEN="sk-1234567890"
 ### Configuration
 
 **1. Corporate Proxy:**
+
 ```bash
 export HTTPS_PROXY="http://proxy.company.com:8080"
 export NO_PROXY="localhost,127.0.0.1"
 ```
 
 **2. Gateway (Hosted by IT/Platform team):**
+
 ```yaml
 # litellm_config.yaml (on gateway server)
 model_list:
@@ -338,6 +358,7 @@ general_settings:
 ```
 
 **3. Claude Code:**
+
 ```bash
 export ANTHROPIC_BASE_URL="https://llm-gateway.company.com"
 export ANTHROPIC_AUTH_TOKEN="<enterprise-token-from-vault>"
@@ -347,6 +368,7 @@ export CLAUDE_CODE_SKIP_VERTEX_AUTH=1  # Gateway handles auth
 ### Pros & Cons
 
 **Advantages:**
+
 - 🏢 Maximum compliance (network + application layers)
 - 🔒 Enterprise-grade security (SSO, audit trails)
 - 📊 Centralized governance and cost tracking
@@ -355,6 +377,7 @@ export CLAUDE_CODE_SKIP_VERTEX_AUTH=1  # Gateway handles auth
 - 🛡️ Defense in depth (multiple security layers)
 
 **Disadvantages:**
+
 - 🔧 Most complex setup and maintenance
 - 🐌 Highest latency (multiple hops)
 - 💰 Most expensive (proxy + gateway infrastructure)
@@ -425,6 +448,7 @@ export CLAUDE_CODE_SKIP_VERTEX_AUTH=1  # Gateway handles auth
 ### Q: Can I use multiple patterns?
 
 **A:** Yes! For example:
+
 - Dev environment: Pattern A (direct access)
 - Staging: Pattern C (local gateway)
 - Production: Pattern D (enterprise setup)
@@ -436,6 +460,7 @@ export CLAUDE_CODE_SKIP_VERTEX_AUTH=1  # Gateway handles auth
 ### Q: How do I test if my chosen pattern works?
 
 **A:** Run these verification steps:
+
 ```bash
 # 1. Check configuration
 ./scripts/check-status.sh

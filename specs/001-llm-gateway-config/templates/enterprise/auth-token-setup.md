@@ -36,6 +36,7 @@ Enterprise gateways require authentication to validate client requests before fo
 ```
 
 **Key Points**:
+
 - Client authenticates with gateway using **gateway token**
 - Gateway authenticates with Anthropic using **provider API key**
 - Gateway never exposes provider API key to client
@@ -54,6 +55,7 @@ Enterprise gateways require authentication to validate client requests before fo
 #### Step 1: Generate Gateway API Key
 
 **For LiteLLM**:
+
 ```bash
 # Generate master key
 export LITELLM_MASTER_KEY=$(openssl rand -hex 32)
@@ -65,6 +67,7 @@ litellm --config litellm-config.yaml \
 ```
 
 **For TrueFoundry**:
+
 ```bash
 # Generate API key in TrueFoundry Console
 # Settings → API Keys → Create API Key
@@ -72,6 +75,7 @@ litellm --config litellm-config.yaml \
 ```
 
 **For Zuplo**:
+
 ```bash
 # Generate API key in Zuplo Portal
 # Settings → API Keys → Create API Key
@@ -80,6 +84,7 @@ litellm --config litellm-config.yaml \
 ```
 
 **For Custom Gateway** (example with Kong):
+
 ```bash
 # Create consumer
 curl -X POST http://localhost:8001/consumers \
@@ -135,6 +140,7 @@ claude "Hello world"
 #### Step 1: Configure OAuth Provider
 
 **Example with Okta**:
+
 ```bash
 # Create OAuth 2.0 Application in Okta
 # Application Type: Web Application
@@ -146,6 +152,7 @@ claude "Hello world"
 #### Step 2: Configure Gateway OAuth Integration
 
 **For Zuplo** (routes.oas.json):
+
 ```json
 {
   "security": [
@@ -169,6 +176,7 @@ claude "Hello world"
 ```
 
 **For Custom Gateway** (example with Kong + OIDC):
+
 ```yaml
 plugins:
   - name: oidc
@@ -183,6 +191,7 @@ plugins:
 #### Step 3: Obtain OAuth Token
 
 **Authorization Code Flow** (interactive):
+
 ```bash
 # User authenticates via browser
 # Gateway redirects to OAuth provider
@@ -193,6 +202,7 @@ plugins:
 ```
 
 **Client Credentials Flow** (service account):
+
 ```bash
 # Obtain access token
 curl -X POST https://your-org.okta.com/oauth2/v1/token \
@@ -267,6 +277,7 @@ gcloud iam service-accounts keys create claude-code-gateway-key.json \
 #### Step 2: Configure Gateway
 
 **For LiteLLM**:
+
 ```bash
 # Set service account key path
 export GOOGLE_APPLICATION_CREDENTIALS="/path/to/claude-code-gateway-key.json"
@@ -333,6 +344,7 @@ openssl x509 -req -in client.csr \
 #### Step 2: Configure Gateway for mTLS
 
 **For Nginx**:
+
 ```nginx
 server {
     listen 443 ssl;
@@ -402,6 +414,7 @@ export ANTHROPIC_AUTH_TOKEN="your-gateway-api-key"
 ### Secret Managers (Production)
 
 **AWS Secrets Manager**:
+
 ```bash
 # Store secret
 aws secretsmanager create-secret \
@@ -416,6 +429,7 @@ export ANTHROPIC_AUTH_TOKEN="$TOKEN"
 ```
 
 **Google Secret Manager**:
+
 ```bash
 # Store secret
 echo -n "your-gateway-api-key" | gcloud secrets create claude-code-gateway-token \
@@ -427,6 +441,7 @@ export ANTHROPIC_AUTH_TOKEN=$(gcloud secrets versions access latest \
 ```
 
 **HashiCorp Vault**:
+
 ```bash
 # Store secret
 vault kv put secret/claude-code gateway_token="your-gateway-api-key"
@@ -438,11 +453,13 @@ export ANTHROPIC_AUTH_TOKEN=$(vault kv get -field=gateway_token secret/claude-co
 ### Password Managers (Individual Developers)
 
 - **1Password CLI**:
+
   ```bash
   export ANTHROPIC_AUTH_TOKEN=$(op read "op://Private/Claude Gateway/token")
   ```
 
 - **LastPass CLI**:
+
   ```bash
   export ANTHROPIC_AUTH_TOKEN=$(lpass show --password "Claude Gateway Token")
   ```
@@ -471,6 +488,7 @@ export ANTHROPIC_AUTH_TOKEN="$NEW_TOKEN"
 ### Automated Rotation (Recommended)
 
 **AWS Lambda Example**:
+
 ```python
 import boto3
 import requests
@@ -506,11 +524,13 @@ def rotate_gateway_token(event, context):
 **Symptoms**: `401 Unauthorized` error when making requests
 
 **Possible Causes**:
+
 1. Invalid or expired gateway token
 2. Token not sent in correct header format
 3. Gateway configuration error
 
 **Solutions**:
+
 ```bash
 # 1. Verify token is set
 echo $ANTHROPIC_AUTH_TOKEN
@@ -533,11 +553,13 @@ curl -H "Authorization: Bearer $ANTHROPIC_AUTH_TOKEN" \
 **Symptoms**: `403 Forbidden` error despite valid authentication
 
 **Possible Causes**:
+
 1. Token lacks required permissions/scopes
 2. IP allowlist blocking request
 3. Gateway policy denying access
 
 **Solutions**:
+
 ```bash
 # 1. Check token permissions in gateway console
 # 2. Verify IP address is allowed
@@ -550,6 +572,7 @@ curl -H "Authorization: Bearer $ANTHROPIC_AUTH_TOKEN" \
 **Symptoms**: Authentication works intermittently, fails after some time
 
 **Solutions**:
+
 ```bash
 # Implement token refresh
 # For OAuth: Use refresh token to obtain new access token

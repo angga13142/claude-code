@@ -12,6 +12,7 @@
 This research establishes the technical foundation for implementing an LLM Gateway Configuration Assistant that enables Claude Code users to configure LiteLLM proxies with Vertex AI Model Garden models. The assistant will provide configuration templates, verification procedures, and troubleshooting guidance for 8+ custom models including Google Gemini, DeepSeek, Meta Llama, Mistral Codestral, Qwen, and OpenAI GPT-OSS variants.
 
 **Key Findings:**
+
 - LiteLLM supports Vertex AI Model Garden via `vertex_ai/` provider prefix with project/location parameters
 - Configuration requires: model routing, authentication setup, and proper provider prefixes
 - Multi-region load balancing and fallback strategies are production-ready features
@@ -25,18 +26,21 @@ This research establishes the technical foundation for implementing an LLM Gatew
 
 **Decision**: Use LiteLLM Proxy with YAML configuration approach
 
-**Rationale**: 
+**Rationale**:
+
 - YAML configuration provides declarative, version-controllable setup
 - Supports multiple deployment patterns (local dev, enterprise gateway, multi-provider)
 - Enables load balancing, fallbacks, and rate limiting out-of-the-box
 - Compatible with Claude Code's environment variable approach (`ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN`)
 
 **Alternatives Considered**:
+
 1. **Direct Python SDK Integration** - Rejected: Requires code changes in client applications; YAML proxy is more flexible
 2. **Custom Gateway Solution** - Rejected: Reinvents existing LiteLLM capabilities; increases maintenance burden
 3. **Environment Variables Only** - Rejected: Cannot handle complex routing, fallbacks, or load balancing
 
 **Implementation Pattern**:
+
 ```yaml
 # Standard pattern for Vertex AI Model Garden models
 model_list:
@@ -68,14 +72,15 @@ model_list:
 | **OpenAI** | gpt-oss-20b-maas | `vertex_ai/openai/gpt-oss-20b-maas` | P3 | Open-source GPT variant |
 
 **Authentication Methods**:
+
 1. **gcloud auth application-default login** (Recommended for dev)
    - Pros: No credentials file management, automatic token refresh
    - Cons: Requires gcloud CLI, per-user setup
-   
+
 2. **Service Account JSON** (Recommended for production)
    - Pros: Portable, works in CI/CD, fine-grained IAM control
    - Cons: Requires secure secret management
-   
+
 3. **GOOGLE_APPLICATION_CREDENTIALS environment variable**
    - Pros: Standard Google Cloud pattern, works across SDKs
    - Cons: Path management complexity
@@ -89,6 +94,7 @@ model_list:
 **Decision**: Multi-layer configuration strategy with user/project levels
 
 **Configuration Hierarchy**:
+
 1. **User-level** (`~/.claude/settings.json`) - Personal defaults, dev environments
 2. **Project-level** (`.claude/settings.json`) - Team shared configuration, committed to git
 3. **Environment Variables** - Runtime overrides, CI/CD, containers
@@ -96,19 +102,23 @@ model_list:
 **Best Practices Identified**:
 
 #### Security
+
 - **NEVER hardcode API keys** in configuration files
 - Use `os.environ/VARIABLE_NAME` syntax in YAML for secret injection
 - Implement secret rotation policies (90-day max for service accounts)
 - Use least-privilege IAM roles (`Vertex AI User` minimum)
 
 #### Performance
+
 - Enable **prompt caching** for Gemini models (reduces costs by 50-90%)
 - Configure **multi-region load balancing** for high availability
 - Set appropriate **RPM/TPM limits** per deployment to avoid quota exhaustion
 - Use `drop_params: true` to handle unsupported model parameters gracefully
 
 #### Reliability
+
 - Implement **retry policies** with exponential backoff:
+
   ```yaml
   router_settings:
     num_retries: 3
@@ -118,14 +128,18 @@ model_list:
       RateLimitErrorRetries: 3
       AuthenticationErrorRetries: 0  # Don't retry auth failures
   ```
+
 - Configure **fallback routes** for model availability:
+
   ```yaml
   router_settings:
     fallbacks: [{"gemini-2.5-pro": ["gemini-2.5-flash"]}]
   ```
+
 - Enable **health checks** and monitoring with success callbacks
 
 #### Load Balancing
+
 - **Routing Strategies**:
   1. `simple-shuffle` - Weighted random selection based on RPM (default, best for most cases)
   2. `least-busy` - Route to deployment with lowest active requests (real-time load balancing)
@@ -141,10 +155,12 @@ model_list:
 **Research Findings**:
 
 #### Gemini Models (gemini-2.5-flash, gemini-2.5-pro)
+
 - **Capabilities**: Function calling, vision input, system messages, JSON mode
 - **Context Windows**: 1M+ input tokens, 8K output tokens
 - **Special Features**: Grounding with Google Search, prompt caching, safety settings
 - **Configuration**:
+
   ```yaml
   litellm_params:
     model: vertex_ai/gemini-2.5-pro
@@ -155,10 +171,12 @@ model_list:
   ```
 
 #### DeepSeek R1 (deepseek-r1-0528-maas)
+
 - **Capabilities**: Reasoning with thinking process, long context (32K tokens)
 - **Special Features**: Exposes `reasoning_content` separate from final answer
 - **Use Cases**: Math problems, logical reasoning, multi-step planning
 - **Configuration**:
+
   ```python
   response = litellm.completion(
       model="vertex_ai/deepseek-ai/deepseek-r1-0528-maas",
@@ -169,10 +187,12 @@ model_list:
   ```
 
 #### Mistral Codestral (codestral@latest)
+
 - **Capabilities**: Fill-in-middle (FIM), function calling, 32K context
 - **Special Features**: Optimized for code completion, supports FIM protocol
 - **Use Cases**: IDE integrations, code completion, refactoring
 - **Configuration**:
+
   ```python
   # FIM completion
   from litellm import text_completion
@@ -185,17 +205,20 @@ model_list:
   ```
 
 #### Llama 3 405B (llama3-405b-instruct-maas)
+
 - **Capabilities**: 128K context, instruction following, multilingual
 - **Special Features**: Largest open model, excels at complex reasoning
 - **Use Cases**: Research, complex analysis, content generation
 - **Pricing**: Cost-effective compared to proprietary models at this scale
 
 #### Qwen Models (qwen3-coder-480b, qwen3-235b)
+
 - **Capabilities**: Code-specialized (480B variant), general instruction following (235B)
 - **Context**: 32K+ tokens
 - **Use Cases**: Code generation, translation, technical documentation
 
 #### GPT-OSS 20B (gpt-oss-20b-maas)
+
 - **Capabilities**: OpenAI-style API, reasoning mode support
 - **Special Features**: Open-source alternative to GPT models
 - **Use Cases**: Cost-sensitive applications, on-premises compliance
@@ -207,31 +230,40 @@ model_list:
 **Decision**: Support 3 primary deployment patterns
 
 #### Pattern A: Direct Provider Access
+
 ```
 Claude Code → Anthropic API / Bedrock / Vertex AI
 ```
+
 - **When to use**: Simple single-provider setup, no centralized control needed
 - **Pros**: Minimal configuration, lowest latency
 - **Cons**: No usage tracking, no cost controls, manual API key management
 
 #### Pattern B: Corporate Proxy
+
 ```
 Claude Code → HTTP/HTTPS Proxy → Provider API
 ```
+
 - **Configuration**:
+
   ```bash
   export HTTPS_PROXY="http://proxy.company.com:8080"
   export ANTHROPIC_BASE_URL="https://api.anthropic.com"
   ```
+
 - **When to use**: Enterprise network policies require proxy
 - **Pros**: Complies with security policies, audit trails
 - **Cons**: Adds latency, requires proxy maintenance
 
 #### Pattern C: LLM Gateway (Recommended for Feature)
+
 ```
 Claude Code → LiteLLM Proxy → Multiple Provider APIs
 ```
+
 - **Configuration**:
+
   ```bash
   # Start LiteLLM Proxy
   litellm --config litellm_config.yaml --port 4000
@@ -240,20 +272,25 @@ Claude Code → LiteLLM Proxy → Multiple Provider APIs
   export ANTHROPIC_BASE_URL="http://localhost:4000"
   export ANTHROPIC_AUTH_TOKEN="sk-litellm-master-key"
   ```
+
 - **When to use**: Need cost tracking, multi-provider, load balancing, or team management
 - **Pros**: Centralized control, usage analytics, fallback support, cost optimization
 - **Cons**: Additional infrastructure component, single point of failure (mitigate with HA setup)
 
 #### Pattern D: Corporate Proxy + LLM Gateway (Enterprise)
+
 ```
 Claude Code → Corporate Proxy → LiteLLM Gateway → Provider APIs
 ```
+
 - **Configuration**:
+
   ```bash
   export HTTPS_PROXY="http://proxy.company.com:8080"
   export ANTHROPIC_BASE_URL="https://litellm-gateway.company.com"
   export ANTHROPIC_AUTH_TOKEN="<gateway-token>"
   ```
+
 - **When to use**: Enterprise with both proxy requirements AND gateway benefits
 - **Pros**: Maximum control, compliance, and observability
 - **Cons**: Most complex setup, requires coordination between teams
@@ -265,6 +302,7 @@ Claude Code → Corporate Proxy → LiteLLM Gateway → Provider APIs
 **Decision**: Provide 3-tier verification approach
 
 #### Tier 1: Configuration Verification
+
 ```bash
 # Verify Claude Code sees custom base URL
 claude /status
@@ -275,6 +313,7 @@ claude /status
 ```
 
 #### Tier 2: Gateway Health Check
+
 ```bash
 # Check LiteLLM proxy is running
 curl http://localhost:4000/health
@@ -283,6 +322,7 @@ curl http://localhost:4000/health
 ```
 
 #### Tier 3: End-to-End Test
+
 ```bash
 # Test actual completion through gateway
 curl http://localhost:4000/chat/completions \
@@ -295,6 +335,7 @@ curl http://localhost:4000/chat/completions \
 ```
 
 #### Debug Logging
+
 ```bash
 # Enable LiteLLM debug output
 export ANTHROPIC_LOG=debug
@@ -324,6 +365,7 @@ claude --verbose <command>
 **Research Findings**:
 
 #### Model Selection by Use Case
+
 1. **Quick responses/high volume** → gemini-2.5-flash (fastest, cheapest)
 2. **Complex reasoning** → gemini-2.5-pro or deepseek-r1
 3. **Code generation** → codestral@latest or qwen3-coder-480b
@@ -331,6 +373,7 @@ claude --verbose <command>
 5. **Budget-constrained** → gpt-oss-20b-maas (open-source pricing)
 
 #### Caching Strategies
+
 ```yaml
 # Enable prompt caching for repeated prefixes
 litellm_settings:
@@ -340,10 +383,12 @@ litellm_settings:
     host: "localhost"
     port: 6379
 ```
+
 - **Gemini models**: Up to 90% cost reduction with prompt caching
 - **Cache TTL**: Set based on content freshness requirements (5min - 24hr)
 
 #### Usage Monitoring
+
 ```yaml
 # Track costs per user/team
 litellm_settings:
@@ -358,12 +403,14 @@ litellm_settings:
 **Decision**: Provide tiered recommendations based on scale
 
 #### Small Team (1-10 users)
+
 - **Setup**: Single LiteLLM proxy instance on shared server
 - **Authentication**: Shared master key or virtual keys per user
 - **Monitoring**: Basic logging to file/stdout
 - **Cost**: ~$0 infrastructure + model API costs
 
 #### Medium Team (10-100 users)
+
 - **Setup**: Load-balanced LiteLLM proxies (2+ instances)
 - **Authentication**: Virtual keys with rate limits per user
 - **Monitoring**: Prometheus + Grafana dashboards
@@ -371,6 +418,7 @@ litellm_settings:
 - **Cost**: ~$100-500/month infrastructure + model API costs
 
 #### Enterprise (100+ users)
+
 - **Setup**: Kubernetes deployment with auto-scaling
 - **Authentication**: SSO integration + virtual keys
 - **Monitoring**: Enterprise observability (Datadog, New Relic)
@@ -379,6 +427,7 @@ litellm_settings:
 - **Cost**: ~$1000+/month infrastructure + model API costs
 
 #### Multi-Region Load Balancing Pattern
+
 ```yaml
 model_list:
   # US deployment
@@ -415,17 +464,20 @@ router_settings:
 ## Technology Stack Decisions
 
 ### Core Technologies
+
 - **LiteLLM**: v1.x+ (Proxy + Python SDK)
 - **Google Cloud Vertex AI**: Model Garden API
 - **Python**: 3.9+ (for testing scripts)
 - **Redis**: 6.x+ (optional, for multi-instance deployments)
 
 ### Development Tools
+
 - **gcloud CLI**: For authentication and project management
 - **curl**: For API testing
 - **jq**: For JSON response parsing (troubleshooting)
 
 ### Configuration Format
+
 - **Primary**: YAML (litellm_config.yaml)
 - **Secondary**: JSON (Claude Code settings.json)
 - **Runtime**: Environment variables
@@ -435,6 +487,7 @@ router_settings:
 ## Integration Points with Claude Code
 
 ### Environment Variables Required
+
 ```bash
 # Gateway Configuration
 ANTHROPIC_BASE_URL="http://localhost:4000"  # LiteLLM proxy URL
@@ -452,6 +505,7 @@ LITELLM_LOG=DEBUG                           # LiteLLM debug output
 ```
 
 ### Claude Code Verification Commands
+
 - `claude /status` - Verify configuration is loaded
 - `claude --version` - Check Claude Code version compatibility
 - `claude --help` - Display available commands
@@ -461,26 +515,31 @@ LITELLM_LOG=DEBUG                           # LiteLLM debug output
 ## Success Metrics Validation
 
 ### SC-001: 10-Minute Setup Time ✅
+
 - **Validation**: Timed test runs of LiteLLM setup following templates
 - **Result**: Average 7 minutes for basic setup, 15 minutes for multi-provider
 - **Recommendation**: Provide pre-filled templates to hit 10-minute target
 
 ### SC-002: 90% First-Attempt Success Rate ✅
+
 - **Validation**: `/status` command shows correct configuration
 - **Result**: Clear verification steps ensure high success rate
 - **Recommendation**: Include verification checklist in quickstart
 
 ### SC-003: Templates Work Without Modification ✅
+
 - **Validation**: Test templates with actual GCP projects
 - **Result**: Only project ID and region need customization
 - **Recommendation**: Use placeholder comments for required values
 
 ### SC-006: 100% Security Warnings ✅
+
 - **Validation**: All configuration examples include security notes
 - **Result**: Research includes comprehensive security best practices
 - **Recommendation**: Add prominent warning blocks in documentation
 
 ### SC-008: 80% Issue Resolution via Troubleshooting ✅
+
 - **Validation**: Common issues table covers major error scenarios
 - **Result**: Troubleshooting guide addresses authentication, permissions, connectivity
 - **Recommendation**: Include diagnostic commands for self-service resolution
@@ -506,18 +565,21 @@ LITELLM_LOG=DEBUG                           # LiteLLM debug output
 ## References
 
 ### LiteLLM Documentation
+
 - GitHub: https://github.com/berriai/litellm
 - Vertex AI Provider: https://docs.litellm.ai/docs/providers/vertex
 - Load Balancing: https://docs.litellm.ai/docs/proxy/load_balancing
 - Routing Strategies: https://docs.litellm.ai/docs/routing
 
 ### Google Cloud Vertex AI
+
 - Model Garden: https://cloud.google.com/vertex-ai/docs/model-garden
 - Authentication: https://cloud.google.com/docs/authentication
 - Quotas: https://cloud.google.com/vertex-ai/quotas
 - Pricing: https://cloud.google.com/vertex-ai/pricing
 
 ### Claude Code
+
 - Documentation: https://docs.anthropic.com/claude-code
 - Environment Variables: https://docs.anthropic.com/claude-code/configuration
 - Gateway Support: https://docs.anthropic.com/claude-code/gateways
@@ -527,6 +589,7 @@ LITELLM_LOG=DEBUG                           # LiteLLM debug output
 ## Appendix: Research Code Snippets
 
 ### A. Complete LiteLLM Config Example
+
 ```yaml
 # Production-ready litellm_config.yaml
 model_list:
@@ -636,6 +699,7 @@ general_settings:
 ```
 
 ### B. Test Script
+
 ```python
 #!/usr/bin/env python3
 """

@@ -42,6 +42,7 @@ auth_token: "zpka_live_1234567890abcdef"
 #### Use Secret Managers
 
 **AWS Secrets Manager**:
+
 ```bash
 # Store secret
 aws secretsmanager create-secret \
@@ -56,6 +57,7 @@ export ANTHROPIC_AUTH_TOKEN="$TOKEN"
 ```
 
 **Google Secret Manager**:
+
 ```bash
 # Store secret
 echo -n "zpka_live_xxxxx" | \
@@ -67,6 +69,7 @@ export ANTHROPIC_AUTH_TOKEN=$(gcloud secrets versions access latest \
 ```
 
 **HashiCorp Vault**:
+
 ```bash
 # Store secret
 vault kv put secret/claude-code gateway_token="zpka_live_xxxxx"
@@ -76,6 +79,7 @@ export ANTHROPIC_AUTH_TOKEN=$(vault kv get -field=gateway_token secret/claude-co
 ```
 
 **Kubernetes Secrets**:
+
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -114,6 +118,7 @@ export ANTHROPIC_AUTH_TOKEN="$GATEWAY_TOKEN"
 ```
 
 **Security Benefits**:
+
 - ✅ Secrets never in source code or environment permanently
 - ✅ Centralized secret rotation
 - ✅ Audit trail of secret access
@@ -136,6 +141,7 @@ code_challenge_method=S256"
 ```
 
 **Security Benefits**:
+
 - ✅ No client secret in public clients
 - ✅ Protection against authorization code interception
 - ✅ Short-lived access tokens (15-60 min)
@@ -152,12 +158,14 @@ export SSL_CAFILE="/path/to/ca.crt"
 ```
 
 **Security Benefits**:
+
 - ✅ Strong cryptographic authentication
 - ✅ No bearer tokens to steal
 - ✅ Protection against MITM attacks
 - ✅ Certificate-based identity
 
 **Certificate Management**:
+
 ```bash
 # Generate certificate with short validity (30 days)
 openssl req -new -x509 -days 30 \
@@ -175,12 +183,14 @@ openssl req -new -x509 -days 30 \
 ### TLS/SSL Configuration
 
 **Minimum Requirements**:
+
 - ✅ TLS 1.2 or higher (TLS 1.3 recommended)
 - ✅ Strong cipher suites only
 - ✅ Certificate validation enabled
 - ✅ No self-signed certificates in production
 
 **Nginx Configuration**:
+
 ```nginx
 server {
     listen 443 ssl http2;
@@ -201,6 +211,7 @@ server {
 ### IP Allowlisting (Optional but Recommended)
 
 **Gateway Configuration**:
+
 ```yaml
 # TrueFoundry
 security:
@@ -218,6 +229,7 @@ plugins:
 ```
 
 **Benefits**:
+
 - ✅ Prevents unauthorized access even with stolen tokens
 - ✅ Defense against token exfiltration
 - ✅ Compliance with network segmentation policies
@@ -238,6 +250,7 @@ plugins:
 ```
 
 **Benefits**:
+
 - ✅ Gateway not exposed to public internet
 - ✅ Access only through VPN or bastion
 - ✅ Additional layer of authentication
@@ -249,6 +262,7 @@ plugins:
 ### What to Log
 
 **Required Logs**:
+
 ```json
 {
   "timestamp": "2025-12-01T10:30:00Z",
@@ -268,12 +282,14 @@ plugins:
 ```
 
 **DO NOT Log**:
+
 - ❌ Full Authorization header (redact token)
 - ❌ API keys in request/response
 - ❌ PII/PHI in prompts (if applicable)
 - ❌ Full request/response bodies (only metadata)
 
 **Redaction Example**:
+
 ```json
 {
   "authorization": "Bearer zpka_****ef",  // ✅ Redacted
@@ -284,6 +300,7 @@ plugins:
 ### Alerting Rules
 
 **Critical Alerts** (PagerDuty/Slack):
+
 - 🚨 Authentication failures > 10/min from same IP
 - 🚨 Gateway error rate > 5%
 - 🚨 Latency P99 > 10 seconds
@@ -291,12 +308,14 @@ plugins:
 - 🚨 Invalid token usage spike
 
 **Warning Alerts** (Email):
+
 - ⚠️ Token approaching expiration (< 7 days)
 - ⚠️ Unusual traffic patterns
 - ⚠️ New client IP addresses
 - ⚠️ Cost spike (> 150% of baseline)
 
 **Prometheus Example**:
+
 ```yaml
 groups:
   - name: gateway_alerts
@@ -365,6 +384,7 @@ def rotate_gateway_token(event, context):
 ```
 
 **Schedule with CloudWatch Events**:
+
 ```json
 {
   "scheduleExpression": "rate(90 days)",
@@ -401,12 +421,14 @@ plugins:
 ### Anomaly Detection
 
 **Detect suspicious patterns**:
+
 - Sudden traffic spike (> 300% of baseline)
 - Requests from new geographic regions
 - Unusual request patterns (e.g., only errors)
 - Token usage from multiple IPs simultaneously
 
 **Example Rule (Prometheus)**:
+
 ```yaml
 - alert: SuspiciousTrafficSpike
   expr: |
@@ -426,6 +448,7 @@ plugins:
 #### Scenario 1: Compromised API Key
 
 **Actions**:
+
 1. ✅ Immediately revoke compromised token in gateway
 2. ✅ Generate and deploy new token from secret manager
 3. ✅ Review audit logs for unauthorized usage
@@ -435,6 +458,7 @@ plugins:
 7. ✅ Update security policies to prevent recurrence
 
 **Commands**:
+
 ```bash
 # 1. Revoke token (gateway API)
 curl -X DELETE https://gateway.example.com/api/keys/$KEY_ID \
@@ -457,6 +481,7 @@ ANTHROPIC_AUTH_TOKEN="$NEW_TOKEN" claude "test"
 #### Scenario 2: Gateway Breach
 
 **Actions**:
+
 1. ✅ Isolate compromised gateway (network segmentation)
 2. ✅ Rotate ALL gateway tokens immediately
 3. ✅ Enable additional monitoring and logging
@@ -473,6 +498,7 @@ ANTHROPIC_AUTH_TOKEN="$NEW_TOKEN" claude "test"
 **Requirement**: Ensure data stays within geographic boundaries
 
 **Implementation**:
+
 ```yaml
 # TrueFoundry - US-only deployment
 deployment:
@@ -491,6 +517,7 @@ upstream_regions:
 **Requirement**: Retain logs for audit purposes
 
 **Implementation**:
+
 ```yaml
 # Logging configuration
 logging:

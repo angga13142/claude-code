@@ -246,7 +246,7 @@ datadog:
 rate(litellm_requests_total[5m])
 ```
 
-2. **Latency (P50, P95, P99)**:
+1. **Latency (P50, P95, P99)**:
 
 ```promql
 histogram_quantile(0.50, sum(rate(litellm_request_duration_seconds_bucket[5m])) by (le))
@@ -254,26 +254,26 @@ histogram_quantile(0.95, sum(rate(litellm_request_duration_seconds_bucket[5m])) 
 histogram_quantile(0.99, sum(rate(litellm_request_duration_seconds_bucket[5m])) by (le))
 ```
 
-3. **Error Rate**:
+1. **Error Rate**:
 
 ```promql
 rate(litellm_errors_total[5m]) / rate(litellm_requests_total[5m])
 ```
 
-4. **Cost per Hour**:
+1. **Cost per Hour**:
 
 ```promql
 rate(litellm_cost_total[1h]) * 3600
 ```
 
-5. **Token Usage**:
+1. **Token Usage**:
 
 ```promql
 rate(litellm_tokens_total{type="input"}[5m])
 rate(litellm_tokens_total{type="output"}[5m])
 ```
 
-6. **Cache Hit Rate**:
+1. **Cache Hit Rate**:
 
 ```promql
 litellm_cache_hits_total / (litellm_cache_hits_total + litellm_cache_misses_total)

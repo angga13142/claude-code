@@ -9,6 +9,7 @@
 ## Quick Validation
 
 Run automated validator first:
+
 ```bash
 python scripts/validate-gateway-compatibility.py \
   --url https://your-gateway.example.com \
@@ -28,6 +29,7 @@ If all automated checks pass, proceed with manual verification below.
 **Requirement**: Gateway MUST support POST requests to `/v1/messages` endpoint
 
 **Test**:
+
 ```bash
 curl -X POST https://your-gateway.example.com/v1/messages \
   -H "Authorization: Bearer your-token" \
@@ -43,12 +45,14 @@ curl -X POST https://your-gateway.example.com/v1/messages \
 **Expected**: HTTP 200 (success) or 401/403 (auth error, but endpoint exists)
 
 **Verification Checklist**:
+
 - [ ] POST /v1/messages endpoint exists and responds
 - [ ] Endpoint accepts JSON request body
 - [ ] Endpoint returns JSON response (or SSE for streaming)
 - [ ] Endpoint does not modify request/response structure
 
 **Common Issues**:
+
 - ❌ 404 Not Found → Endpoint not configured
 - ❌ 405 Method Not Allowed → POST method not enabled
 - ❌ Endpoint at different path (e.g., `/api/v1/messages`) → Non-standard path
@@ -60,6 +64,7 @@ curl -X POST https://your-gateway.example.com/v1/messages \
 ### ✅ Criterion 2: Required Header Forwarding
 
 **Requirement**: Gateway MUST forward these headers without modification:
+
 - `anthropic-version` (required)
 - `anthropic-beta` (required for beta features)
 - `anthropic-client-version` (recommended)
@@ -67,6 +72,7 @@ curl -X POST https://your-gateway.example.com/v1/messages \
 - `Accept` (required)
 
 **Test**:
+
 ```bash
 ./tests/test-header-forwarding.sh \
   --url https://your-gateway.example.com \
@@ -76,6 +82,7 @@ curl -X POST https://your-gateway.example.com/v1/messages \
 **Expected**: All header forwarding tests pass
 
 **Verification Checklist**:
+
 - [ ] `anthropic-version` header forwarded to Anthropic API
 - [ ] `anthropic-beta` header forwarded (if provided by client)
 - [ ] `anthropic-client-version` header forwarded (if provided)
@@ -84,6 +91,7 @@ curl -X POST https://your-gateway.example.com/v1/messages \
 - [ ] Gateway does NOT strip unknown `anthropic-*` headers
 
 **Common Issues**:
+
 - ❌ 400 Bad Request with "Missing required header" → Headers not forwarded
 - ❌ Gateway strips all custom headers → Overly restrictive header filtering
 - ❌ Gateway adds unwanted headers that break API → Header injection issue
@@ -93,6 +101,7 @@ curl -X POST https://your-gateway.example.com/v1/messages \
 **Gateway-Specific Configuration**:
 
 **Kong**:
+
 ```yaml
 plugins:
   - name: request-transformer
@@ -104,6 +113,7 @@ plugins:
 ```
 
 **Nginx**:
+
 ```nginx
 proxy_pass_request_headers on;
 proxy_set_header anthropic-version $http_anthropic_version;
@@ -111,6 +121,7 @@ proxy_set_header anthropic-beta $http_anthropic_beta;
 ```
 
 **AWS API Gateway**:
+
 - Integration Request → HTTP Headers → Add mappings for each header
 
 ---
@@ -120,6 +131,7 @@ proxy_set_header anthropic-beta $http_anthropic_beta;
 **Requirement**: Gateway MUST NOT modify request or response JSON bodies
 
 **Test**:
+
 ```bash
 # Send request with specific structure
 curl -X POST https://your-gateway.example.com/v1/messages \
@@ -134,6 +146,7 @@ curl -X POST https://your-gateway.example.com/v1/messages \
 ```
 
 **Expected**: Response contains fields:
+
 ```json
 {
   "id": "msg_xxxxx",
@@ -147,6 +160,7 @@ curl -X POST https://your-gateway.example.com/v1/messages \
 ```
 
 **Verification Checklist**:
+
 - [ ] All standard response fields present (`id`, `type`, `role`, `content`, `model`, `usage`)
 - [ ] Field names NOT changed (e.g., `content` not renamed to `response`)
 - [ ] Field types preserved (numbers stay numbers, not converted to strings)
@@ -155,6 +169,7 @@ curl -X POST https://your-gateway.example.com/v1/messages \
 - [ ] Request body passed through without modification
 
 **Common Issues**:
+
 - ❌ Gateway wraps response: `{"success": true, "data": {...}}` → Body modification
 - ❌ Gateway renames fields for "consistency" → Breaking change
 - ❌ Gateway removes fields it doesn't recognize → Data loss
@@ -167,6 +182,7 @@ curl -X POST https://your-gateway.example.com/v1/messages \
 ### ✅ Criterion 4: Standard HTTP Status Codes
 
 **Requirement**: Gateway MUST return correct HTTP status codes:
+
 - `200 OK` - Successful response
 - `401 Unauthorized` - Invalid/missing authentication
 - `403 Forbidden` - Valid auth but insufficient permissions
@@ -177,6 +193,7 @@ curl -X POST https://your-gateway.example.com/v1/messages \
 - `504 Gateway Timeout` - Request timeout
 
 **Test**:
+
 ```bash
 # Test 401 (invalid token)
 curl -X POST https://your-gateway.example.com/v1/messages \
@@ -189,6 +206,7 @@ curl -X POST https://your-gateway.example.com/v1/messages \
 ```
 
 **Verification Checklist**:
+
 - [ ] Invalid token returns 401 (not 400 or 500)
 - [ ] Rate limit returns 429 (not 503)
 - [ ] Gateway errors return 500-504 (not 200 with error body)
@@ -196,6 +214,7 @@ curl -X POST https://your-gateway.example.com/v1/messages \
 - [ ] Status codes match error types (auth → 401/403, rate limit → 429)
 
 **Common Issues**:
+
 - ❌ All errors return 500 → Status code not differentiated
 - ❌ Gateway returns 200 with `{"error": "..."}` body → Misleading success
 - ❌ Gateway returns custom codes (e.g., 599) → Non-standard
@@ -209,6 +228,7 @@ curl -X POST https://your-gateway.example.com/v1/messages \
 **Requirement**: Gateway MUST support streaming responses with SSE format
 
 **Test**:
+
 ```bash
 curl -N -X POST https://your-gateway.example.com/v1/messages \
   -H "Authorization: Bearer your-token" \
@@ -224,6 +244,7 @@ curl -N -X POST https://your-gateway.example.com/v1/messages \
 ```
 
 **Expected**: Real-time streaming output:
+
 ```
 event: message_start
 data: {"type":"message_start","message":{...}}
@@ -237,6 +258,7 @@ data: {"type":"content_block_delta","delta":{"text":", 2"}}
 ```
 
 **Verification Checklist**:
+
 - [ ] `Content-Type: text/event-stream` header in response
 - [ ] Events arrive in real-time (not buffered until complete)
 - [ ] SSE format preserved (`event:` and `data:` lines)
@@ -246,6 +268,7 @@ data: {"type":"content_block_delta","delta":{"text":", 2"}}
 - [ ] Gateway does NOT buffer entire response before sending
 
 **Common Issues**:
+
 - ❌ Response arrives all at once after completion → Buffering enabled
 - ❌ `Content-Type: application/json` instead of `text/event-stream` → Wrong type
 - ❌ Connection closes immediately → Streaming not supported
@@ -254,11 +277,13 @@ data: {"type":"content_block_delta","delta":{"text":", 2"}}
 **Fix**: Disable response buffering in gateway configuration:
 
 **Nginx**:
+
 ```nginx
 proxy_buffering off;
 ```
 
 **Kong**:
+
 ```yaml
 plugins:
   - name: response-buffering
@@ -275,6 +300,7 @@ plugins:
 **Requirement**: Gateway MUST accept authentication via `Authorization: Bearer <token>` header
 
 **Test**:
+
 ```bash
 # Test with valid token
 curl -X POST https://your-gateway.example.com/v1/messages \
@@ -287,6 +313,7 @@ curl -X POST https://your-gateway.example.com/v1/messages \
 ```
 
 **Verification Checklist**:
+
 - [ ] `Authorization: Bearer <token>` header accepted
 - [ ] Valid token results in successful request (200)
 - [ ] Invalid token results in auth error (401)
@@ -296,6 +323,7 @@ curl -X POST https://your-gateway.example.com/v1/messages \
 - [ ] Multiple concurrent requests with same token work correctly
 
 **Common Issues**:
+
 - ❌ Gateway requires different auth format (e.g., `X-API-Key`) → Non-standard
 - ❌ Gateway doesn't validate token (security issue) → Open access
 - ❌ Gateway forwards client token to Anthropic (security issue) → Token leakage
@@ -310,6 +338,7 @@ curl -X POST https://your-gateway.example.com/v1/messages \
 **Requirement**: Gateway MUST support requests taking up to 60 seconds minimum (recommended: 300-600s)
 
 **Test** (manual timing):
+
 ```bash
 # Send request that takes 30-60 seconds
 time curl -X POST https://your-gateway.example.com/v1/messages \
@@ -326,6 +355,7 @@ time curl -X POST https://your-gateway.example.com/v1/messages \
 **Expected**: Request completes successfully (not 504 timeout)
 
 **Verification Checklist**:
+
 - [ ] Gateway timeout ≥ 60 seconds (check config)
 - [ ] Complex requests complete without 504 errors
 - [ ] Streaming requests can run for several minutes
@@ -333,6 +363,7 @@ time curl -X POST https://your-gateway.example.com/v1/messages \
 - [ ] Separate read timeout from connect timeout
 
 **Common Issues**:
+
 - ❌ Gateway timeout too short (e.g., 30s) → Requests timeout
 - ❌ Gateway kills idle connections → Streaming interrupted
 - ❌ No separate read vs connect timeout → Slow responses fail
@@ -340,6 +371,7 @@ time curl -X POST https://your-gateway.example.com/v1/messages \
 **Fix**: Increase gateway timeouts:
 
 **Nginx**:
+
 ```nginx
 proxy_connect_timeout 10s;
 proxy_send_timeout 600s;
@@ -347,6 +379,7 @@ proxy_read_timeout 600s;
 ```
 
 **Kong**:
+
 ```yaml
 services:
   - connect_timeout: 10000
@@ -363,6 +396,7 @@ services:
 ### Passing Criteria
 
 Gateway is **COMPATIBLE** if ALL 7 criteria pass:
+
 - ✅ 1. Messages API endpoint supported
 - ✅ 2. Required headers forwarded
 - ✅ 3. Request/response body preserved

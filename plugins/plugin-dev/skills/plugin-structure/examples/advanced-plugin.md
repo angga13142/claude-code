@@ -707,6 +707,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/kubernetes-ops/scripts/validate-manifest.sh de
 ### MCP Integration
 
 Three custom MCP servers:
+
 - **Kubernetes**: Cluster operations
 - **Terraform**: Infrastructure provisioning
 - **GitHub Actions**: CI/CD automation
@@ -714,6 +715,7 @@ Three custom MCP servers:
 ### Shared Libraries
 
 Reusable code in `lib/`:
+
 - **Core**: Common utilities (logging, config, auth)
 - **Integrations**: External services (Slack, Datadog)
 - **Utils**: Helper functions (retry, validation)
@@ -721,12 +723,14 @@ Reusable code in `lib/`:
 ### Configuration Management
 
 Environment-specific configs in `config/`:
+
 - **Environments**: Per-environment settings
 - **Templates**: Reusable deployment templates
 
 ### Security Automation
 
 Multiple security hooks:
+
 - Secret scanning before writes
 - Permission validation on session start
 - Configuration auditing on completion
@@ -734,6 +738,7 @@ Multiple security hooks:
 ### Monitoring Integration
 
 Built-in monitoring via lib integrations:
+
 - Datadog for metrics
 - PagerDuty for alerts
 - Slack for notifications

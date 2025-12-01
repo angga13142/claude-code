@@ -162,21 +162,25 @@ A developer working behind a corporate proxy needs to configure Claude Code to r
 ### Deployment Pattern Definitions
 
 **Pattern 1: Direct Provider Access**
+
 - Description: Claude Code connects directly to provider API (Anthropic/Bedrock/Vertex AI)
 - Use Case: Simple single-provider setup, no centralized control needed
 - Configuration: Provider API key only
 
 **Pattern 2: Corporate Proxy**
+
 - Description: Claude Code → HTTP/HTTPS Proxy → Provider API
 - Use Case: Enterprise network policies require proxy
 - Configuration: HTTPS_PROXY + provider credentials
 
 **Pattern 3: LLM Gateway**
+
 - Description: Claude Code → LiteLLM Proxy → Multiple Provider APIs
 - Use Case: Cost tracking, multi-provider, load balancing, team management
 - Configuration: ANTHROPIC_BASE_URL + ANTHROPIC_AUTH_TOKEN + gateway config
 
 **Pattern 4: Proxy + Gateway**
+
 - Description: Claude Code → Corporate Proxy → LiteLLM Gateway → Provider APIs
 - Use Case: Enterprise with both proxy requirements AND gateway benefits
 - Configuration: HTTPS_PROXY + ANTHROPIC_BASE_URL + ANTHROPIC_AUTH_TOKEN + gateway config
@@ -184,6 +188,7 @@ A developer working behind a corporate proxy needs to configure Claude Code to r
 ### Gateway Compatibility Criteria
 
 A gateway is compatible with Claude Code if it meets ALL of the following:
+
 1. Supports Messages API endpoints (/v1/messages, /v1/chat/completions)
 2. Forwards required headers: anthropic-beta, anthropic-version, anthropic-client-version
 3. Preserves request/response body format without modification
@@ -208,12 +213,14 @@ A gateway is compatible with Claude Code if it meets ALL of the following:
 ### Required Environment Variables (For SC-005)
 
 **Required (Gateway Setup)**:
+
 - ANTHROPIC_BASE_URL - Gateway endpoint URL
 - ANTHROPIC_AUTH_TOKEN - Gateway authentication token
 - GCP_PROJECT_ID - Google Cloud project ID (for Vertex AI)
 - LITELLM_MASTER_KEY - LiteLLM proxy master key
 
 **Optional**:
+
 - GOOGLE_APPLICATION_CREDENTIALS - Service account JSON path
 - ANTHROPIC_BEDROCK_BASE_URL - Bedrock gateway endpoint
 - ANTHROPIC_VERTEX_BASE_URL - Vertex AI gateway endpoint
@@ -242,12 +249,14 @@ A gateway is compatible with Claude Code if it meets ALL of the following:
 ### Prerequisite Knowledge (For FR-032)
 
 **Required Knowledge**:
+
 - YAML syntax and structure
 - Environment variables and shell configuration
 - Command-line interface (CLI) basics
 - HTTP/HTTPS protocols and status codes
 
 **Recommended Knowledge**:
+
 - Docker and containerization (for production deployments)
 - Google Cloud Platform basics
 - API authentication patterns (Bearer tokens, service accounts)
@@ -269,6 +278,7 @@ This configuration uses [GATEWAY_NAME], a third-party solution not developed or 
 ### Assessment Criteria for User Requirements (For FR-009, FR-036)
 
 When assessing user needs, evaluate:
+
 1. **Team Size**: 1-10 (small), 10-100 (medium), 100+ (enterprise)
 2. **Security Requirements**: Basic (API keys), Enterprise (SSO, audit logs), Compliance (SOC2, HIPAA)
 3. **Multi-Provider Needs**: Single provider, 2-3 providers, 5+ providers
@@ -276,4 +286,3 @@ When assessing user needs, evaluate:
 5. **Deployment Environment**: Local development, staging, production, multi-region
 6. **Existing Infrastructure**: Greenfield, existing gateway, corporate proxy required
 7. **Support Level**: Self-service documentation, community support, enterprise support SLA
-

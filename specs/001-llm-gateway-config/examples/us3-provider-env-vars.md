@@ -109,13 +109,17 @@ This document provides a complete reference for environment variables required t
 **Authentication Methods**:
 
 1. **gcloud CLI** (Recommended for development):
+
    ```bash
    gcloud auth application-default login
    ```
+
 2. **Service Account** (Recommended for production):
+
    ```bash
    export GOOGLE_APPLICATION_CREDENTIALS="/path/to/sa-key.json"
    ```
+
 3. **Workload Identity** (Recommended for GKE): No env vars needed
 
 **Required IAM Roles**:
@@ -246,6 +250,7 @@ When the same variable is defined in multiple places:
    ```
 
 3. **Config Files** (lowest precedence)
+
    ```yaml
    # litellm-config.yaml
    model_list:

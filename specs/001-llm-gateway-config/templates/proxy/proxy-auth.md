@@ -112,13 +112,13 @@ password P@ssw0rd123
 EOF
 ```
 
-2. Set restrictive permissions (required):
+1. Set restrictive permissions (required):
 
 ```bash
 chmod 600 ~/.netrc
 ```
 
-3. Configure proxy WITHOUT credentials:
+1. Configure proxy WITHOUT credentials:
 
 ```bash
 export HTTPS_PROXY="http://proxy.company.com:8080"
@@ -405,7 +405,7 @@ curl --proxy-cacert ca.crt \
      https://api.anthropic.com/v1/messages
 ```
 
-3. For Python/LiteLLM (using environment variables):
+1. For Python/LiteLLM (using environment variables):
 
 ```python
 import os
@@ -420,7 +420,7 @@ os.environ['HTTPS_PROXY'] = 'https://proxy.company.com:8443'
 # Start LiteLLM (will use above environment variables)
 ```
 
-4. System-wide certificate configuration (Linux):
+1. System-wide certificate configuration (Linux):
 
 ```bash
 # Copy certificates to system location
@@ -588,6 +588,7 @@ Proxy-Authenticate: Basic realm="Corporate Proxy"
    ```
 
 3. Enable debug logging:
+
    ```bash
    export ANTHROPIC_LOG=debug
    export LITELLM_LOG=DEBUG

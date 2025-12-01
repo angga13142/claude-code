@@ -129,6 +129,7 @@ See gateway compatibility checklist: examples/us2-compatibility-checklist.md
 ### When to Include Warning
 
 Include this warning in:
+
 - ✅ **ALL** third-party gateway configuration files (YAML, JSON)
 - ✅ **ALL** third-party gateway documentation (Markdown, README)
 - ✅ **ALL** third-party gateway setup guides and quickstarts
@@ -136,6 +137,7 @@ Include this warning in:
 - ✅ **ALL** responses from LLM Gateway Configuration Assistant about third-party solutions
 
 Do NOT include warning for:
+
 - ❌ Direct Anthropic API access
 - ❌ Anthropic-developed tools (Claude Code itself)
 - ❌ Official Anthropic documentation
@@ -143,6 +145,7 @@ Do NOT include warning for:
 ### Warning Placement
 
 **In YAML/JSON Configuration Files**:
+
 ```yaml
 # ===================================================================
 # ⚠️ THIRD-PARTY NOTICE
@@ -159,6 +162,7 @@ model_list:
 ```
 
 **In Markdown Documentation**:
+
 ```markdown
 ## Quick Start
 
@@ -177,6 +181,7 @@ or maintained by Anthropic. Anthropic does not provide support for
 ```
 
 **In Assistant Responses**:
+
 ```
 I can help you configure Claude Code with [GATEWAY_NAME].
 

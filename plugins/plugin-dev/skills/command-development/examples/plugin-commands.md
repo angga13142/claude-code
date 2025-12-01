@@ -42,6 +42,7 @@ Review the analysis output and provide:
 ```
 
 **Key features:**
+
 - Uses `${CLAUDE_PLUGIN_ROOT}` for portable path
 - Combines file reference with script execution
 - Simple single-purpose command
@@ -81,6 +82,7 @@ Analyze all results and create comprehensive report including:
 ```
 
 **Key features:**
+
 - Multiple script executions
 - Organized output sections
 - Comprehensive workflow
@@ -118,6 +120,7 @@ Format output as markdown suitable for README or docs site.
 ```
 
 **Key features:**
+
 - Uses plugin template
 - Combines template with source file
 - Standardized output format
@@ -161,6 +164,7 @@ Review all step outputs and report:
 ```
 
 **Key features:**
+
 - Multi-step workflow
 - Sequential script execution
 - Clear step numbering
@@ -202,6 +206,7 @@ Report deployment status and any issues encountered.
 ```
 
 **Key features:**
+
 - Environment-specific configuration
 - Dynamic config file loading
 - Pre-deployment validation
@@ -239,6 +244,7 @@ Note: This uses the Task tool to launch the plugin's code-reviewer agent for tho
 ```
 
 **Key features:**
+
 - Delegates to plugin agent
 - Documents agent capabilities
 - References plugin resources
@@ -279,6 +285,7 @@ Generate production-ready API documentation.
 ```
 
 **Key features:**
+
 - Invokes plugin skill by name
 - Documents skill purpose
 - Clear expectations
@@ -336,6 +343,7 @@ Include specific file locations and suggested changes for each item.
 ```
 
 **Key features:**
+
 - Multi-phase workflow
 - Combines scripts, agents, skills
 - Template-based reporting
@@ -380,6 +388,7 @@ If validations fail:
 ```
 
 **Key features:**
+
 - Input validation
 - Resource existence checks
 - Error handling
@@ -427,6 +436,7 @@ Report status and recommend proceed/block decision.
 ```
 
 **Key features:**
+
 - Environment-aware logic
 - Conditional execution
 - Different validation levels
@@ -437,45 +447,59 @@ Report status and recommend proceed/block decision.
 ## Common Patterns Summary
 
 ### Pattern: Plugin Script Execution
+
 ```markdown
 !`node ${CLAUDE_PLUGIN_ROOT}/scripts/script-name.js $1`
 ```
+
 Use for: Running plugin-provided Node.js scripts
 
 ### Pattern: Plugin Configuration Loading
+
 ```markdown
 @${CLAUDE_PLUGIN_ROOT}/config/config-name.json
 ```
+
 Use for: Loading plugin configuration files
 
 ### Pattern: Plugin Template Usage
+
 ```markdown
 @${CLAUDE_PLUGIN_ROOT}/templates/template-name.md
 ```
+
 Use for: Using plugin templates for generation
 
 ### Pattern: Agent Invocation
+
 ```markdown
 Launch the [agent-name] agent for [task description].
 ```
+
 Use for: Delegating complex tasks to plugin agents
 
 ### Pattern: Skill Reference
+
 ```markdown
 Use the [skill-name] skill to ensure [requirements].
 ```
+
 Use for: Leveraging plugin skills for specialized knowledge
 
 ### Pattern: Input Validation
+
 ```markdown
 Validate input: !`echo "$1" | grep -E "^pattern$" && echo "OK" || echo "ERROR"`
 ```
+
 Use for: Validating command arguments
 
 ### Pattern: Resource Validation
+
 ```markdown
 Check exists: !`test -f ${CLAUDE_PLUGIN_ROOT}/path/file && echo "YES" || echo "NO"`
 ```
+
 Use for: Verifying required plugin files exist
 
 ---
@@ -485,24 +509,28 @@ Use for: Verifying required plugin files exist
 ### Testing Plugin Commands
 
 1. **Test with plugin installed:**
+
    ```bash
    cd /path/to/plugin
    claude /command-name args
    ```
 
 2. **Verify ${CLAUDE_PLUGIN_ROOT} expansion:**
+
    ```bash
    # Add debug output to command
    !`echo "Plugin root: ${CLAUDE_PLUGIN_ROOT}"`
    ```
 
 3. **Test across different working directories:**
+
    ```bash
    cd /tmp && claude /command-name
    cd /other/project && claude /command-name
    ```
 
 4. **Validate resource availability:**
+
    ```bash
    # Check all plugin resources exist
    !`ls -la ${CLAUDE_PLUGIN_ROOT}/scripts/`
@@ -512,6 +540,7 @@ Use for: Verifying required plugin files exist
 ### Common Mistakes to Avoid
 
 1. **Using relative paths instead of ${CLAUDE_PLUGIN_ROOT}:**
+
    ```markdown
    # Wrong
    !`node ./scripts/analyze.js`
@@ -521,6 +550,7 @@ Use for: Verifying required plugin files exist
    ```
 
 2. **Forgetting to allow required tools:**
+
    ```markdown
    # Missing allowed-tools
    !`bash script.sh`  # Will fail without Bash permission
@@ -533,6 +563,7 @@ Use for: Verifying required plugin files exist
    ```
 
 3. **Not validating inputs:**
+
    ```markdown
    # Risky - no validation
    Deploy to $1 environment
@@ -543,6 +574,7 @@ Use for: Verifying required plugin files exist
    ```
 
 4. **Hardcoding plugin paths:**
+
    ```markdown
    # Wrong - breaks on different installations
    @/home/user/.claude/plugins/my-plugin/config.json

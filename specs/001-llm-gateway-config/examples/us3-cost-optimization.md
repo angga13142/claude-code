@@ -167,6 +167,7 @@ model_list:
 ```
 
 **Task Classification**:
+
 | Task Type | Model | Cost per Request (avg) |
 |-----------|-------|------------------------|
 | Simple Q&A, formatting | Haiku | $0.002 |

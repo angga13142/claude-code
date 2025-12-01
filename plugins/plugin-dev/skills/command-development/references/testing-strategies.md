@@ -11,6 +11,7 @@ Testing commands ensures they work correctly, handle edge cases, and provide goo
 ### Level 1: Syntax and Structure Validation
 
 **What to test:**
+
 - YAML frontmatter syntax
 - Markdown format
 - File location and naming
@@ -73,6 +74,7 @@ echo "✓ Command file structure valid"
 ### Level 2: Frontmatter Field Validation
 
 **What to test:**
+
 - Field types correct
 - Values in valid ranges
 - Required fields present (if any)
@@ -126,6 +128,7 @@ echo "✓ Frontmatter fields valid"
 ### Level 3: Manual Command Invocation
 
 **What to test:**
+
 - Command appears in `/help`
 - Command executes without errors
 - Output is as expected
@@ -156,6 +159,7 @@ tail -f ~/.claude/debug-logs/latest
 ### Level 4: Argument Testing
 
 **What to test:**
+
 - Positional arguments work ($1, $2, etc.)
 - $ARGUMENTS captures all arguments
 - Missing arguments handled gracefully
@@ -210,6 +214,7 @@ echo "  Manual test required"
 ### Level 5: File Reference Testing
 
 **What to test:**
+
 - @ syntax loads file contents
 - Non-existent files handled
 - Large files handled appropriately
@@ -246,6 +251,7 @@ rm /tmp/test-file*.txt /tmp/large-file.bin
 ### Level 6: Bash Execution Testing
 
 **What to test:**
+
 - !` commands execute correctly
 - Command output included in prompt
 - Command failures handled
@@ -291,6 +297,7 @@ EOF
 ### Level 7: Integration Testing
 
 **What to test:**
+
 - Commands work with other plugin components
 - Commands interact correctly with each other
 - State management works across invocations
@@ -456,12 +463,14 @@ jobs:
 ### Test Edge Cases
 
 **Empty arguments:**
+
 ```bash
 > /cmd ""
 > /cmd '' ''
 ```
 
 **Special characters:**
+
 ```bash
 > /cmd "arg with spaces"
 > /cmd arg-with-dashes
@@ -471,11 +480,13 @@ jobs:
 ```
 
 **Long arguments:**
+
 ```bash
 > /cmd $(python -c "print('a' * 10000)")
 ```
 
 **Unusual file paths:**
+
 ```bash
 > /cmd ./file
 > /cmd ../file
@@ -484,6 +495,7 @@ jobs:
 ```
 
 **Bash command edge cases:**
+
 ```markdown
 # Commands that might fail
 !`exit 1`
@@ -594,12 +606,14 @@ Recruit testers:
 Before releasing a command:
 
 ### Structure
+
 - [ ] File in correct location
 - [ ] Correct .md extension
 - [ ] Valid YAML frontmatter (if present)
 - [ ] Markdown syntax correct
 
 ### Functionality
+
 - [ ] Command appears in `/help`
 - [ ] Description is clear
 - [ ] Command executes without errors
@@ -608,6 +622,7 @@ Before releasing a command:
 - [ ] Bash execution works (if used)
 
 ### Edge Cases
+
 - [ ] Missing arguments handled
 - [ ] Invalid arguments detected
 - [ ] Non-existent files handled
@@ -615,12 +630,14 @@ Before releasing a command:
 - [ ] Long inputs handled
 
 ### Integration
+
 - [ ] Works with other commands
 - [ ] Works with hooks (if applicable)
 - [ ] Works with MCP (if applicable)
 - [ ] State management works
 
 ### Quality
+
 - [ ] Performance acceptable
 - [ ] No security issues
 - [ ] Error messages helpful
@@ -628,6 +645,7 @@ Before releasing a command:
 - [ ] Documentation complete
 
 ### Distribution
+
 - [ ] Tested by others
 - [ ] Feedback incorporated
 - [ ] README updated

@@ -12,6 +12,7 @@ Show all configured hookify rules in the project.
 ## Steps
 
 1. Use Glob tool to find all hookify rule files:
+
    ```
    pattern: ".claude/hookify.*.local.md"
    ```
@@ -35,7 +36,8 @@ Show all configured hookify rules in the project.
 **Total**: 3 rules (2 enabled, 1 disabled)
 ```
 
-4. For each rule, show a brief preview:
+1. For each rule, show a brief preview:
+
 ```
 ### warn-dangerous-rm
 **Event**: bash
@@ -46,7 +48,8 @@ Show all configured hookify rules in the project.
 **File**: .claude/hookify.dangerous-rm.local.md
 ```
 
-5. Add helpful footer:
+1. Add helpful footer:
+
 ```
 ---
 
@@ -75,7 +78,9 @@ To get started:
 
 Example:
 ```
+
 /hookify Warn me when I use console.log
+
 ```
 
 Check `${CLAUDE_PLUGIN_ROOT}/examples/` for example rule files.

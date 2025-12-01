@@ -11,6 +11,7 @@
 This guide walks through integrating Claude Code with enterprise API gateways. Enterprise gateways provide centralized authentication, rate limiting, compliance enforcement, and observability for API traffic.
 
 **Benefits**:
+
 - ✅ Centralized authentication and authorization
 - ✅ Rate limiting and quota management per team/user
 - ✅ Audit logging for compliance (SOC2, HIPAA, GDPR)
@@ -24,6 +25,7 @@ This guide walks through integrating Claude Code with enterprise API gateways. E
 ### Step 1: Get Gateway Details
 
 From your gateway administrator, obtain:
+
 ```
 Gateway URL: https://your-gateway.example.com
 API Key: your-gateway-api-key-xxxxx
@@ -43,6 +45,7 @@ claude /status
 ```
 
 Expected output:
+
 ```
 Claude Code Status
 ==================
@@ -69,8 +72,10 @@ If successful, you're done! Continue to full setup for production configuration.
 **When to use**: Need managed infrastructure with built-in observability
 
 **Setup**:
+
 1. Deploy TrueFoundry in your Kubernetes cluster
 2. Configure Anthropic provider:
+
    ```yaml
    # truefoundry-config.yaml
    providers:
@@ -81,10 +86,13 @@ If successful, you're done! Continue to full setup for production configuration.
          - claude-3-5-sonnet-20241022
          - claude-3-5-haiku-20241022
    ```
+
 3. Apply configuration:
+
    ```bash
    truefoundry apply -f truefoundry-config.yaml
    ```
+
 4. Get gateway URL from TrueFoundry console
 
 **Template**: See `templates/enterprise/truefoundry-config.yaml`
@@ -94,8 +102,10 @@ If successful, you're done! Continue to full setup for production configuration.
 **When to use**: Need edge gateway with developer portal
 
 **Setup**:
+
 1. Create Zuplo project at https://portal.zuplo.com
 2. Configure route in `routes.oas.json`:
+
    ```json
    {
      "paths": {
@@ -117,6 +127,7 @@ If successful, you're done! Continue to full setup for production configuration.
      }
    }
    ```
+
 3. Deploy to production
 4. Generate API key in Zuplo Portal
 
@@ -127,6 +138,7 @@ If successful, you're done! Continue to full setup for production configuration.
 **When to use**: Already have Kong, Apigee, AWS API Gateway, etc.
 
 **Setup**:
+
 1. Configure upstream to Anthropic API: `https://api.anthropic.com`
 2. Configure authentication plugin
 3. Add header forwarding rules (critical - see Phase 2)
@@ -153,6 +165,7 @@ If successful, you're done! Continue to full setup for production configuration.
 #### Configuration Examples
 
 **Kong Gateway**:
+
 ```yaml
 plugins:
   - name: request-transformer
@@ -167,6 +180,7 @@ plugins:
 ```
 
 **Nginx**:
+
 ```nginx
 location /v1/messages {
     proxy_pass_request_headers on;
@@ -177,6 +191,7 @@ location /v1/messages {
 ```
 
 **AWS API Gateway**:
+
 - Integration Request → HTTP Headers
 - Add mapping: `anthropic-version` → `'2023-06-01'`
 - Add mapping: `anthropic-beta` → `method.request.header.anthropic-beta`
@@ -193,6 +208,7 @@ location /v1/messages {
 ```
 
 Expected:
+
 ```
 ✓ PASS - anthropic-version header forwarded correctly
 ✓ PASS - anthropic-beta header forwarded correctly
@@ -247,6 +263,7 @@ export ANTHROPIC_AUTH_TOKEN="your-gateway-api-key"
 Configure rate limits per your gateway:
 
 **TrueFoundry**:
+
 ```yaml
 rate_limits:
   - name: claude-code-team
@@ -255,6 +272,7 @@ rate_limits:
 ```
 
 **Zuplo**:
+
 ```json
 {
   "export": "RateLimitInboundPolicy",
@@ -266,6 +284,7 @@ rate_limits:
 ```
 
 **Kong**:
+
 ```yaml
 plugins:
   - name: rate-limiting
@@ -298,6 +317,7 @@ python scripts/validate-gateway-compatibility.py \
 ```
 
 Expected output:
+
 ```
 ✓ PASS - Endpoint Support: Gateway supports /v1/messages endpoint
 ✓ PASS - Header Forwarding: All required headers forwarded correctly
@@ -328,6 +348,7 @@ Expected output:
 **Symptoms**: `Cannot connect to gateway` error
 
 **Solutions**:
+
 ```bash
 # 1. Check gateway is running
 curl https://your-gateway.example.com/health
@@ -347,6 +368,7 @@ echo $ANTHROPIC_BASE_URL
 **Symptoms**: All requests fail with 401
 
 **Solutions**:
+
 ```bash
 # Run auth troubleshooting helper
 ./scripts/debug-auth.sh \
@@ -364,6 +386,7 @@ echo $ANTHROPIC_BASE_URL
 **Symptoms**: `Missing required header: anthropic-version`
 
 **Solutions**:
+
 ```bash
 # Test header forwarding
 ./tests/test-header-forwarding.sh \
@@ -386,6 +409,7 @@ curl -v -X POST https://your-gateway.example.com/v1/messages \
 **Symptoms**: Responses not streaming, appear all at once
 
 **Solutions**:
+
 ```bash
 # Check if gateway buffers responses
 # Disable buffering in gateway config
