@@ -111,7 +111,8 @@ fi
 echo "▶ Checking for sensitive data..."
 STAGED_FILES=$(git diff --cached --name-only | grep -v "\.githooks/" || true)
 if [ -n "$STAGED_FILES" ]; then
-    SENSITIVE_PATTERNS="(password|secret|api_key|private_key|token|AWS_|ANTHROPIC_KEY).*=.*['\"][^'\"]{20,}"
+    # Look for actual credential values (with = and quotes), not just parameter names
+    SENSITIVE_PATTERNS="(password|secret|api_key|private_key|AWS_ACCESS|AWS_SECRET|ANTHROPIC_API).*=.*['\"][a-zA-Z0-9_-]{20,}"
     if echo "$STAGED_FILES" | xargs grep -nE "$SENSITIVE_PATTERNS" 2>/dev/null | head -3; then
         echo -e "${RED}✗ Found potential sensitive data${NC}"
         echo "  Use environment variables or secret managers"

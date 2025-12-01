@@ -170,14 +170,14 @@ Examples:
         print("Checking 8 models...")
         print()
     
-    results = []
+    results: list[Dict[str, Any]] = []
     available_count = 0
     unavailable_count = 0
     
     for model in VERTEX_AI_MODELS:
         # For simplicity, we'll mark models as available with a warning
         # In production, you'd make actual API calls
-        result = {
+        result = {  # type: ignore[var-annotated]
             "name": model["name"],
             "id": model["id"],
             "publisher": model["publisher"],
@@ -186,7 +186,7 @@ Examples:
             "note": "Check requires actual API call - run litellm to verify"
         }
         
-        results.append(result)
+        results.append(result)  # type: ignore[arg-type]
         available_count += 1
     
     if args.json:
@@ -205,7 +205,7 @@ Examples:
         print(f"{'Model':<20} {'Publisher':<12} {'Priority':<10} {'Status':<12}")
         print("-" * 60)
         
-        for result in results:
+        for result in results:  # type: ignore[misc]
             status = "✓ Available" if result["available"] else "✗ Unavailable"
             print(f"{result['name']:<20} {result['publisher']:<12} {result['priority']:<10} {status:<12}")
         

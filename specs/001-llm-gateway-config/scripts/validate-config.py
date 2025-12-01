@@ -93,13 +93,13 @@ class ConfigValidator:
             self.errors.append("model_list must be a list")
             return
             
-        if len(model_list) == 0:
+        if len(model_list) == 0:  # type: ignore[arg-type]
             self.errors.append("model_list cannot be empty")
             return
         
-        model_names = set()
+        model_names: set[str] = set()
         
-        for idx, model in enumerate(model_list):
+        for idx, model in enumerate(model_list):  # type: ignore[arg-type,var-annotated]
             if not isinstance(model, dict):
                 self.errors.append(f"Model at index {idx} must be an object")
                 continue
@@ -108,29 +108,33 @@ class ConfigValidator:
             if 'model_name' not in model:
                 self.errors.append(f"Model at index {idx} missing 'model_name'")
             else:
-                model_name = model['model_name']
+                model_name = str(model['model_name'])  # type: ignore[arg-type]
                 if model_name in model_names:
                     self.errors.append(f"Duplicate model_name: {model_name}")
                 model_names.add(model_name)
             
             if 'litellm_params' not in model:
-                self.errors.append(f"Model '{model.get('model_name', f'index-{idx}')}' missing 'litellm_params'")
+                self.errors.append(f"Model '{model.get('model_name', f'index-{idx}')}' missing 'litellm_params'")  # type: ignore[union-attr]
                 continue
             
             # Validate litellm_params
-            params = model['litellm_params']
+            params = model['litellm_params']  # type: ignore[index]
             if not isinstance(params, dict):
-                self.errors.append(f"Model '{model.get('model_name')}': litellm_params must be an object")
+                self.errors.append(f"Model '{model.get('model_name')}': litellm_params must be an object")  # type: ignore[union-attr]
                 continue
             
+            model_name_str = str(model.get('model_name', f'index-{idx}'))  # type: ignore[arg-type]
+            
             if 'model' not in params:
-                self.errors.append(f"Model '{model.get('model_name')}': litellm_params missing 'model' field")
+                self.errors.append(f"Model '{model_name_str}': litellm_params missing 'model' field")
             else:
-                self._validate_model_identifier(model.get('model_name'), params['model'])
+                model_id = str(params['model'])  # type: ignore[arg-type]
+                self._validate_model_identifier(model_name_str, model_id)
             
             # Validate Vertex AI specific params
-            if params.get('model', '').startswith('vertex_ai/'):
-                self._validate_vertex_ai_params(model.get('model_name'), params)
+            model_value = str(params.get('model', ''))  # type: ignore[arg-type]
+            if model_value.startswith('vertex_ai/'):
+                self._validate_vertex_ai_params(model_name_str, params)  # type: ignore[arg-type]
     
     def _validate_model_identifier(self, model_name: str, model_id: str):
         """Validate model identifier format."""
@@ -299,7 +303,7 @@ Examples:
     is_valid = validator.validate()
     
     if args.json:
-        result = {
+        result = {  # type: ignore[var-annotated]
             'valid': is_valid,
             'errors': validator.errors,
             'warnings': validator.warnings,

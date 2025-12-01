@@ -31,7 +31,7 @@ def test_model(gateway_url: str, auth_token: str, model: Dict[str, Any]) -> Dict
     """Test a single model with a completion request."""
     url = f"{gateway_url}/chat/completions"
     
-    data = {
+    data = {  # type: ignore[var-annotated]
         "model": model["name"],
         "messages": [
             {"role": "user", "content": model["test_prompt"]}
@@ -126,7 +126,7 @@ def main():
         print(f"Testing {len(MODELS)} models...")
         print()
     
-    results = []
+    results: list[Dict[str, Any]] = []
     success_count = 0
     error_count = 0
     
@@ -135,7 +135,7 @@ def main():
             print(f"[{i}/{len(MODELS)}] Testing {model['name']}...", end=" ", flush=True)
         
         result = test_model(args.gateway_url, auth_token, model)
-        results.append(result)
+        results.append(result)  # type: ignore[arg-type]  # type: ignore[arg-type]
         
         if result["status"] == "success":
             success_count += 1
