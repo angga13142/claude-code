@@ -217,11 +217,11 @@ All artifacts go in `/specs/001-llm-gateway-config/` - no changes to Claude Code
 
 ### Testing & Quality Assurance
 
-- [ ] T084 [P] Create integration test suite runner in tests/run-all-tests.sh
-- [ ] T085 [P] Add YAML schema validation tests in tests/test-yaml-schemas.py
-- [ ] T086 [P] Add environment variable validation tests in tests/test-env-vars.py
-- [ ] T087 Create configuration examples validation script in tests/validate-examples.sh
-- [ ] T088 Run all user story verification checklists (US1-US4)
+- [x] T084 [P] Create integration test suite runner in tests/run-all-tests.sh
+- [x] T085 [P] Add YAML schema validation tests in tests/test-yaml-schemas.py
+- [x] T086 [P] Add environment variable validation tests in tests/test-env-vars.py
+- [x] T087 Create configuration examples validation script in tests/validate-examples.sh
+- [x] T088 Run all user story verification checklists (US1-US4)
 
 ### Advanced Features Documentation
 
