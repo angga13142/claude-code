@@ -10,7 +10,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Any, Optional
 
 try:
     import yaml
@@ -24,9 +24,9 @@ class ConfigValidator:
     
     def __init__(self, config_path: str):
         self.config_path = Path(config_path)
-        self.config = None
-        self.errors = []
-        self.warnings = []
+        self.config: Optional[Dict[str, Any]] = None
+        self.errors: List[str] = []
+        self.warnings: List[str] = []
         
     def validate(self) -> bool:
         """Run all validation checks. Returns True if validation passes."""
@@ -65,6 +65,9 @@ class ConfigValidator:
     
     def _validate_structure(self):
         """Validate top-level configuration structure."""
+        if self.config is None:
+            return
+            
         required_keys = ['model_list']
         optional_keys = ['litellm_settings', 'router_settings', 'general_settings']
         
@@ -81,6 +84,9 @@ class ConfigValidator:
     
     def _validate_model_list(self):
         """Validate model_list configuration."""
+        if self.config is None:
+            return
+            
         model_list = self.config.get('model_list', [])
         
         if not isinstance(model_list, list):
@@ -141,7 +147,7 @@ class ConfigValidator:
                 f"Model '{model_name}': Identifier '{model_id}' doesn't use standard provider prefix"
             )
     
-    def _validate_vertex_ai_params(self, model_name: str, params: dict):
+    def _validate_vertex_ai_params(self, model_name: str, params: Dict[str, Any]):
         """Validate Vertex AI specific parameters."""
         required = ['vertex_project', 'vertex_location']
         
@@ -163,6 +169,9 @@ class ConfigValidator:
     
     def _validate_environment_variables(self):
         """Validate environment variable references and actual values."""
+        if self.config is None:
+            return
+            
         # Check general_settings.master_key
         general_settings = self.config.get('general_settings', {})
         master_key = general_settings.get('master_key', '')
@@ -187,6 +196,9 @@ class ConfigValidator:
     
     def _validate_router_settings(self):
         """Validate router_settings configuration."""
+        if self.config is None:
+            return
+            
         router_settings = self.config.get('router_settings', {})
         
         if not router_settings:

@@ -8,7 +8,7 @@ Usage: python check-model-availability.py [--project PROJECT_ID] [--location LOC
 import argparse
 import json
 import sys
-from typing import Dict, List
+from typing import Dict, Any
 
 try:
     from google.cloud import aiplatform
@@ -76,7 +76,7 @@ def check_model_availability(
     project_id: str,
     location: str,
     model_id: str
-) -> Dict[str, any]:
+) -> Dict[str, Any]:
     """
     Check if a specific model is available in the given project/region.
     

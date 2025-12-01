@@ -9,7 +9,7 @@ import argparse
 import json
 import sys
 import time
-from typing import Dict, List
+from typing import Dict, Any
 import urllib.request
 import urllib.error
 
@@ -27,7 +27,7 @@ MODELS = [
 ]
 
 
-def test_model(gateway_url: str, auth_token: str, model: Dict) -> Dict:
+def test_model(gateway_url: str, auth_token: str, model: Dict[str, Any]) -> Dict[str, Any]:
     """Test a single model with a completion request."""
     url = f"{gateway_url}/chat/completions"
     
