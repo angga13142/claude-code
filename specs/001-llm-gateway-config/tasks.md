@@ -200,12 +200,12 @@ All artifacts go in `/specs/001-llm-gateway-config/` - no changes to Claude Code
 
 ### Comprehensive Documentation
 
-- [ ] T073 [P] Create master configuration reference guide in docs/configuration-reference.md
-- [ ] T074 [P] Create deployment patterns comparison matrix in docs/deployment-patterns-comparison.md
-- [ ] T075 [P] Create environment variables complete reference in docs/environment-variables.md
-- [ ] T076 [P] Create security best practices consolidated guide in docs/security-best-practices.md
-- [ ] T077 [P] Create troubleshooting master guide in docs/troubleshooting-guide.md
-- [ ] T078 [P] Create FAQ document addressing common questions in docs/faq.md
+- [X] T073 [P] Create master configuration reference guide in docs/configuration-reference.md
+- [X] T074 [P] Create deployment patterns comparison matrix in docs/deployment-patterns-comparison.md
+- [X] T075 [P] Create environment variables complete reference in docs/environment-variables.md
+- [X] T076 [P] Create security best practices consolidated guide in docs/security-best-practices.md
+- [X] T077 [P] Create troubleshooting master guide in docs/troubleshooting-guide.md
+- [X] T078 [P] Create FAQ document addressing common questions in docs/faq.md
 
 ### Integration & Validation
 
