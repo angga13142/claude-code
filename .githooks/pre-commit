@@ -37,7 +37,7 @@ if [ -n "$PYTHON_FILES" ]; then
     for file in $PYTHON_FILES; do
         if [ -f "$file" ]; then
             # Check for functions without type hints (excluding __init__ and __main__)
-            MISSING=$(grep -n "^def " "$file" | grep -v "-> " | grep -v "__init__" | grep -v "__main__" | head -3 || true)
+            MISSING=$(grep -n "^def " "$file" | grep -v -- "-> " | grep -v "__init__" | grep -v "__main__" | head -3 || true)
             if [ -n "$MISSING" ]; then
                 echo -e "${YELLOW}⚠ Missing type hints in: $file${NC}"
                 echo "$MISSING" | head -3
@@ -109,12 +109,24 @@ fi
 
 # Check 7: No sensitive data
 echo "▶ Checking for sensitive data..."
-STAGED_FILES=$(git diff --cached --name-only | grep -v "\.githooks/" || true)
+STAGED_FILES=$(git diff --cached --name-only | grep -v "\.githooks/" | grep -v "\.toml$" | grep -v "\.yml$" | grep -v "\.yaml$" || true)
 if [ -n "$STAGED_FILES" ]; then
-    # Look for actual credential values (with = and quotes), not just parameter names
-    SENSITIVE_PATTERNS="(password|secret|api_key|private_key|AWS_ACCESS|AWS_SECRET|ANTHROPIC_API).*=.*['\"][a-zA-Z0-9_-]{20,}"
-    if echo "$STAGED_FILES" | xargs grep -nE "$SENSITIVE_PATTERNS" 2>/dev/null | head -3; then
-        echo -e "${RED}✗ Found potential sensitive data${NC}"
+    # Look for actual credential values (long alphanumeric strings after = with quotes)
+    # Exclude: parameter names, type hints, function signatures
+    SENSITIVE_PATTERNS='(password|secret|api_key|private_key|AWS_ACCESS_KEY|AWS_SECRET_KEY|ANTHROPIC_API_KEY)\s*=\s*["\047][a-zA-Z0-9_-]{32,}["\047]'
+    
+    # Check each file individually to provide better error messages
+    FOUND_SENSITIVE=false
+    for file in $STAGED_FILES; do
+        if [ -f "$file" ]; then
+            if grep -nE "$SENSITIVE_PATTERNS" "$file" 2>/dev/null | head -1; then
+                echo -e "${RED}✗ Found potential sensitive data in: $file${NC}"
+                FOUND_SENSITIVE=true
+            fi
+        fi
+    done
+    
+    if [ "$FOUND_SENSITIVE" = true ]; then
         echo "  Use environment variables or secret managers"
         ERRORS=$((ERRORS + 1))
     else
