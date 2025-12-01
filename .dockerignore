@@ -1,5 +1,6 @@
-# macOS
-.DS_Store
+# Git
+.git/
+.gitignore
 
 # Python
 __pycache__/
@@ -20,9 +21,6 @@ sdist/
 var/
 wheels/
 *.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
 .venv/
 venv/
 ENV/
@@ -30,7 +28,6 @@ env/
 .pytest_cache/
 .coverage
 htmlcov/
-*.log
 
 # IDEs
 .vscode/
@@ -44,8 +41,20 @@ htmlcov/
 .env.local
 *.local.md
 
+# Documentation (not needed in container)
+*.md
+LICENSE.md
+SECURITY.md
+CHANGELOG.md
+
+# CI/CD
+.github/
+
+# Logs
+*.log
+logs/
+
 # Temporary files
 *.tmp
 *.bak
 *.orig
-

@@ -28,10 +28,10 @@ All artifacts go in `/specs/001-llm-gateway-config/` - no changes to Claude Code
 
 **Purpose**: Create project structure for documentation, templates, and scripts
 
-- [ ] T001 Create templates directory structure in specs/001-llm-gateway-config/templates/
-- [ ] T002 [P] Create scripts directory structure in specs/001-llm-gateway-config/scripts/
-- [ ] T003 [P] Create examples directory structure in specs/001-llm-gateway-config/examples/
-- [ ] T004 [P] Create tests directory structure in specs/001-llm-gateway-config/tests/
+- [X] T001 Create templates directory structure in specs/001-llm-gateway-config/templates/
+- [X] T002 [P] Create scripts directory structure in specs/001-llm-gateway-config/scripts/
+- [X] T003 [P] Create examples directory structure in specs/001-llm-gateway-config/examples/
+- [X] T004 [P] Create tests directory structure in specs/001-llm-gateway-config/tests/
 
 **Checkpoint**: Directory structure ready for template and script creation
 
@@ -43,15 +43,15 @@ All artifacts go in `/specs/001-llm-gateway-config/` - no changes to Claude Code
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Create base LiteLLM configuration template (minimal) in templates/litellm-base.yaml
-- [ ] T006 [P] Create environment variables reference template in templates/env-vars-reference.md
-- [ ] T007 [P] Create settings.json schema template in templates/settings-schema.json
-- [ ] T008 Create configuration validation script in scripts/validate-config.py
-- [ ] T009 [P] Create health check verification script in scripts/health-check.sh
-- [ ] T010 [P] Create status check helper script in scripts/check-status.sh
-- [ ] T011 Create common troubleshooting functions in scripts/troubleshooting-utils.sh
-- [ ] T012 [P] Create prerequisite checker script in scripts/check-prerequisites.sh
-- [ ] T013 Document deployment pattern decision tree in templates/deployment-patterns.md
+- [X] T005 Create base LiteLLM configuration template (minimal) in templates/litellm-base.yaml
+- [X] T006 [P] Create environment variables reference template in templates/env-vars-reference.md
+- [X] T007 [P] Create settings.json schema template in templates/settings-schema.json
+- [X] T008 Create configuration validation script in scripts/validate-config.py
+- [X] T009 [P] Create health check verification script in scripts/health-check.sh
+- [X] T010 [P] Create status check helper script in scripts/check-status.sh
+- [X] T011 Create common troubleshooting functions in scripts/troubleshooting-utils.sh
+- [X] T012 [P] Create prerequisite checker script in scripts/check-prerequisites.sh
+- [X] T013 Document deployment pattern decision tree in templates/deployment-patterns.md
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 

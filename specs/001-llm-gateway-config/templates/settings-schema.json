@@ -1,0 +1,142 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Claude Code Settings Schema",
+  "description": "JSON schema for Claude Code settings.json configuration files",
+  "type": "object",
+  "properties": {
+    "ANTHROPIC_BASE_URL": {
+      "type": "string",
+      "format": "uri",
+      "description": "Base URL for the LLM gateway/proxy",
+      "examples": [
+        "http://localhost:4000",
+        "https://llm-gateway.company.com"
+      ]
+    },
+    "ANTHROPIC_AUTH_TOKEN": {
+      "type": "string",
+      "description": "Authentication token for gateway access (will be masked in logs)",
+      "pattern": "^.{10,}$",
+      "examples": [
+        "sk-litellm-master-key-1234",
+        "bearer-token-xyz"
+      ]
+    },
+    "ANTHROPIC_BEDROCK_BASE_URL": {
+      "type": "string",
+      "format": "uri",
+      "description": "Custom base URL for Bedrock provider (optional)",
+      "examples": [
+        "https://bedrock-runtime.us-west-2.amazonaws.com"
+      ]
+    },
+    "ANTHROPIC_VERTEX_BASE_URL": {
+      "type": "string",
+      "format": "uri",
+      "description": "Custom base URL for Vertex AI provider (optional)",
+      "examples": [
+        "https://us-central1-aiplatform.googleapis.com"
+      ]
+    },
+    "CLAUDE_CODE_SKIP_BEDROCK_AUTH": {
+      "type": ["boolean", "string"],
+      "description": "Skip Bedrock authentication when gateway handles it",
+      "enum": [true, false, "1", "0", "true", "false", "yes", "no"],
+      "default": false
+    },
+    "CLAUDE_CODE_SKIP_VERTEX_AUTH": {
+      "type": ["boolean", "string"],
+      "description": "Skip Vertex AI authentication when gateway handles it",
+      "enum": [true, false, "1", "0", "true", "false", "yes", "no"],
+      "default": false
+    },
+    "GOOGLE_APPLICATION_CREDENTIALS": {
+      "type": "string",
+      "description": "Path to Google Cloud service account JSON key file",
+      "examples": [
+        "/path/to/service-account-key.json",
+        "~/credentials/litellm-sa.json"
+      ]
+    },
+    "HTTPS_PROXY": {
+      "type": "string",
+      "format": "uri",
+      "description": "Corporate HTTPS proxy for outbound requests",
+      "examples": [
+        "http://proxy.company.com:8080",
+        "http://user:pass@proxy.company.com:8080"
+      ]
+    },
+    "HTTP_PROXY": {
+      "type": "string",
+      "format": "uri",
+      "description": "Corporate HTTP proxy for outbound requests",
+      "examples": [
+        "http://proxy.company.com:8080"
+      ]
+    },
+    "NO_PROXY": {
+      "type": "string",
+      "description": "Comma-separated list of domains to bypass proxy",
+      "pattern": "^([a-zA-Z0-9.-]+)(,[a-zA-Z0-9.-]+)*$",
+      "examples": [
+        "localhost,127.0.0.1,.company.com"
+      ]
+    },
+    "ANTHROPIC_LOG": {
+      "type": "string",
+      "description": "Claude Code logging level",
+      "enum": ["debug", "info", "warn", "error"],
+      "default": "info"
+    },
+    "LITELLM_LOG": {
+      "type": "string",
+      "description": "LiteLLM proxy logging level",
+      "enum": ["DEBUG", "INFO", "WARNING", "ERROR"],
+      "default": "INFO"
+    }
+  },
+  "required": [],
+  "additionalProperties": true,
+  "examples": [
+    {
+      "$comment": "Example 1: Local LiteLLM Gateway",
+      "ANTHROPIC_BASE_URL": "http://localhost:4000",
+      "ANTHROPIC_AUTH_TOKEN": "sk-litellm-master-key"
+    },
+    {
+      "$comment": "Example 2: Enterprise Gateway with Proxy",
+      "ANTHROPIC_BASE_URL": "https://llm-gateway.company.com",
+      "ANTHROPIC_AUTH_TOKEN": "enterprise-token-123",
+      "HTTPS_PROXY": "http://proxy.company.com:8080",
+      "CLAUDE_CODE_SKIP_VERTEX_AUTH": true
+    },
+    {
+      "$comment": "Example 3: Multi-Provider with Service Account",
+      "ANTHROPIC_BASE_URL": "http://localhost:4000",
+      "ANTHROPIC_AUTH_TOKEN": "sk-litellm-master-key",
+      "GOOGLE_APPLICATION_CREDENTIALS": "/home/user/litellm-sa-key.json",
+      "ANTHROPIC_BEDROCK_BASE_URL": "https://bedrock-runtime.us-west-2.amazonaws.com"
+    }
+  ],
+  "definitions": {
+    "deployment_patterns": {
+      "direct": {
+        "description": "Direct provider access (no gateway)",
+        "required_vars": []
+      },
+      "proxy": {
+        "description": "Corporate proxy only",
+        "required_vars": ["HTTPS_PROXY"]
+      },
+      "gateway": {
+        "description": "LLM gateway (LiteLLM, TrueFoundry, etc.)",
+        "required_vars": ["ANTHROPIC_BASE_URL", "ANTHROPIC_AUTH_TOKEN"]
+      },
+      "proxy_gateway": {
+        "description": "Corporate proxy + LLM gateway",
+        "required_vars": ["HTTPS_PROXY", "ANTHROPIC_BASE_URL", "ANTHROPIC_AUTH_TOKEN"]
+      }
+    }
+  }
+}
