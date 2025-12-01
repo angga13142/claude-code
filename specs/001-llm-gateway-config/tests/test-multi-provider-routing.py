@@ -207,13 +207,14 @@ def test_routing_strategy_compliance(models: List[str], strategy: str):
 
 def main():
     """Main test routine."""
+    global TEST_ITERATIONS
+    
     parser = argparse.ArgumentParser(description="Test multi-provider routing")
     parser.add_argument("--config", help="Path to LiteLLM config file (optional)")
     parser.add_argument("--iterations", type=int, default=TEST_ITERATIONS, help="Number of test iterations")
     parser.add_argument("--models", nargs="+", help="Specific models to test (optional)")
     args = parser.parse_args()
     
-    global TEST_ITERATIONS
     TEST_ITERATIONS = args.iterations
     
     print_header("Multi-Provider Routing Test")
