@@ -200,20 +200,20 @@ All artifacts go in `/specs/001-llm-gateway-config/` - no changes to Claude Code
 
 ### Comprehensive Documentation
 
-- [X] T073 [P] Create master configuration reference guide in docs/configuration-reference.md
-- [X] T074 [P] Create deployment patterns comparison matrix in docs/deployment-patterns-comparison.md
-- [X] T075 [P] Create environment variables complete reference in docs/environment-variables.md
-- [X] T076 [P] Create security best practices consolidated guide in docs/security-best-practices.md
-- [X] T077 [P] Create troubleshooting master guide in docs/troubleshooting-guide.md
-- [X] T078 [P] Create FAQ document addressing common questions in docs/faq.md
+- [x] T073 [P] Create master configuration reference guide in docs/configuration-reference.md
+- [x] T074 [P] Create deployment patterns comparison matrix in docs/deployment-patterns-comparison.md
+- [x] T075 [P] Create environment variables complete reference in docs/environment-variables.md
+- [x] T076 [P] Create security best practices consolidated guide in docs/security-best-practices.md
+- [x] T077 [P] Create troubleshooting master guide in docs/troubleshooting-guide.md
+- [x] T078 [P] Create FAQ document addressing common questions in docs/faq.md
 
 ### Integration & Validation
 
-- [ ] T079 Create master validation script that runs all checks in scripts/validate-all.sh
-- [ ] T080 Create configuration migration helper script in scripts/migrate-config.py
-- [ ] T081 Create configuration rollback utility in scripts/rollback-config.sh
-- [ ] T082 Update quickstart.md with links to all user story examples
-- [ ] T083 Create README.md for specs/001-llm-gateway-config/ with navigation
+- [x] T079 Create master validation script that runs all checks in scripts/validate-all.sh
+- [x] T080 Create configuration migration helper script in scripts/migrate-config.py
+- [x] T081 Create configuration rollback utility in scripts/rollback-config.sh
+- [x] T082 Update quickstart.md with links to all user story examples
+- [x] T083 Create README.md for specs/001-llm-gateway-config/ with navigation
 
 ### Testing & Quality Assurance
 

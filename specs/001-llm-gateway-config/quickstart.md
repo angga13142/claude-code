@@ -10,6 +10,7 @@
 ## 🎯 What You'll Build
 
 By the end of this guide, you'll have:
+
 - ✅ LiteLLM proxy running locally with 8 Vertex AI Model Garden models
 - ✅ Claude Code configured to route requests through the gateway
 - ✅ Verification that everything works end-to-end
@@ -28,6 +29,7 @@ Before starting, ensure you have:
 - [ ] **10 minutes** of focused time
 
 **GCP Information Needed:**
+
 - Project ID: `_________________`
 - Preferred Region: `_________________` (e.g., us-central1)
 
@@ -45,6 +47,7 @@ litellm --version
 ```
 
 **Troubleshooting:**
+
 - If `pip` not found: Install Python from python.org
 - If permission denied: Use `pip install --user litellm`
 
@@ -102,15 +105,15 @@ model_list:
   - model_name: gemini-2.5-flash
     litellm_params:
       model: vertex_ai/gemini-2.5-flash
-      vertex_ai_project: "YOUR_PROJECT_ID"  # ← REPLACE THIS
-      vertex_ai_location: "us-central1"      # ← CHANGE IF NEEDED
-    tpm: 1000000  # 1M tokens per minute
-    rpm: 10000    # 10K requests per minute
+      vertex_ai_project: "YOUR_PROJECT_ID" # ← REPLACE THIS
+      vertex_ai_location: "us-central1" # ← CHANGE IF NEEDED
+    tpm: 1000000 # 1M tokens per minute
+    rpm: 10000 # 10K requests per minute
 
   - model_name: gemini-2.5-pro
     litellm_params:
       model: vertex_ai/gemini-2.5-pro
-      vertex_ai_project: "YOUR_PROJECT_ID"  # ← REPLACE THIS
+      vertex_ai_project: "YOUR_PROJECT_ID" # ← REPLACE THIS
       vertex_ai_location: "us-central1"
     tpm: 500000
     rpm: 5000
@@ -119,7 +122,7 @@ model_list:
   - model_name: deepseek-r1
     litellm_params:
       model: vertex_ai/deepseek-ai/deepseek-r1-0528-maas
-      vertex_ai_project: "YOUR_PROJECT_ID"  # ← REPLACE THIS
+      vertex_ai_project: "YOUR_PROJECT_ID" # ← REPLACE THIS
       vertex_ai_location: "us-central1"
     tpm: 100000
     rpm: 1000
@@ -128,8 +131,8 @@ model_list:
   - model_name: llama3-405b
     litellm_params:
       model: vertex_ai/meta/llama3-405b-instruct-maas
-      vertex_ai_project: "YOUR_PROJECT_ID"  # ← REPLACE THIS
-      vertex_ai_location: "us-east1"         # Some models prefer different regions
+      vertex_ai_project: "YOUR_PROJECT_ID" # ← REPLACE THIS
+      vertex_ai_location: "us-east1" # Some models prefer different regions
     tpm: 200000
     rpm: 2000
 
@@ -137,7 +140,7 @@ model_list:
   - model_name: codestral
     litellm_params:
       model: vertex_ai/codestral@latest
-      vertex_ai_project: "YOUR_PROJECT_ID"  # ← REPLACE THIS
+      vertex_ai_project: "YOUR_PROJECT_ID" # ← REPLACE THIS
       vertex_ai_location: "us-central1"
     tpm: 300000
     rpm: 3000
@@ -146,7 +149,7 @@ model_list:
   - model_name: qwen3-coder-480b
     litellm_params:
       model: vertex_ai/qwen/qwen3-coder-480b-a35b-instruct-maas
-      vertex_ai_project: "YOUR_PROJECT_ID"  # ← REPLACE THIS
+      vertex_ai_project: "YOUR_PROJECT_ID" # ← REPLACE THIS
       vertex_ai_location: "us-east1"
     tpm: 150000
     rpm: 1500
@@ -154,7 +157,7 @@ model_list:
   - model_name: qwen3-235b
     litellm_params:
       model: vertex_ai/qwen/qwen3-235b-a22b-instruct-2507-maas
-      vertex_ai_project: "YOUR_PROJECT_ID"  # ← REPLACE THIS
+      vertex_ai_project: "YOUR_PROJECT_ID" # ← REPLACE THIS
       vertex_ai_location: "us-west1"
     tpm: 200000
     rpm: 2000
@@ -163,31 +166,32 @@ model_list:
   - model_name: gpt-oss-20b
     litellm_params:
       model: vertex_ai/openai/gpt-oss-20b-maas
-      vertex_ai_project: "YOUR_PROJECT_ID"  # ← REPLACE THIS
+      vertex_ai_project: "YOUR_PROJECT_ID" # ← REPLACE THIS
       vertex_ai_location: "us-central1"
     tpm: 250000
     rpm: 2500
 
 # Router Settings - Handles load balancing and retries
 router_settings:
-  routing_strategy: "simple-shuffle"  # Weighted random selection
-  num_retries: 3                       # Retry failed requests 3 times
-  timeout: 30                          # 30 second timeout
+  routing_strategy: "simple-shuffle" # Weighted random selection
+  num_retries: 3 # Retry failed requests 3 times
+  timeout: 30 # 30 second timeout
   fallbacks:
-    - {"gemini-2.5-pro": ["gemini-2.5-flash"]}  # Fallback to Flash if Pro fails
-  enable_pre_call_check: true          # Check rate limits before making requests
+    - { "gemini-2.5-pro": ["gemini-2.5-flash"] } # Fallback to Flash if Pro fails
+  enable_pre_call_check: true # Check rate limits before making requests
 
 # Global Settings
 litellm_settings:
-  drop_params: true   # Drop unsupported parameters gracefully
-  set_verbose: false  # Set to true for debugging
+  drop_params: true # Drop unsupported parameters gracefully
+  set_verbose: false # Set to true for debugging
 
 # Authentication (generate a secure key)
 general_settings:
-  master_key: "sk-1234567890abcdef"  # ← REPLACE with secure random key
+  master_key: "sk-1234567890abcdef" # ← REPLACE with secure random key
 ```
 
 **Action Items:**
+
 1. Replace ALL instances of `YOUR_PROJECT_ID` with your GCP project ID
 2. Verify regions match where you want to deploy models
 3. Generate a secure master key: `openssl rand -hex 16` and replace in `master_key`
@@ -211,6 +215,7 @@ litellm --config litellm_config.yaml --port 4000
 **Keep this terminal open!** The proxy runs in the foreground.
 
 **Troubleshooting:**
+
 - **Port already in use**: Change `--port 4000` to `--port 4001`
 - **Config file not found**: Use full path `litellm --config /full/path/to/litellm_config.yaml`
 - **Authentication errors**: Verify gcloud auth or service account key is valid
@@ -233,6 +238,7 @@ claude /status
 ```
 
 **Expected Output:**
+
 ```
 Claude Code Status:
 ├─ Base URL: http://localhost:4000 ✓
@@ -241,6 +247,7 @@ Claude Code Status:
 ```
 
 **Troubleshooting:**
+
 - If Base URL shows default (api.anthropic.com): Re-export ANTHROPIC_BASE_URL
 - If Auth Token missing: Re-export ANTHROPIC_AUTH_TOKEN
 - If variables don't persist: Add to `~/.bashrc` or `~/.zshrc`
@@ -352,7 +359,7 @@ def test_model(model_name):
             },
             timeout=30
         )
-        
+
         if response.status_code == 200:
             print(f"✅ {model_name}: SUCCESS")
             return True
@@ -373,11 +380,13 @@ print(f"{'='*50}")
 ```
 
 **Run the test:**
+
 ```bash
 python test_all_models.py
 ```
 
 **Expected Output:**
+
 ```
 Testing all 8 Vertex AI models...
 
@@ -404,6 +413,7 @@ RESULTS: 8/8 models working
 **Error**: `Model 'vertex_ai/gemini-2.5-flash' not found`
 
 **Solution**:
+
 1. Verify model is deployed in Model Garden:
    ```bash
    # Open Model Garden console
@@ -417,6 +427,7 @@ RESULTS: 8/8 models working
 **Error**: `403 Forbidden` or `Permission denied`
 
 **Solution**:
+
 1. Verify service account has correct IAM role:
    ```bash
    gcloud projects get-iam-policy YOUR_PROJECT_ID \
@@ -434,6 +445,7 @@ RESULTS: 8/8 models working
 **Error**: `429 Too Many Requests` or `Quota exceeded`
 
 **Solution**:
+
 1. Check current quotas:
    ```bash
    gcloud compute project-info describe --project=YOUR_PROJECT_ID | grep quota
@@ -446,6 +458,7 @@ RESULTS: 8/8 models working
 **Error**: `Connection refused` when calling http://localhost:4000
 
 **Solution**:
+
 1. Verify LiteLLM proxy is running:
    ```bash
    ps aux | grep litellm
@@ -466,6 +479,7 @@ RESULTS: 8/8 models working
 **Error**: `Invalid authentication credentials`
 
 **Solution**:
+
 1. Verify environment variable is set:
    ```bash
    echo $GOOGLE_APPLICATION_CREDENTIALS
@@ -481,12 +495,14 @@ RESULTS: 8/8 models working
 ## 🔒 Security Best Practices
 
 ### For Development
+
 - ✅ Use `gcloud auth application-default login`
 - ✅ Store config files in project directory (not home)
 - ✅ Add `litellm_config.yaml` to `.gitignore`
 - ❌ Never commit API keys or project IDs to git
 
 ### For Production
+
 - ✅ Use service accounts with minimal IAM roles
 - ✅ Store secrets in Google Secret Manager:
   ```bash
@@ -506,6 +522,7 @@ RESULTS: 8/8 models working
 ### Explore Advanced Features
 
 1. **Enable Prompt Caching** (Reduce costs by 90%):
+
    ```yaml
    litellm_settings:
      cache: true
@@ -516,6 +533,7 @@ RESULTS: 8/8 models working
    ```
 
 2. **Add Multi-Region Load Balancing**:
+
    ```yaml
    model_list:
      - model_name: gemini-2.5-pro
@@ -529,6 +547,7 @@ RESULTS: 8/8 models working
    ```
 
 3. **Enable Usage Monitoring**:
+
    ```yaml
    litellm_settings:
      success_callback: ["langfuse"]
@@ -554,6 +573,7 @@ RESULTS: 8/8 models working
 If you encounter issues not covered here:
 
 1. **Enable Debug Logging**:
+
    ```bash
    export LITELLM_LOG=DEBUG
    export ANTHROPIC_LOG=debug
@@ -581,6 +601,96 @@ You now have a fully functional LLM gateway connecting Claude Code to 8 Vertex A
 - **Large context**: llama3-405b (128K tokens)
 
 Happy coding! 🚀
+
+---
+
+## 📚 Next Steps & Additional Guides
+
+### User Story Guides
+
+**User Story 1: Basic LiteLLM Gateway** (You just completed this!)
+
+- `examples/us1-quickstart-basic.md` - This guide
+- `examples/us1-gcloud-auth.md` - Advanced authentication setup
+- `examples/us1-troubleshooting.md` - Common issues and solutions
+- `examples/us1-verification-checklist.md` - Post-setup validation
+
+**User Story 2: Enterprise Gateway Integration**
+
+- `examples/us2-enterprise-integration.md` - TrueFoundry, Zuplo, custom gateways
+- `examples/us2-security-best-practices.md` - Enterprise security requirements
+- `examples/us2-compliance-guide.md` - SOC 2, HIPAA, GDPR compliance
+- `examples/us2-compatibility-checklist.md` - Gateway compatibility verification
+
+**User Story 3: Multi-Provider Configuration**
+
+- `examples/us3-multi-provider-setup.md` - Configure Anthropic + Bedrock + Vertex AI
+- `examples/us3-provider-env-vars.md` - Provider-specific environment variables
+- `examples/us3-cost-optimization.md` - Cost savings strategies (40-70% reduction)
+- `examples/us3-provider-selection.md` - Decision tree for choosing providers
+- `examples/us3-auth-bypass-guide.md` - Authentication bypass scenarios
+
+**User Story 4: Corporate Proxy Configuration**
+
+- `examples/us4-corporate-proxy-setup.md` - Proxy + gateway setup (15-20 min)
+- `examples/us4-https-proxy-config.md` - Complete HTTPS_PROXY reference
+- `examples/us4-proxy-gateway-architecture.md` - Architecture diagrams
+- `examples/us4-proxy-troubleshooting.md` - Proxy-specific troubleshooting
+- `examples/us4-firewall-considerations.md` - Network security and firewall rules
+
+### Master Documentation
+
+**Reference Guides** (`docs/` directory):
+
+- `docs/configuration-reference.md` - Complete LiteLLM settings reference
+- `docs/deployment-patterns-comparison.md` - 5 deployment patterns with decision matrix
+- `docs/environment-variables.md` - All 40+ environment variables documented
+- `docs/security-best-practices.md` - Comprehensive security guidance
+- `docs/troubleshooting-guide.md` - Master troubleshooting guide
+- `docs/faq.md` - 40+ frequently asked questions
+
+**Configuration Templates** (`templates/` directory):
+
+- `templates/litellm-base.yaml` - Minimal configuration
+- `templates/litellm-complete.yaml` - Full 8-model setup
+- `templates/models/*.yaml` - Individual model configurations
+- `templates/enterprise/*.yaml` - Enterprise gateway configs
+- `templates/multi-provider/*.yaml` - Multi-provider configs
+- `templates/proxy/*.yaml` - Corporate proxy configs
+
+**Validation & Testing** (`scripts/` and `tests/` directories):
+
+- `scripts/validate-all.sh` - Master validation script (run all checks)
+- `scripts/migrate-config.py` - Configuration migration helper
+- `scripts/rollback-config.sh` - Safe configuration rollback
+- `tests/test-all-models.py` - End-to-end model testing
+- `tests/test-proxy-gateway.py` - Proxy integration testing
+
+### Quick Links by Scenario
+
+**Scenario: I'm behind a corporate firewall**
+→ Start with `examples/us4-corporate-proxy-setup.md`
+
+**Scenario: I want to use multiple providers (Anthropic + Bedrock + Vertex)**
+→ Start with `examples/us3-multi-provider-setup.md`
+
+**Scenario: I need enterprise gateway integration**
+→ Start with `examples/us2-enterprise-integration.md`
+
+**Scenario: I need to optimize costs**
+→ Read `examples/us3-cost-optimization.md`
+
+**Scenario: Something's not working**
+→ Check `docs/troubleshooting-guide.md` or `docs/faq.md`
+
+---
+
+## 🆘 Support
+
+**Documentation Index**: `README.md` (in this directory)  
+**Troubleshooting**: `docs/troubleshooting-guide.md`  
+**FAQ**: `docs/faq.md`  
+**Validation**: Run `bash scripts/validate-all.sh`
 
 ---
 
