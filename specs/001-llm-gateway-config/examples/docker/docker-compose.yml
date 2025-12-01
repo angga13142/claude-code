@@ -1,0 +1,90 @@
+# Docker Compose Example for LiteLLM Gateway
+# Purpose: Local development setup with LiteLLM gateway and optional Redis cache
+# Usage: docker-compose up -d
+
+version: '3.8'
+
+services:
+  # LiteLLM Gateway Service
+  litellm-gateway:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm-gateway
+    ports:
+      - "4000:4000"
+    volumes:
+      # Mount your configuration file
+      - ./config/litellm.yaml:/app/config.yaml:ro
+      # Optional: Mount logs directory
+      - ./logs:/app/logs
+    environment:
+      # Master key for gateway authentication
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-local-gateway}
+      # Google Cloud credentials (if using service account file)
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS:-/app/gcp-key.json}
+      # Optional: Enable verbose logging
+      - LITELLM_LOG=DEBUG
+    command: >
+      litellm
+      --config /app/config.yaml
+      --port 4000
+      --host 0.0.0.0
+    depends_on:
+      - redis
+    networks:
+      - litellm-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis Cache (Optional but Recommended)
+  redis:
+    image: redis:7-alpine
+    container_name: litellm-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - litellm-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Optional: LiteLLM UI Dashboard
+  litellm-ui:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm-ui
+    ports:
+      - "4001:4001"
+    environment:
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-local-gateway}
+      - LITELLM_API_BASE=http://litellm-gateway:4000
+    command: >
+      litellm
+      --ui
+      --port 4001
+      --host 0.0.0.0
+    depends_on:
+      - litellm-gateway
+    networks:
+      - litellm-network
+    restart: unless-stopped
+    profiles:
+      - ui  # Only start with: docker-compose --profile ui up
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  litellm-network:
+    driver: bridge
+

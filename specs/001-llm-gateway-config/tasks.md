@@ -225,19 +225,19 @@ All artifacts go in `/specs/001-llm-gateway-config/` - no changes to Claude Code
 
 ### Advanced Features Documentation
 
-- [ ] T089 [P] Document load balancing strategies in docs/load-balancing.md
-- [ ] T090 [P] Document fallback and retry policies in docs/fallback-retry.md
-- [ ] T091 [P] Document multi-region deployment in docs/multi-region-deployment.md
-- [ ] T092 [P] Document observability and monitoring in docs/observability.md
-- [ ] T093 [P] Document cost tracking and optimization in docs/cost-tracking.md
-- [ ] T094 [P] Document credential rotation procedures in docs/credential-rotation.md
+- [x] T089 [P] Document load balancing strategies in docs/load-balancing.md
+- [x] T090 [P] Document fallback and retry policies in docs/fallback-retry.md
+- [x] T091 [P] Document multi-region deployment in docs/multi-region-deployment.md
+- [x] T092 [P] Document observability and monitoring in docs/observability.md
+- [x] T093 [P] Document cost tracking and optimization in docs/cost-tracking.md
+- [x] T094 [P] Document credential rotation procedures in docs/credential-rotation.md
 
 ### Repository Integration
 
-- [ ] T095 Create CHANGELOG entry for this feature
-- [ ] T096 Update main README.md with link to gateway configuration docs
-- [ ] T097 Create example configurations for CI/CD environments in examples/ci-cd/
-- [ ] T098 Create Docker Compose example for local development in examples/docker/
+- [x] T095 Create CHANGELOG entry for this feature
+- [x] T096 Update main README.md with link to gateway configuration docs
+- [x] T097 Create example configurations for CI/CD environments in examples/ci-cd/
+- [x] T098 Create Docker Compose example for local development in examples/docker/
 
 **Checkpoint**: All polish and cross-cutting concerns complete - feature ready for production use
 
