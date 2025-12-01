@@ -1,0 +1,245 @@
+#!/bin/bash
+# Pre-push hook - Final quality gate before push
+# Runs comprehensive tests
+
+set -e
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+echo "🚀 Running pre-push checks..."
+echo ""
+
+ERRORS=0
+WARNINGS=0
+
+# Check 1: Branch protection
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+PROTECTED_BRANCHES="main master production"
+
+if echo "$PROTECTED_BRANCHES" | grep -wq "$CURRENT_BRANCH"; then
+    echo -e "${RED}✗ Cannot push directly to protected branch: $CURRENT_BRANCH${NC}"
+    echo "  Use a feature branch and create a pull request"
+    exit 1
+fi
+
+echo -e "${GREEN}✓ Pushing to branch: $CURRENT_BRANCH${NC}"
+
+# Check 2: No merge conflicts
+echo "▶ Checking for merge conflicts..."
+if git diff --name-only --diff-filter=U | grep -q .; then
+    echo -e "${RED}✗ Unresolved merge conflicts detected${NC}"
+    git diff --name-only --diff-filter=U
+    ERRORS=$((ERRORS + 1))
+else
+    echo -e "${GREEN}✓ No merge conflicts${NC}"
+fi
+
+# Check 3: Syntax validation for all Python files
+echo "▶ Validating Python syntax..."
+PYTHON_FILES=$(git diff --name-only HEAD @{upstream} 2>/dev/null | grep '\.py$' || git ls-files '*.py')
+if [ -n "$PYTHON_FILES" ]; then
+    SYNTAX_ERRORS=0
+    for file in $PYTHON_FILES; do
+        if [ -f "$file" ]; then
+            if ! python3 -m py_compile "$file" 2>/dev/null; then
+                echo -e "${RED}✗ Syntax error in: $file${NC}"
+                SYNTAX_ERRORS=$((SYNTAX_ERRORS + 1))
+            fi
+        fi
+    done
+    
+    if [ $SYNTAX_ERRORS -eq 0 ]; then
+        echo -e "${GREEN}✓ All Python files have valid syntax${NC}"
+    else
+        echo -e "${RED}✗ Found $SYNTAX_ERRORS file(s) with syntax errors${NC}"
+        ERRORS=$((ERRORS + 1))
+    fi
+fi
+
+# Check 4: Run validation scripts
+echo "▶ Running validation scripts..."
+if [ -d "specs/001-llm-gateway-config/scripts" ]; then
+    VALIDATION_PASSED=true
+    
+    # Test validate-config.py
+    if [ -f "specs/001-llm-gateway-config/scripts/validate-config.py" ]; then
+        if python3 -m py_compile specs/001-llm-gateway-config/scripts/validate-config.py 2>/dev/null; then
+            echo -e "${GREEN}✓ validate-config.py syntax valid${NC}"
+        else
+            echo -e "${RED}✗ validate-config.py has syntax errors${NC}"
+            ERRORS=$((ERRORS + 1))
+        fi
+    fi
+    
+    # Test other Python scripts
+    for script in specs/001-llm-gateway-config/scripts/*.py; do
+        if [ -f "$script" ]; then
+            if ! python3 -m py_compile "$script" 2>/dev/null; then
+                echo -e "${RED}✗ Syntax error in: $script${NC}"
+                ERRORS=$((ERRORS + 1))
+            fi
+        fi
+    done
+fi
+
+# Check 5: Run tests if they exist
+echo "▶ Running tests..."
+if command -v pytest &> /dev/null; then
+    if [ -d "tests" ] || [ -d "spec/001-llm-gateway-config/tests" ]; then
+        if pytest --collect-only &>/dev/null; then
+            echo "  Running pytest..."
+            if pytest -v --tb=short 2>&1 | tail -20; then
+                echo -e "${GREEN}✓ All tests passed${NC}"
+            else
+                echo -e "${YELLOW}⚠ Some tests failed${NC}"
+                WARNINGS=$((WARNINGS + 1))
+            fi
+        else
+            echo -e "${GREEN}✓ No pytest tests found${NC}"
+        fi
+    else
+        echo -e "${GREEN}✓ No test directory found${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠ pytest not installed (pip install pytest)${NC}"
+fi
+
+# Check 6: No uncommitted changes
+echo "▶ Checking for uncommitted changes..."
+if ! git diff --quiet; then
+    echo -e "${YELLOW}⚠ You have unstaged changes${NC}"
+    echo "  Unstaged files:"
+    git diff --name-only | head -5
+    WARNINGS=$((WARNINGS + 1))
+fi
+
+if ! git diff --cached --quiet; then
+    echo -e "${YELLOW}⚠ You have staged but uncommitted changes${NC}"
+    echo "  Staged files:"
+    git diff --cached --name-only | head -5
+    WARNINGS=$((WARNINGS + 1))
+fi
+
+if git diff --quiet && git diff --cached --quiet; then
+    echo -e "${GREEN}✓ Working directory is clean${NC}"
+fi
+
+# Check 7: Branch is up to date with remote
+echo "▶ Checking if branch is up to date..."
+git fetch origin &>/dev/null || true
+REMOTE_BRANCH="origin/$CURRENT_BRANCH"
+
+if git rev-parse --verify "$REMOTE_BRANCH" &>/dev/null; then
+    LOCAL=$(git rev-parse @)
+    REMOTE=$(git rev-parse "$REMOTE_BRANCH")
+    BASE=$(git merge-base @ "$REMOTE_BRANCH")
+    
+    if [ "$LOCAL" = "$REMOTE" ]; then
+        echo -e "${YELLOW}⚠ No new commits to push${NC}"
+    elif [ "$LOCAL" = "$BASE" ]; then
+        echo -e "${YELLOW}⚠ Your branch is behind remote${NC}"
+        echo "  Run: git pull --rebase"
+        ERRORS=$((ERRORS + 1))
+    elif [ "$REMOTE" = "$BASE" ]; then
+        COMMITS=$(git rev-list --count "$REMOTE".."$LOCAL")
+        echo -e "${GREEN}✓ Branch is ahead by $COMMITS commit(s)${NC}"
+    else
+        echo -e "${RED}✗ Branch has diverged from remote${NC}"
+        echo "  Run: git pull --rebase"
+        ERRORS=$((ERRORS + 1))
+    fi
+else
+    echo -e "${GREEN}✓ New branch (no remote tracking)${NC}"
+fi
+
+# Check 8: Security scan
+echo "▶ Running security scan..."
+if command -v bandit &> /dev/null; then
+    PYTHON_FILES_TO_SCAN=$(git diff --name-only HEAD @{upstream} 2>/dev/null | grep '\.py$' || echo "")
+    if [ -n "$PYTHON_FILES_TO_SCAN" ]; then
+        # Only scan files that exist
+        FILES_EXIST=""
+        for file in $PYTHON_FILES_TO_SCAN; do
+            if [ -f "$file" ]; then
+                FILES_EXIST="$FILES_EXIST $file"
+            fi
+        done
+        
+        if [ -n "$FILES_EXIST" ]; then
+            if bandit -ll $FILES_EXIST 2>&1 | tail -10 | grep -q "No issues identified"; then
+                echo -e "${GREEN}✓ No security issues detected${NC}"
+            else
+                echo -e "${YELLOW}⚠ Security scan completed with warnings${NC}"
+                WARNINGS=$((WARNINGS + 1))
+            fi
+        else
+            echo -e "${GREEN}✓ No Python files to scan${NC}"
+        fi
+    else
+        echo -e "${GREEN}✓ No new Python files to scan${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠ bandit not installed (pip install bandit)${NC}"
+fi
+
+# Check 9: File permissions
+echo "▶ Checking file permissions..."
+SCRIPT_FILES=$(git diff --name-only HEAD @{upstream} 2>/dev/null | grep -E '\.(sh|py)$' || echo "")
+PERMISSION_ISSUES=0
+
+for file in $SCRIPT_FILES; do
+    if [ -f "$file" ]; then
+        if head -1 "$file" | grep -q "^#!/"; then
+            if [ ! -x "$file" ]; then
+                echo -e "${YELLOW}⚠ Script missing executable permission: $file${NC}"
+                echo "  Run: chmod +x $file"
+                PERMISSION_ISSUES=$((PERMISSION_ISSUES + 1))
+            fi
+        fi
+    fi
+done
+
+if [ $PERMISSION_ISSUES -eq 0 ]; then
+    echo -e "${GREEN}✓ File permissions are correct${NC}"
+else
+    WARNINGS=$((WARNINGS + 1))
+fi
+
+# Check 10: Documentation check
+echo "▶ Checking documentation..."
+CODE_CHANGES=$(git diff --name-only HEAD @{upstream} 2>/dev/null | grep -E '\.(py|sh)$' | wc -l || echo "0")
+DOC_CHANGES=$(git diff --name-only HEAD @{upstream} 2>/dev/null | grep -E '\.md$' | wc -l || echo "0")
+
+if [ "$CODE_CHANGES" -gt 5 ] && [ "$DOC_CHANGES" -eq 0 ]; then
+    echo -e "${YELLOW}⚠ Significant code changes but no documentation updates${NC}"
+    echo "  Consider updating relevant .md files"
+    WARNINGS=$((WARNINGS + 1))
+else
+    echo -e "${GREEN}✓ Documentation check passed${NC}"
+fi
+
+# Summary
+echo ""
+echo "================================"
+echo -e "${BLUE}Push Summary:${NC}"
+echo "  Branch: $CURRENT_BRANCH"
+echo "  Commits to push: $(git rev-list --count @{upstream}..HEAD 2>/dev/null || echo "N/A")"
+echo "  Files changed: $(git diff --name-only HEAD @{upstream} 2>/dev/null | wc -l || echo "N/A")"
+echo ""
+
+if [ $ERRORS -gt 0 ]; then
+    echo -e "${RED}✗ Pre-push checks failed with $ERRORS error(s)${NC}"
+    echo "Fix the issues above before pushing"
+    echo "To bypass (not recommended): git push --no-verify"
+    exit 1
+elif [ $WARNINGS -gt 0 ]; then
+    echo -e "${YELLOW}⚠ Pre-push checks passed with $WARNINGS warning(s)${NC}"
+    echo -e "${GREEN}Proceeding with push...${NC}"
+else
+    echo -e "${GREEN}✓ All pre-push checks passed!${NC}"
+    echo "Pushing to remote..."
+fi
