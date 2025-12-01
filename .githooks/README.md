@@ -2,6 +2,12 @@
 
 This directory contains Git hooks for maintaining high code quality standards in the claude-code project.
 
+## ⚠️ IMPORTANT: No-Bypass Policy
+
+**READ THIS FIRST**: See [POLICY.md](./POLICY.md) for the strict no-bypass policy.
+
+**NEVER use `--no-verify` flag!** Always fix issues or improve hooks instead.
+
 ## 🎯 Overview
 
 These hooks enforce strict code quality checks at different stages:
@@ -56,10 +62,12 @@ Runs before each commit to catch issues early.
 - 0: All checks passed
 - 1: Critical errors found (blocks commit)
 
-**Bypass (not recommended):**
-```bash
-git commit --no-verify
-```
+**When hooks fail:**
+- ✅ Fix the actual issue
+- ✅ Or improve the hook logic
+- ❌ NEVER use `git commit --no-verify`
+
+See [POLICY.md](./POLICY.md) for details.
 
 ### commit-msg
 
@@ -105,10 +113,9 @@ Final quality gate before pushing to remote.
 - Shows files changed
 - Checks for divergence
 
-**Bypass (not recommended):**
-```bash
-git push --no-verify
-```
+**When hooks fail:**
+- Fix issues before pushing
+- Never bypass with `--no-verify`
 
 ### post-push
 
@@ -236,14 +243,23 @@ which shellcheck markdownlint
 
 ### False positives
 
-**Temporarily bypass a hook:**
-```bash
-git commit --no-verify   # Skip pre-commit and commit-msg
-git push --no-verify     # Skip pre-push
-```
+**⚠️ NEVER bypass hooks!** Instead:
 
-**Permanently disable a check:**
-Edit the hook file and comment out the check.
+1. **Fix the hook logic** to handle the case correctly
+2. **Update the pattern** to be more specific
+3. **Add exclusions** for known safe cases
+4. **Document the fix** in commit message
+
+See [POLICY.md](./POLICY.md) for proper handling procedures.
+
+**Example fix for false positive:**
+```bash
+# Don't do: git commit --no-verify
+# Instead: Fix the hook
+vim .githooks/pre-commit  # Update the problematic pattern
+git add .githooks/pre-commit
+git commit -m "fix(hooks): improve pattern to avoid false positive"
+```
 
 ### Performance issues
 
@@ -256,17 +272,14 @@ If hooks are too slow:
 
 ## 📊 Success Metrics
 
-Track hook effectiveness:
+Track hook effectiveness (not bypass usage!):
 
 ```bash
-# Count blocked commits
-git log --all --grep="--no-verify" --oneline | wc -l
-
-# View hook bypass history
-git log --all --grep="skip.*hook" --oneline
-
-# Check average commit quality
+# Count commits with proper quality checks
 git log --oneline --no-merges | head -20
+
+# Check recent hook improvements
+git log --grep="fix(hooks)" --oneline
 ```
 
 ## 🎓 Best Practices
