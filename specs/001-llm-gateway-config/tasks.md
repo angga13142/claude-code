@@ -104,26 +104,26 @@ All artifacts go in `/specs/001-llm-gateway-config/` - no changes to Claude Code
 
 ### Configuration Templates for User Story 2
 
-- [ ] T032 [P] [US2] Create TrueFoundry gateway config template in templates/enterprise/truefoundry-config.yaml
-- [ ] T033 [P] [US2] Create Zuplo gateway config template in templates/enterprise/zuplo-config.yaml
-- [ ] T034 [P] [US2] Create custom enterprise gateway config template in templates/enterprise/custom-gateway-config.yaml
-- [ ] T035 [US2] Create header forwarding configuration guide in templates/enterprise/header-forwarding.md
-- [ ] T036 [US2] Create authentication token setup template in templates/enterprise/auth-token-setup.md
+- [X] T032 [P] [US2] Create TrueFoundry gateway config template in templates/enterprise/truefoundry-config.yaml
+- [X] T033 [P] [US2] Create Zuplo gateway config template in templates/enterprise/zuplo-config.yaml
+- [X] T034 [P] [US2] Create custom enterprise gateway config template in templates/enterprise/custom-gateway-config.yaml
+- [X] T035 [US2] Create header forwarding configuration guide in templates/enterprise/header-forwarding.md
+- [X] T036 [US2] Create authentication token setup template in templates/enterprise/auth-token-setup.md
 
 ### Scripts for User Story 2
 
-- [ ] T037 [P] [US2] Create gateway compatibility validator in scripts/validate-gateway-compatibility.py
-- [ ] T038 [P] [US2] Create header verification test script in tests/test-header-forwarding.sh
-- [ ] T039 [US2] Create rate limiting verification script in tests/test-rate-limiting.py
-- [ ] T040 [US2] Create authentication troubleshooting helper in scripts/debug-auth.sh
+- [X] T037 [P] [US2] Create gateway compatibility validator in scripts/validate-gateway-compatibility.py
+- [X] T038 [P] [US2] Create header verification test script in tests/test-header-forwarding.sh
+- [X] T039 [US2] Create rate limiting verification script in tests/test-rate-limiting.py
+- [X] T040 [US2] Create authentication troubleshooting helper in scripts/debug-auth.sh
 
 ### Documentation for User Story 2
 
-- [ ] T041 [US2] Create enterprise integration guide in examples/us2-enterprise-integration.md
-- [ ] T042 [US2] Document security best practices for enterprise deployments in examples/us2-security-best-practices.md
-- [ ] T043 [US2] Create gateway compatibility criteria checklist in examples/us2-compatibility-checklist.md
-- [ ] T044 [US2] Document compliance considerations (SOC2, HIPAA) in examples/us2-compliance-guide.md
-- [ ] T045 [US2] Create third-party gateway warning template in templates/enterprise/third-party-warning.md
+- [X] T041 [US2] Create enterprise integration guide in examples/us2-enterprise-integration.md
+- [X] T042 [US2] Document security best practices for enterprise deployments in examples/us2-security-best-practices.md
+- [X] T043 [US2] Create gateway compatibility criteria checklist in examples/us2-compatibility-checklist.md
+- [X] T044 [US2] Document compliance considerations (SOC2, HIPAA) in examples/us2-compliance-guide.md
+- [X] T045 [US2] Create third-party gateway warning template in templates/enterprise/third-party-warning.md
 
 **Checkpoint**: User Story 2 complete - enterprise architects can integrate with existing gateways independently
 

@@ -1,0 +1,280 @@
+# TrueFoundry LLM Gateway Configuration for Claude Code
+# Purpose: Enterprise-grade gateway with centralized authentication, rate limiting, and monitoring
+# Documentation: https://www.truefoundry.com/docs/llm-gateway
+# Usage: Configure Claude Code to connect through TrueFoundry deployment
+
+# ===================================================================
+# QUICK START
+# ===================================================================
+# 1. Deploy TrueFoundry LLM Gateway in your cluster
+# 2. Set environment variables:
+#    export ANTHROPIC_BASE_URL="https://your-truefoundry-gateway.example.com"
+#    export ANTHROPIC_AUTH_TOKEN="your-truefoundry-api-key"
+# 3. Verify connection: claude /status
+# 4. Test: claude "Hello world"
+#
+# ⚠️ THIRD-PARTY NOTICE
+# TrueFoundry is a third-party solution not developed or maintained by Anthropic.
+# - Anthropic does not provide support for TrueFoundry
+# - Configuration may change without notice
+# - For issues, contact TrueFoundry support
+# - Review TrueFoundry security and privacy policies before use
+# ===================================================================
+
+model_list:
+  # === Anthropic Models via TrueFoundry Gateway ===
+  
+  - model_name: claude-3-5-sonnet-20241022
+    litellm_params:
+      model: anthropic/claude-3-5-sonnet-20241022
+      api_base: ${ANTHROPIC_BASE_URL}  # TrueFoundry gateway endpoint
+      api_key: ${ANTHROPIC_AUTH_TOKEN}  # TrueFoundry API key
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 200000
+      max_output_tokens: 8192
+    rpm: 100  # Adjust based on TrueFoundry plan
+    tpm: 400000
+
+  - model_name: claude-3-5-haiku-20241022
+    litellm_params:
+      model: anthropic/claude-3-5-haiku-20241022
+      api_base: ${ANTHROPIC_BASE_URL}
+      api_key: ${ANTHROPIC_AUTH_TOKEN}
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      max_tokens: 200000
+      max_output_tokens: 8192
+    rpm: 200
+    tpm: 800000
+
+  - model_name: claude-3-opus-20240229
+    litellm_params:
+      model: anthropic/claude-3-opus-20240229
+      api_base: ${ANTHROPIC_BASE_URL}
+      api_key: ${ANTHROPIC_AUTH_TOKEN}
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 200000
+      max_output_tokens: 4096
+    rpm: 50
+    tpm: 200000
+
+# ===================================================================
+# GENERAL SETTINGS
+# ===================================================================
+
+general_settings:
+  master_key: ${LITELLM_MASTER_KEY}  # Required for admin API access
+  
+  # Database for caching and analytics (optional but recommended for production)
+  database_url: ${DATABASE_URL}  # PostgreSQL connection string
+  
+  # TrueFoundry-specific settings
+  custom_headers:
+    # TrueFoundry forwards these headers to Anthropic API
+    - anthropic-version: "2023-06-01"
+    - anthropic-beta: "messages-2025-01-01"
+  
+  # Logging and monitoring
+  log_level: INFO
+  
+  # Cost tracking (TrueFoundry provides built-in cost tracking)
+  enable_cost_tracking: true
+  
+  # Success callback for observability
+  success_callback:
+    - truefoundry_logger
+    - prometheus
+  
+  # Failure callback for alerting
+  failure_callback:
+    - truefoundry_logger
+    - slack_webhook
+
+# ===================================================================
+# RATE LIMITING (TrueFoundry handles at gateway level)
+# ===================================================================
+
+# Note: TrueFoundry manages rate limiting centrally
+# The rpm/tpm values above are informational for LiteLLM
+# Actual limits are configured in TrueFoundry console
+
+# ===================================================================
+# SECURITY CONFIGURATION
+# ===================================================================
+
+litellm_settings:
+  # Disable telemetry for enterprise compliance
+  telemetry: false
+  
+  # Request timeout (seconds) - align with TrueFoundry gateway timeout
+  request_timeout: 600
+  
+  # Retry configuration
+  num_retries: 3
+  retry_policy: exponential_backoff_retry
+  
+  # TLS configuration (TrueFoundry enforces TLS 1.2+)
+  ssl_verify: true
+
+# ===================================================================
+# AUTHENTICATION SETUP
+# ===================================================================
+
+# TrueFoundry Authentication Options:
+#
+# Option 1: Bearer Token (Recommended)
+#   - Set ANTHROPIC_AUTH_TOKEN to TrueFoundry API key
+#   - TrueFoundry handles provider authentication
+#
+# Option 2: SSO Integration (Enterprise)
+#   - Configure in TrueFoundry console
+#   - Enable OIDC/SAML authentication
+#   - Users authenticate via corporate IdP
+#
+# Option 3: Service Account
+#   - Create service account in TrueFoundry
+#   - Generate long-lived API key
+#   - Rotate keys every 90 days (best practice)
+
+# ===================================================================
+# HEADER FORWARDING REQUIREMENTS
+# ===================================================================
+
+# TrueFoundry MUST forward these headers to Anthropic API:
+#
+# Required Headers:
+#   - anthropic-version: API version (e.g., "2023-06-01")
+#   - anthropic-beta: Beta features (e.g., "messages-2025-01-01")
+#   - anthropic-client-version: Client SDK version
+#   - Authorization: Bearer token (handled by TrueFoundry)
+#
+# Verify header forwarding in TrueFoundry console:
+#   Settings → Gateway → Header Forwarding → Add patterns:
+#   - anthropic-*
+#   - Authorization
+#
+# Test header forwarding:
+#   curl -H "anthropic-version: 2023-06-01" \
+#        -H "Authorization: Bearer $ANTHROPIC_AUTH_TOKEN" \
+#        https://your-truefoundry-gateway.example.com/v1/messages
+
+# ===================================================================
+# ROUTING STRATEGY
+# ===================================================================
+
+router_settings:
+  routing_strategy: least-busy  # TrueFoundry optimizes routing
+  
+  # Fallback chain (if one model fails, try next)
+  model_group_alias:
+    production:
+      - claude-3-5-sonnet-20241022
+      - claude-3-5-haiku-20241022
+    
+    development:
+      - claude-3-5-haiku-20241022
+  
+  # Load balancing across multiple TrueFoundry instances
+  enable_load_balancing: true
+
+# ===================================================================
+# OBSERVABILITY & MONITORING
+# ===================================================================
+
+# TrueFoundry provides built-in dashboards for:
+# - Request latency and throughput
+# - Token usage and costs
+# - Error rates and status codes
+# - Model availability and health
+
+# Prometheus metrics endpoint (if enabled in TrueFoundry):
+# GET https://your-truefoundry-gateway.example.com/metrics
+
+# Logging configuration:
+# - TrueFoundry captures all requests/responses
+# - Logs available in TrueFoundry console
+# - Export logs to S3/CloudWatch/Splunk via TrueFoundry integrations
+
+# ===================================================================
+# TROUBLESHOOTING
+# ===================================================================
+
+# Common Issues:
+#
+# 1. Connection Refused (502 Bad Gateway)
+#    - Verify TrueFoundry gateway is running
+#    - Check ANTHROPIC_BASE_URL is correct
+#    - Ensure network connectivity to TrueFoundry
+#
+# 2. Authentication Failed (401 Unauthorized)
+#    - Verify ANTHROPIC_AUTH_TOKEN is valid TrueFoundry API key
+#    - Check token hasn't expired
+#    - Confirm token has required permissions in TrueFoundry console
+#
+# 3. Rate Limit Exceeded (429 Too Many Requests)
+#    - Check TrueFoundry plan limits
+#    - Review rate limiting policies in TrueFoundry console
+#    - Consider upgrading plan or increasing quotas
+#
+# 4. Missing Headers (400 Bad Request)
+#    - Verify header forwarding enabled in TrueFoundry
+#    - Check custom_headers configuration above
+#    - Test with curl to isolate issue
+#
+# 5. Model Not Found (404 Not Found)
+#    - Verify model name matches TrueFoundry configuration
+#    - Check model is enabled in TrueFoundry console
+#    - Confirm provider credentials configured in TrueFoundry
+
+# ===================================================================
+# COMPLIANCE & SECURITY
+# ===================================================================
+
+# SOC2 Compliance:
+# - TrueFoundry maintains SOC2 Type II certification
+# - Enable audit logging in TrueFoundry console
+# - Configure retention policies per compliance requirements
+#
+# HIPAA Compliance:
+# - TrueFoundry supports BAA agreements (Enterprise plan)
+# - Enable encryption at rest and in transit
+# - Configure PHI data masking in TrueFoundry
+#
+# GDPR Compliance:
+# - Configure data residency in TrueFoundry (EU regions)
+# - Enable right-to-deletion workflows
+# - Review TrueFoundry DPA (Data Processing Agreement)
+
+# ===================================================================
+# COST OPTIMIZATION
+# ===================================================================
+
+# TrueFoundry Cost Tracking Features:
+# - Real-time cost dashboards
+# - Per-user/team cost allocation
+# - Budget alerts and limits
+# - Cost optimization recommendations
+#
+# Best Practices:
+# 1. Use cheaper models (Haiku) for simple tasks
+# 2. Enable prompt caching where applicable
+# 3. Set up budget alerts per team/project
+# 4. Review cost reports monthly
+# 5. Implement retry limits to avoid runaway costs
+
+# ===================================================================
+# ADDITIONAL RESOURCES
+# ===================================================================
+
+# TrueFoundry Documentation: https://www.truefoundry.com/docs
+# TrueFoundry Support: support@truefoundry.com
+# TrueFoundry Slack: truefoundry-community.slack.com
+# Claude Code Docs: https://docs.anthropic.com/claude-code
+# Anthropic API Reference: https://docs.anthropic.com/api

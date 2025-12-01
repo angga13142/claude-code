@@ -1,0 +1,487 @@
+# Custom Enterprise Gateway Configuration for Claude Code
+# Purpose: Generic template for any enterprise API gateway routing to Anthropic
+# Use Case: Custom-built gateways, Kong, Apigee, AWS API Gateway, Azure APIM, etc.
+# Usage: Adapt this template to your specific gateway implementation
+
+# ===================================================================
+# QUICK START
+# ===================================================================
+# 1. Deploy your enterprise gateway with Anthropic API backend
+# 2. Configure header forwarding (see CRITICAL REQUIREMENTS below)
+# 3. Set environment variables:
+#    export ANTHROPIC_BASE_URL="https://your-gateway.example.com"
+#    export ANTHROPIC_AUTH_TOKEN="your-gateway-api-key"
+# 4. Verify connection: claude /status
+# 5. Test: claude "Hello world"
+#
+# ⚠️ THIRD-PARTY NOTICE
+# This configuration template is for custom/third-party gateways not developed
+# or maintained by Anthropic. Anthropic does not provide support for gateway
+# implementation or configuration. Contact your gateway provider for support.
+# ===================================================================
+
+model_list:
+  # === Anthropic Models via Custom Enterprise Gateway ===
+  
+  - model_name: claude-3-5-sonnet-20241022
+    litellm_params:
+      model: anthropic/claude-3-5-sonnet-20241022
+      api_base: ${ANTHROPIC_BASE_URL}  # Your enterprise gateway URL
+      api_key: ${ANTHROPIC_AUTH_TOKEN}  # Your gateway API key/token
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 200000
+      max_output_tokens: 8192
+    rpm: 100  # Adjust based on your gateway rate limits
+    tpm: 400000
+
+  - model_name: claude-3-5-haiku-20241022
+    litellm_params:
+      model: anthropic/claude-3-5-haiku-20241022
+      api_base: ${ANTHROPIC_BASE_URL}
+      api_key: ${ANTHROPIC_AUTH_TOKEN}
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      max_tokens: 200000
+      max_output_tokens: 8192
+    rpm: 200
+    tpm: 800000
+
+  - model_name: claude-3-opus-20240229
+    litellm_params:
+      model: anthropic/claude-3-opus-20240229
+      api_base: ${ANTHROPIC_BASE_URL}
+      api_key: ${ANTHROPIC_AUTH_TOKEN}
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 200000
+      max_output_tokens: 4096
+    rpm: 50
+    tpm: 200000
+
+# ===================================================================
+# CRITICAL REQUIREMENTS FOR GATEWAY COMPATIBILITY
+# ===================================================================
+
+# Your custom enterprise gateway MUST meet ALL of the following criteria
+# to work correctly with Claude Code:
+#
+# ✓ 1. ENDPOINT SUPPORT
+#      - POST /v1/messages - Primary Messages API endpoint
+#      - GET /health (optional) - Health check endpoint
+#      - GET /status (optional) - Status/version endpoint
+#
+# ✓ 2. HEADER FORWARDING (CRITICAL)
+#      Gateway MUST forward these headers from Claude Code to Anthropic API:
+#      - anthropic-version: API version (e.g., "2023-06-01")
+#      - anthropic-beta: Beta features (e.g., "messages-2025-01-01")
+#      - anthropic-client-version: Client SDK version
+#      - Authorization: Bearer token with provider API key
+#      - Content-Type: application/json
+#      - Accept: application/json
+#
+# ✓ 3. REQUEST/RESPONSE PRESERVATION
+#      - DO NOT modify request body JSON structure
+#      - DO NOT modify response body JSON structure
+#      - Preserve all fields, even if unknown to gateway
+#
+# ✓ 4. HTTP STATUS CODES
+#      Gateway MUST return correct HTTP status codes:
+#      - 200 OK: Successful response
+#      - 401 Unauthorized: Invalid/missing authentication
+#      - 403 Forbidden: Authentication valid but insufficient permissions
+#      - 429 Too Many Requests: Rate limit exceeded
+#      - 500 Internal Server Error: Gateway error
+#      - 502 Bad Gateway: Upstream (Anthropic API) error
+#      - 503 Service Unavailable: Gateway overloaded
+#      - 504 Gateway Timeout: Request timeout
+#
+# ✓ 5. STREAMING SUPPORT (REQUIRED)
+#      - Support Server-Sent Events (SSE) format
+#      - Content-Type: text/event-stream
+#      - Preserve streaming chunks without buffering
+#      - Forward "data: " prefixed JSON events
+#      - Forward "[DONE]" completion marker
+#
+# ✓ 6. AUTHENTICATION
+#      - Accept Bearer token in Authorization header
+#      - Validate token before forwarding to Anthropic
+#      - Forward Anthropic API key in Authorization header to upstream
+#
+# ✓ 7. TIMEOUTS
+#      - Support minimum 60-second timeout for long completions
+#      - Recommended: 300-600 seconds for complex requests
+#      - Configure read timeout separately from connect timeout
+
+# ===================================================================
+# GENERAL SETTINGS
+# ===================================================================
+
+general_settings:
+  master_key: ${LITELLM_MASTER_KEY}
+  
+  # Custom headers for your gateway
+  custom_headers:
+    # Required Anthropic headers
+    - anthropic-version: "2023-06-01"
+    - anthropic-beta: "messages-2025-01-01"
+    
+    # Optional: Your gateway tracking headers
+    # - x-gateway-request-id: "${REQUEST_ID}"
+    # - x-gateway-client-id: "${CLIENT_ID}"
+  
+  # Logging
+  log_level: INFO
+  
+  # Cost tracking
+  enable_cost_tracking: true
+  
+  # Callbacks
+  success_callback:
+    - custom_logger  # Replace with your logging system
+    - prometheus
+  
+  failure_callback:
+    - custom_logger
+    - alerting_system  # Replace with your alerting system
+
+# ===================================================================
+# SECURITY CONFIGURATION
+# ===================================================================
+
+litellm_settings:
+  # Disable telemetry for enterprise compliance
+  telemetry: false
+  
+  # Request timeout - align with your gateway timeout
+  request_timeout: 600
+  
+  # Retry configuration
+  num_retries: 3
+  retry_policy: exponential_backoff_retry
+  
+  # TLS configuration (enforce TLS 1.2+ minimum)
+  ssl_verify: true
+
+# ===================================================================
+# AUTHENTICATION PATTERNS
+# ===================================================================
+
+# Pattern 1: API Key Authentication (Simplest)
+#
+# Claude Code → Gateway (API key auth) → Anthropic API (provider key)
+#
+# Configuration:
+#   export ANTHROPIC_BASE_URL="https://gateway.example.com"
+#   export ANTHROPIC_AUTH_TOKEN="your-gateway-api-key"
+#
+# Gateway Implementation:
+#   - Validate ANTHROPIC_AUTH_TOKEN against gateway's user database
+#   - If valid, forward request to Anthropic with provider API key
+#   - Return response to Claude Code
+
+# Pattern 2: OAuth 2.0 + Client Credentials (Enterprise)
+#
+# Claude Code → Gateway (OAuth token) → Anthropic API (provider key)
+#
+# Configuration:
+#   export ANTHROPIC_BASE_URL="https://gateway.example.com"
+#   export ANTHROPIC_AUTH_TOKEN="oauth-access-token"
+#
+# Gateway Implementation:
+#   - Validate OAuth access token with authorization server
+#   - Check scopes/claims for Anthropic API access
+#   - Forward request to Anthropic with provider API key
+#   - Track usage per OAuth client_id
+
+# Pattern 3: Mutual TLS (mTLS) (High Security)
+#
+# Claude Code → Gateway (client cert) → Anthropic API (provider key)
+#
+# Configuration:
+#   export ANTHROPIC_BASE_URL="https://gateway.example.com"
+#   export ANTHROPIC_AUTH_TOKEN="placeholder"  # Not used with mTLS
+#   export SSL_CERT_FILE="/path/to/client-cert.pem"
+#   export SSL_KEY_FILE="/path/to/client-key.pem"
+#
+# Gateway Implementation:
+#   - Validate client certificate against CA
+#   - Extract identity from certificate subject
+#   - Forward request to Anthropic with provider API key
+
+# Pattern 4: SAML/OIDC SSO (Enterprise)
+#
+# User → SSO Login → Gateway (session token) → Anthropic API
+#
+# Configuration:
+#   export ANTHROPIC_BASE_URL="https://gateway.example.com"
+#   export ANTHROPIC_AUTH_TOKEN="sso-session-token"
+#
+# Gateway Implementation:
+#   - User authenticates via corporate IdP
+#   - Gateway issues session token/JWT
+#   - Claude Code uses session token for requests
+#   - Gateway validates session and forwards to Anthropic
+
+# ===================================================================
+# GATEWAY IMPLEMENTATION EXAMPLES
+# ===================================================================
+
+# Example 1: Kong Gateway (API Gateway)
+#
+# Kong Configuration (declarative YAML):
+#
+# services:
+#   - name: anthropic-api
+#     url: https://api.anthropic.com
+#     routes:
+#       - name: messages
+#         paths:
+#           - /v1/messages
+#         methods:
+#           - POST
+#     plugins:
+#       - name: key-auth
+#         config:
+#           key_names:
+#             - apikey
+#       - name: rate-limiting
+#         config:
+#           minute: 100
+#           policy: local
+#       - name: request-transformer
+#         config:
+#           add:
+#             headers:
+#               - Authorization: Bearer sk-ant-api03-xxxxx  # Your provider key
+#       - name: response-transformer
+#         config:
+#           add:
+#             headers:
+#               - X-Gateway: Kong
+
+# Example 2: AWS API Gateway (Serverless)
+#
+# API Gateway Configuration:
+#   - Create REST API
+#   - Create /v1/messages POST method
+#   - Integration type: HTTP Proxy
+#   - Endpoint URL: https://api.anthropic.com/v1/messages
+#   - Method Request: API Key Required
+#   - Integration Request: Add Authorization header
+#   - Deploy to production stage
+#
+# Lambda Authorizer (optional):
+#   - Validates ANTHROPIC_AUTH_TOKEN
+#   - Returns IAM policy allowing API invocation
+
+# Example 3: Nginx Reverse Proxy (Simple)
+#
+# nginx.conf:
+#
+# server {
+#     listen 443 ssl;
+#     server_name gateway.example.com;
+#     
+#     ssl_certificate /path/to/cert.pem;
+#     ssl_certificate_key /path/to/key.pem;
+#     
+#     location /v1/messages {
+#         if ($http_authorization != "Bearer your-gateway-api-key") {
+#             return 401;
+#         }
+#         
+#         proxy_pass https://api.anthropic.com;
+#         proxy_set_header Authorization "Bearer sk-ant-api03-xxxxx";
+#         proxy_set_header anthropic-version $http_anthropic_version;
+#         proxy_set_header anthropic-beta $http_anthropic_beta;
+#         proxy_set_header Content-Type application/json;
+#         
+#         proxy_read_timeout 600s;
+#         proxy_buffering off;  # Critical for streaming
+#     }
+# }
+
+# Example 4: Azure API Management (APIM)
+#
+# APIM Policy (inbound):
+#
+# <policies>
+#   <inbound>
+#     <base />
+#     <check-header name="Authorization" failed-check-httpcode="401" />
+#     <set-backend-service base-url="https://api.anthropic.com" />
+#     <set-header name="Authorization" exists-action="override">
+#       <value>Bearer sk-ant-api03-xxxxx</value>
+#     </set-header>
+#     <rate-limit calls="100" renewal-period="60" />
+#   </inbound>
+#   <backend>
+#     <base />
+#   </backend>
+#   <outbound>
+#     <base />
+#   </outbound>
+#   <on-error>
+#     <base />
+#   </on-error>
+# </policies>
+
+# ===================================================================
+# ROUTING STRATEGY
+# ===================================================================
+
+router_settings:
+  routing_strategy: simple-shuffle
+  
+  # Fallback chain (if gateway fails)
+  model_group_alias:
+    production:
+      - claude-3-5-sonnet-20241022
+      - claude-3-5-haiku-20241022
+    
+    development:
+      - claude-3-5-haiku-20241022
+
+# ===================================================================
+# OBSERVABILITY & MONITORING
+# ===================================================================
+
+# Recommended Metrics to Track in Your Gateway:
+#
+# Request Metrics:
+#   - gateway_requests_total{method, status_code, model}
+#   - gateway_request_duration_seconds{method, model}
+#   - gateway_request_size_bytes{model}
+#   - gateway_response_size_bytes{model}
+#
+# Error Metrics:
+#   - gateway_errors_total{type, status_code}
+#   - gateway_auth_failures_total
+#   - gateway_rate_limit_exceeded_total
+#
+# Upstream Metrics:
+#   - gateway_upstream_requests_total{provider}
+#   - gateway_upstream_latency_seconds{provider}
+#   - gateway_upstream_errors_total{provider, status_code}
+#
+# Cost Metrics:
+#   - gateway_token_usage_total{model, user_id}
+#   - gateway_estimated_cost_usd{model, user_id}
+
+# Logging Best Practices:
+#   - Log all requests with request_id for traceability
+#   - Log authentication attempts (success/failure)
+#   - Log rate limit events
+#   - Redact sensitive data (API keys, auth tokens)
+#   - Retain logs for minimum 30 days (compliance)
+
+# ===================================================================
+# TROUBLESHOOTING
+# ===================================================================
+
+# Common Issues:
+#
+# 1. Gateway Returns 400 Bad Request
+#    Cause: Missing or invalid required headers
+#    Solution:
+#      - Verify anthropic-version header is forwarded
+#      - Check anthropic-beta header if using beta features
+#      - Test with curl to isolate issue:
+#        curl -v -X POST $ANTHROPIC_BASE_URL/v1/messages \
+#          -H "Authorization: Bearer $ANTHROPIC_AUTH_TOKEN" \
+#          -H "anthropic-version: 2023-06-01" \
+#          -H "Content-Type: application/json" \
+#          -d '{"model":"claude-3-5-sonnet-20241022","max_tokens":100,"messages":[{"role":"user","content":"Hi"}]}'
+#
+# 2. Gateway Returns 401 Unauthorized
+#    Cause: Invalid gateway API key or authentication failure
+#    Solution:
+#      - Verify ANTHROPIC_AUTH_TOKEN is correct
+#      - Check token hasn't expired
+#      - Confirm user has permissions in gateway system
+#      - Review gateway authentication logs
+#
+# 3. Gateway Returns 502 Bad Gateway
+#    Cause: Gateway cannot reach Anthropic API
+#    Solution:
+#      - Verify Anthropic API is reachable from gateway
+#      - Check firewall rules allow outbound HTTPS (443)
+#      - Test connectivity: curl https://api.anthropic.com/v1/health
+#      - Review gateway error logs for upstream failures
+#
+# 4. Gateway Returns 504 Gateway Timeout
+#    Cause: Request timeout too short for long completions
+#    Solution:
+#      - Increase gateway timeout to 600 seconds minimum
+#      - Configure separate read timeout vs connect timeout
+#      - Check if Anthropic API is experiencing latency
+#
+# 5. Streaming Doesn't Work
+#    Cause: Gateway buffers responses instead of streaming
+#    Solution:
+#      - Disable response buffering in gateway config
+#      - Configure proxy to support text/event-stream
+#      - Test streaming: curl with --no-buffer flag
+#      - Verify SSE events are forwarded immediately
+
+# Debug Commands:
+# ANTHROPIC_LOG=debug claude /status
+# ANTHROPIC_LOG=debug claude "test request"
+
+# ===================================================================
+# COMPLIANCE & SECURITY CHECKLIST
+# ===================================================================
+
+# Enterprise Security Requirements:
+# [ ] TLS 1.2+ encryption enforced
+# [ ] Certificate validation enabled (no self-signed certs in production)
+# [ ] API keys rotated every 90 days maximum
+# [ ] Audit logging enabled for all requests
+# [ ] Rate limiting configured per user/team
+# [ ] IP allowlisting enabled (if applicable)
+# [ ] Sensitive data redaction in logs
+# [ ] Secrets stored in secret manager (not config files)
+# [ ] Regular security scans (OWASP ZAP, Burp Suite)
+# [ ] Incident response plan documented
+
+# Compliance Requirements:
+# [ ] SOC2: Audit logging, encryption, access controls
+# [ ] HIPAA: BAA with Anthropic, PHI data masking, encryption at rest
+# [ ] GDPR: Data residency, right-to-deletion, DPA with Anthropic
+# [ ] PCI DSS: No credit card data in prompts/responses
+# [ ] FedRAMP: Use Anthropic FedRAMP offering (if applicable)
+
+# ===================================================================
+# TESTING & VALIDATION
+# ===================================================================
+
+# Validation Checklist:
+# [ ] Gateway returns 200 OK for valid requests
+# [ ] Gateway forwards anthropic-version header
+# [ ] Gateway forwards anthropic-beta header
+# [ ] Gateway supports streaming responses (SSE)
+# [ ] Gateway enforces rate limiting
+# [ ] Gateway validates authentication tokens
+# [ ] Gateway logs requests for audit trail
+# [ ] Gateway handles 429 errors gracefully
+# [ ] Gateway times out after 600 seconds
+# [ ] Gateway returns correct error codes
+
+# Test Script:
+# See /specs/001-llm-gateway-config/tests/test-gateway-compatibility.sh
+
+# ===================================================================
+# ADDITIONAL RESOURCES
+# ===================================================================
+
+# Claude Code Documentation: https://docs.anthropic.com/claude-code
+# Anthropic API Reference: https://docs.anthropic.com/api
+# Gateway Compatibility Criteria: See examples/us2-compatibility-checklist.md
+# Header Forwarding Guide: See templates/enterprise/header-forwarding.md
+# Security Best Practices: See examples/us2-security-best-practices.md
