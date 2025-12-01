@@ -1,0 +1,250 @@
+# Claude Code Configuration: Corporate Proxy Only (No Gateway)
+# Deployment Pattern 2: Claude Code → HTTP/HTTPS Proxy → Provider API
+#
+# Use Case: Enterprise environments with corporate proxy requirements but NO gateway needed
+# - Network policies require all outbound traffic through proxy
+# - Direct provider access (Anthropic, Bedrock, Vertex AI)
+# - No need for centralized cost tracking or multi-provider routing
+#
+# Prerequisites:
+# - Corporate proxy URL and credentials (if authenticated)
+# - Provider API keys/credentials
+# - Network firewall allows proxy → provider API traffic
+
+# This is NOT a LiteLLM configuration file
+# This file documents environment variables for proxy-only setup
+
+# Environment Variables for Claude Code:
+# =======================================
+
+# Corporate Proxy Configuration:
+# -------------------------------
+# HTTPS_PROXY: URL of corporate HTTPS proxy
+#   Format: http://proxy.company.com:8080
+#   With auth: http://username:password@proxy.company.com:8080
+#
+# HTTP_PROXY: URL of corporate HTTP proxy (optional, usually same as HTTPS_PROXY)
+#   Format: http://proxy.company.com:8080
+#
+# NO_PROXY: Comma-separated list of hosts to bypass proxy (optional)
+#   Example: localhost,127.0.0.1,*.internal,192.168.0.0/16
+#
+# Note: Claude Code respects standard proxy environment variables
+
+# Provider Authentication (choose ONE provider):
+# ----------------------------------------------
+
+# Option 1: Anthropic Direct API
+#   ANTHROPIC_API_KEY=sk-ant-api03-...
+#   (No ANTHROPIC_BASE_URL needed - Claude Code uses api.anthropic.com by default)
+
+# Option 2: AWS Bedrock
+#   AWS_REGION=us-east-1
+#   AWS_ACCESS_KEY_ID=AKIA...
+#   AWS_SECRET_ACCESS_KEY=...
+#   Or: AWS_PROFILE=bedrock
+#   (Claude Code automatically detects Bedrock configuration)
+
+# Option 3: Google Vertex AI
+#   VERTEX_PROJECT_ID=my-gcp-project
+#   VERTEX_LOCATION=us-central1
+#   GOOGLE_APPLICATION_CREDENTIALS=/path/to/sa-key.json
+#   Or: gcloud auth application-default login
+#   (Claude Code automatically detects Vertex AI configuration)
+
+# Example Configuration:
+# ======================
+
+# ~/.bashrc or ~/.zshrc:
+# ----------------------
+
+# Corporate Proxy (Required)
+export HTTPS_PROXY="http://proxy.company.com:8080"
+export HTTP_PROXY="http://proxy.company.com:8080"
+export NO_PROXY="localhost,127.0.0.1,*.internal"
+
+# Provider Authentication (Anthropic Direct)
+export ANTHROPIC_API_KEY="sk-ant-api03-your-key-here"
+
+# OR Provider Authentication (AWS Bedrock)
+# export AWS_REGION="us-east-1"
+# export AWS_PROFILE="bedrock"
+
+# OR Provider Authentication (Google Vertex AI)
+# export VERTEX_PROJECT_ID="my-gcp-project"
+# export VERTEX_LOCATION="us-central1"
+# export GOOGLE_APPLICATION_CREDENTIALS="/path/to/sa-key.json"
+
+# Verification Steps:
+# ===================
+
+# 1. Test proxy connectivity to Anthropic API:
+# curl -x $HTTPS_PROXY https://api.anthropic.com/v1/messages \
+#   -H "x-api-key: $ANTHROPIC_API_KEY" \
+#   -H "anthropic-version: 2023-06-01" \
+#   -H "content-type: application/json" \
+#   -d '{"model":"claude-3-5-sonnet-20241022","max_tokens":10,"messages":[{"role":"user","content":"Hi"}]}'
+
+# 2. Test proxy connectivity to AWS Bedrock:
+# aws bedrock-runtime invoke-model \
+#   --model-id anthropic.claude-3-5-sonnet-20241022-v2:0 \
+#   --body '{"anthropic_version":"bedrock-2023-05-31","max_tokens":10,"messages":[{"role":"user","content":"Hi"}]}' \
+#   output.json
+
+# 3. Test proxy connectivity to Vertex AI:
+# curl -x $HTTPS_PROXY -X POST \
+#   -H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
+#   -H "Content-Type: application/json" \
+#   "https://us-central1-aiplatform.googleapis.com/v1/projects/$VERTEX_PROJECT_ID/locations/us-central1/publishers/anthropic/models/claude-3-5-sonnet@20241022:predict" \
+#   -d '{"anthropic_version":"vertex-2023-10-16","messages":[{"role":"user","content":"Hi"}],"max_tokens":10}'
+
+# 4. Test with Claude Code:
+# claude /status
+
+# Authenticated Proxy Configuration:
+# ===================================
+
+# Method 1: Inline Credentials (Simplest)
+# ----------------------------------------
+# export HTTPS_PROXY="http://username:password@proxy.company.com:8080"
+#
+# Security Warning: Credentials visible in process list and shell history
+# Only use for development/testing environments
+
+# Method 2: .netrc File (Recommended)
+# ------------------------------------
+# Create ~/.netrc with:
+#
+# machine proxy.company.com
+# login username
+# password your-password
+#
+# Set permissions:
+# chmod 600 ~/.netrc
+#
+# Then use proxy without credentials in URL:
+# export HTTPS_PROXY="http://proxy.company.com:8080"
+#
+# Note: curl and some HTTP libraries respect .netrc, but not all tools do
+
+# Method 3: Environment Variables (Production)
+# ---------------------------------------------
+# Store credentials in secret manager, retrieve at runtime:
+#
+# export PROXY_USERNAME=$(aws secretsmanager get-secret-value ...)
+# export PROXY_PASSWORD=$(aws secretsmanager get-secret-value ...)
+# export HTTPS_PROXY="http://${PROXY_USERNAME}:${PROXY_PASSWORD}@proxy.company.com:8080"
+
+# Proxy Bypass Configuration:
+# ============================
+
+# NO_PROXY environment variable determines which hosts bypass proxy:
+#
+# export NO_PROXY="localhost,127.0.0.1,*.internal,192.168.0.0/16"
+#
+# Common bypass patterns:
+# - localhost, 127.0.0.1: Local connections
+# - *.internal, *.local: Internal domains
+# - 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16: Private IP ranges
+# - .company.com: Company internal services
+
+# SSL/TLS Certificate Handling:
+# ==============================
+
+# If corporate proxy intercepts HTTPS (SSL inspection):
+#
+# 1. Obtain proxy CA certificate from IT department
+# 2. Add to system trust store:
+#
+# macOS:
+#   sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain proxy-ca.crt
+#
+# Linux (Debian/Ubuntu):
+#   sudo cp proxy-ca.crt /usr/local/share/ca-certificates/
+#   sudo update-ca-certificates
+#
+# Linux (RHEL/CentOS):
+#   sudo cp proxy-ca.crt /etc/pki/ca-trust/source/anchors/
+#   sudo update-ca-trust
+#
+# 3. Verify: curl -v https://api.anthropic.com should NOT show certificate errors
+
+# Troubleshooting:
+# ================
+
+# Issue: 407 Proxy Authentication Required
+# Solution: Add credentials to HTTPS_PROXY URL or configure .netrc
+
+# Issue: Connection timeout / Connection refused
+# Solution: 
+#   - Verify proxy URL and port are correct
+#   - Check firewall allows traffic to proxy
+#   - Test with curl: curl -x $HTTPS_PROXY https://google.com
+
+# Issue: SSL certificate verification failed
+# Solution:
+#   - Proxy is intercepting HTTPS (SSL inspection)
+#   - Install proxy CA certificate (see SSL/TLS section above)
+#   - Or temporarily bypass verification (NOT RECOMMENDED):
+#     export CURL_CA_BUNDLE=""
+#     export REQUESTS_CA_BUNDLE=""
+
+# Issue: 403 Forbidden / 502 Bad Gateway
+# Solution:
+#   - Proxy may block AI provider domains
+#   - Contact IT to whitelist: api.anthropic.com, bedrock*.amazonaws.com, aiplatform.googleapis.com
+#   - Check proxy logs for policy violations
+
+# Issue: Provider API works with curl but not Claude Code
+# Solution:
+#   - Verify HTTPS_PROXY is exported in shell where Claude Code runs
+#   - Check NO_PROXY doesn't accidentally include provider domain
+#   - Enable debug logging: export ANTHROPIC_LOG=debug
+#   - Check Claude Code can access proxy: claude /status
+
+# Issue: Slow performance through proxy
+# Solution:
+#   - Proxy may have high latency or bandwidth limits
+#   - Contact IT about dedicated proxy pool for AI traffic
+#   - Consider caching at gateway layer (add LiteLLM gateway)
+
+# Security Best Practices:
+# =========================
+
+# 1. Never commit proxy credentials to version control
+# 2. Use .netrc or secret managers for credentials in production
+# 3. Rotate proxy credentials quarterly
+# 4. Monitor proxy logs for unauthorized access
+# 5. Use separate proxy credentials for different environments
+# 6. Ensure proxy doesn't log sensitive data (API keys, request/response bodies)
+# 7. Verify proxy vendor's security certifications (SOC 2, ISO 27001)
+# 8. Test disaster recovery (what happens if proxy goes down?)
+# 9. Document proxy bypass procedures for emergencies
+# 10. Regular security audits of proxy configuration
+
+# Compliance Considerations:
+# ==========================
+
+# GDPR: Ensure proxy doesn't retain logs longer than necessary
+# HIPAA: Proxy must have Business Associate Agreement (BAA) if processing PHI
+# SOC 2: Proxy must have audit logs, access controls, encryption in transit
+# PCI DSS: Additional restrictions if processing payment data through proxy
+
+# Next Steps:
+# ===========
+
+# 1. Get proxy URL and credentials from IT department
+# 2. Configure environment variables in shell config (~/.bashrc, ~/.zshrc)
+# 3. Test proxy connectivity with curl
+# 4. Configure provider credentials (Anthropic/Bedrock/Vertex AI)
+# 5. Test with Claude Code: claude /status
+# 6. If issues persist, see examples/us4-proxy-troubleshooting.md
+
+# Additional Resources:
+# =====================
+
+# - examples/us4-corporate-proxy-setup.md - Step-by-step setup guide
+# - examples/us4-https-proxy-config.md - Detailed HTTPS_PROXY configuration
+# - examples/us4-proxy-troubleshooting.md - Common issues and solutions
+# - examples/us4-firewall-considerations.md - Network security best practices
+# - templates/proxy/proxy-auth.md - Authentication methods in detail

@@ -33,7 +33,7 @@ model_list:
 
   - model_name: llama3-405b
     litellm_params:
-      model: vertex_ai/meta/llama3-405b-instruct-maas
+      model: vertex_ai/meta/llama-3.1-405b-instruct-maas
       vertex_project: protean-tooling-476420-i8
       vertex_location: us-central1
     rpm: 15
@@ -41,9 +41,9 @@ model_list:
 
   - model_name: codestral
     litellm_params:
-      model: vertex_ai/codestral@latest
+      model: vertex_ai/codestral-2
       vertex_project: protean-tooling-476420-i8
-      vertex_location: us-central1
+      vertex_location: europe-west4
     rpm: 30
     tpm: 600000
 
@@ -53,7 +53,7 @@ model_list:
     litellm_params:
       model: vertex_ai/qwen/qwen3-coder-480b-a35b-instruct-maas
       vertex_project: protean-tooling-476420-i8
-      vertex_location: us-central1
+      vertex_location: us-south1
     rpm: 10
     tpm: 500000
 
@@ -61,7 +61,7 @@ model_list:
     litellm_params:
       model: vertex_ai/qwen/qwen3-235b-a22b-instruct-2507-maas
       vertex_project: protean-tooling-476420-i8
-      vertex_location: us-central1
+      vertex_location: us-south1
     rpm: 15
     tpm: 600000
 
@@ -83,7 +83,7 @@ litellm_settings:
   
   # Global timeout and retries
   num_retries: 3
-  timeout: 30
+  timeout: 600  # 10 minutes (meets 60s minimum requirement)
   
   # Request logging (optional - requires database)
   # success_callback: ["langfuse"]

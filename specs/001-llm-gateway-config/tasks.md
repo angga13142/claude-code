@@ -170,25 +170,25 @@ All artifacts go in `/specs/001-llm-gateway-config/` - no changes to Claude Code
 
 ### Configuration Templates for User Story 4
 
-- [ ] T060 [P] [US4] Create proxy + gateway config template in templates/proxy/proxy-gateway-config.yaml
-- [ ] T061 [P] [US4] Create proxy-only config template in templates/proxy/proxy-only-config.yaml
-- [ ] T062 [US4] Create proxy authentication guide in templates/proxy/proxy-auth.md
-- [ ] T063 [US4] Create proxy troubleshooting flowchart in templates/proxy/proxy-troubleshooting-flowchart.md
+- [x] T060 [P] [US4] Create proxy + gateway config template in templates/proxy/proxy-gateway-config.yaml
+- [x] T061 [P] [US4] Create proxy-only config template in templates/proxy/proxy-only-config.yaml
+- [x] T062 [US4] Create proxy authentication guide in templates/proxy/proxy-auth.md
+- [x] T063 [US4] Create proxy troubleshooting flowchart in templates/proxy/proxy-troubleshooting-flowchart.md
 
 ### Scripts for User Story 4
 
-- [ ] T064 [P] [US4] Create proxy connectivity checker in scripts/check-proxy-connectivity.sh
-- [ ] T065 [P] [US4] Create proxy authentication validator in scripts/validate-proxy-auth.py
-- [ ] T066 [US4] Create proxy + gateway integration test in tests/test-proxy-gateway.py
-- [ ] T067 [US4] Create proxy bypass verification script in tests/test-proxy-bypass.sh
+- [x] T064 [P] [US4] Create proxy connectivity checker in scripts/check-proxy-connectivity.sh
+- [x] T065 [P] [US4] Create proxy authentication validator in scripts/validate-proxy-auth.py
+- [x] T066 [US4] Create proxy + gateway integration test in tests/test-proxy-gateway.py
+- [x] T067 [US4] Create proxy bypass verification script in tests/test-proxy-bypass.sh
 
 ### Documentation for User Story 4
 
-- [ ] T068 [US4] Create corporate proxy setup guide in examples/us4-corporate-proxy-setup.md
-- [ ] T069 [US4] Document HTTPS_PROXY configuration in examples/us4-https-proxy-config.md
-- [ ] T070 [US4] Create proxy + gateway architecture diagram in examples/us4-proxy-gateway-architecture.md
-- [ ] T071 [US4] Document common proxy issues and solutions in examples/us4-proxy-troubleshooting.md
-- [ ] T072 [US4] Create proxy firewall bypass considerations in examples/us4-firewall-considerations.md
+- [x] T068 [US4] Create corporate proxy setup guide in examples/us4-corporate-proxy-setup.md
+- [x] T069 [US4] Document HTTPS_PROXY configuration in examples/us4-https-proxy-config.md
+- [x] T070 [US4] Create proxy + gateway architecture diagram in examples/us4-proxy-gateway-architecture.md
+- [x] T071 [US4] Document common proxy issues and solutions in examples/us4-proxy-troubleshooting.md
+- [x] T072 [US4] Create proxy firewall bypass considerations in examples/us4-firewall-considerations.md
 
 **Checkpoint**: All user stories complete - full gateway configuration coverage achieved
 
