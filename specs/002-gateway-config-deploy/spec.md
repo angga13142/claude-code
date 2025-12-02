@@ -37,7 +37,7 @@ User wants to deploy only specific models they plan to use, reducing configurati
 
 **Acceptance Scenarios**:
 
-1. **Given** user wants to deploy only Gemini models, **When** user runs deployment with `--models gemini-2.5-flash,gemini-2.5-pro`, **Then** only specified models are included in deployed litellm_config.yaml
+1. **Given** user wants to deploy only Gemini models, **When** user runs deployment with `--models gemini-2.5-flash,gemini-2.5-pro`, **Then** only specified models are included in deployed litellm.yaml
 
 2. **Given** user has selected custom models, **When** deployment validates configuration, **Then** command warns about missing models but proceeds with valid selections
 
@@ -144,14 +144,14 @@ User behind corporate proxy wants to deploy gateway config that includes proxy s
 - **FR-005**: System MUST create `~/.claude/gateway/.env` file with required environment variables (LITELLM_MASTER_KEY, GOOGLE_APPLICATION_CREDENTIALS, etc.)
 - **FR-006**: System MUST update `~/.claude/settings.json` with gateway endpoint URL (default: http://localhost:4000)
 - **FR-007**: System MUST generate startup script `~/.claude/gateway/start-gateway.sh` with correct paths and environment loading
-- **FR-008**: System MUST create backup of existing configuration before overwriting (format: `gateway-backup-YYYYMMDD-HHMMSS.tar.gz`)
+- **FR-008**: System MUST create backup of existing configuration before overwriting in `~/.claude/gateway/backups/` directory (format: `gateway-backup-YYYYMMDD-HHMMSS.tar.gz`)
 
 #### Model Selection (P2)
 
 - **FR-009**: System MUST support `--models` flag to deploy only specified models (comma-separated list)
 - **FR-010**: System MUST validate model names against available model list from templates/models/ directory
 - **FR-011**: System MUST show available model list with descriptions when invalid model name is provided
-- **FR-012**: System MUST merge selected model configs into single litellm_config.yaml file
+- **FR-012**: System MUST merge selected model configs into single litellm.yaml file
 
 #### Enterprise Gateway Integration (P2)
 

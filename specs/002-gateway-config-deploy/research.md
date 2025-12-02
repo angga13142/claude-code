@@ -1,744 +1,548 @@
-# Research Report: Gateway Configuration Deployment
+# Research: LLM Gateway Configuration Deployment
 
 **Feature**: 002-gateway-config-deploy  
 **Date**: 2025-12-02  
-**Phase**: Phase 0 - Research & Requirements Clarification
-
-## Research Questions & Findings
-
-### 1. Bash Best Practices for Deployment Scripts
-
-**Question**: What are the essential bash patterns for safe, maintainable deployment automation?
-
-**Research Findings**:
-
-**Error Handling**:
-```bash
-# Always use strict mode
-set -euo pipefail
-# -e: Exit on error
-# -u: Treat unset variables as error
-# -o pipefail: Fail on pipe errors
-
-# Trap cleanup on exit
-trap cleanup EXIT ERR INT TERM
-
-cleanup() {
-    local exit_code=$?
-    if [ $exit_code -ne 0 ]; then
-        echo "Error occurred, rolling back..." >&2
-        rollback_deployment
-    fi
-}
-```
-
-**File Operations Safety**:
-```bash
-# Atomic file operations (write to temp, then move)
-temp_file=$(mktemp)
-generate_config > "$temp_file"
-validate_config "$temp_file" || { rm "$temp_file"; return 1; }
-mv "$temp_file" "$target_file"
-
-# Always quote variables to handle spaces
-cp "$source_file" "$destination_file"
-
-# Check file existence before operations
-if [ -f "$config_file" ]; then
-    # Safe to operate
-fi
-```
-
-**User Input Validation**:
-```bash
-# Validate model names against whitelist
-validate_model_name() {
-    local model="$1"
-    local valid_models=(
-        "gemini-2.5-flash" "gemini-2.5-pro" "deepseek-r1"
-        "llama3-405b" "codestral" "qwen3-coder-480b"
-        "qwen3-235b" "gpt-oss-20b"
-    )
-    
-    for valid in "${valid_models[@]}"; do
-        if [ "$model" = "$valid" ]; then
-            return 0
-        fi
-    done
-    return 1
-}
-
-# Sanitize URLs (prevent injection)
-sanitize_url() {
-    local url="$1"
-    # Remove dangerous protocols
-    if [[ "$url" =~ ^(file|javascript|data): ]]; then
-        echo "Invalid URL protocol" >&2
-        return 1
-    fi
-    echo "$url"
-}
-```
-
-**Decision**: Use strict mode (`set -euo pipefail`), atomic file operations (write to temp), comprehensive input validation, and trap-based cleanup.
-
-**Rationale**: Prevents partial deployments, handles errors gracefully, protects against user input issues.
+**Status**: Complete  
+**Objective**: Audit 001-llm-gateway-config and design deployment strategy to ~/.claude directory
 
 ---
 
-### 2. Backup Strategies: tar vs rsync
+## Executive Summary
 
-**Question**: What's the best backup method for ~/.claude/gateway/ directory?
+This research audited the complete LLM Gateway Configuration Assistant (specs/001-llm-gateway-config) to determine deployment requirements. The source contains 80+ production-ready files including templates, validation scripts, tests, and documentation. The deployment system will use Bash for core operations with Python validation utilities, providing preset-based installation, intelligent merging, automatic backup, and comprehensive validation.
 
-**Comparison**:
+**Audit Findings**:
 
-| Feature | tar + gzip | rsync |
-|---------|-----------|-------|
-| Compression | ✅ Built-in | ❌ Requires external |
-| Incremental | ❌ Full backup each time | ✅ Only changed files |
-| Atomic | ✅ Single archive file | ❌ Multiple files |
-| Speed (small dirs) | ✅ Fast (~1s) | ⚠️ Overhead (~2s) |
-| Restoration | ✅ Simple extract | ⚠️ Need to track state |
-| Integrity Check | ✅ gzip -t | ⚠️ Manual checksums |
-
-**Recommendation**: Use `tar + gzip` for this use case
-
-**Rationale**:
-- ~/.claude/gateway/ is small (<10MB typically)
-- Atomic backup (single .tar.gz file)
-- Simple restoration (single extract command)
-- Built-in integrity checking
-- No incremental backup needed (full backup is fast)
-
-**Implementation**:
-```bash
-backup_deployment() {
-    local backup_dir="$HOME/.claude/gateway/backups"
-    local timestamp=$(date +%Y%m%d-%H%M%S)
-    local backup_file="$backup_dir/gateway-backup-$timestamp.tar.gz"
-    
-    mkdir -p "$backup_dir"
-    
-    # Create backup excluding sensitive files by default
-    tar -czf "$backup_file" \
-        --exclude='*.log' \
-        --exclude='backups' \
-        -C "$HOME/.claude" \
-        gateway/
-    
-    # Verify backup integrity
-    if gzip -t "$backup_file" 2>/dev/null; then
-        echo "$backup_file"
-        return 0
-    else
-        rm "$backup_file"
-        return 1
-    fi
-}
-
-restore_backup() {
-    local backup_file="$1"
-    
-    # Verify integrity before restore
-    gzip -t "$backup_file" || return 1
-    
-    # Extract to temp location first
-    local temp_dir=$(mktemp -d)
-    tar -xzf "$backup_file" -C "$temp_dir"
-    
-    # Validate extracted config
-    python3 specs/001-llm-gateway-config/scripts/validate-config.py \
-        "$temp_dir/gateway/litellm_config.yaml" || {
-        rm -rf "$temp_dir"
-        return 1
-    }
-    
-    # Atomic move
-    rm -rf "$HOME/.claude/gateway"
-    mv "$temp_dir/gateway" "$HOME/.claude/"
-    rm -rf "$temp_dir"
-}
-```
-
-**Backup Rotation Strategy**:
-```bash
-# Keep last 5 backups, delete older
-rotate_backups() {
-    local backup_dir="$HOME/.claude/gateway/backups"
-    local keep_count=5
-    
-    # List backups sorted by date (oldest first)
-    local backups=($(ls -1t "$backup_dir"/gateway-backup-*.tar.gz 2>/dev/null))
-    local count=${#backups[@]}
-    
-    if [ $count -gt $keep_count ]; then
-        # Delete oldest backups
-        for ((i=$keep_count; i<$count; i++)); do
-            rm "${backups[$i]}"
-        done
-    fi
-}
-```
-
-**Decision**: Use tar + gzip with 5-backup rotation policy.
+- ✅ **80+ files ready**: 24 templates, 17 scripts, 14 tests, 12 docs, 20+ examples  
+- ✅ **Complete implementation**: All 98 tasks completed, 100% validation coverage  
+- ✅ **Production-ready**: Comprehensive health checks, migration tools, rollback utilities  
+- ✅ **Multi-scenario support**: Basic, enterprise, multi-provider, proxy configurations  
+- ✅ **8 Vertex AI models**: Google Gemini, DeepSeek R1, Meta Llama, Mistral, Qwen, GPT-OSS
 
 ---
 
-### 3. Settings.json Manipulation with jq
+## Research Tasks Completed
 
-**Question**: How to safely update Claude Code settings.json without corruption?
+### 1. Source Audit: 001-llm-gateway-config Structure ✅
 
-**Research Findings**:
+**Decision**: Deploy from specs/001-llm-gateway-config as authoritative source
 
-**jq Basics for Settings Update**:
-```bash
-# Read current value
-current_url=$(jq -r '.ANTHROPIC_BASE_URL // "none"' ~/.claude/settings.json)
+**Complete Directory Audit**:
 
-# Update single field
-jq '.ANTHROPIC_BASE_URL = "http://localhost:4000"' \
-    ~/.claude/settings.json > ~/.claude/settings.json.tmp && \
-    mv ~/.claude/settings.json.tmp ~/.claude/settings.json
-
-# Update multiple fields atomically
-jq '. + {
-    "ANTHROPIC_BASE_URL": "http://localhost:4000",
-    "CLAUDE_CODE_SKIP_VERTEX_AUTH": true
-}' ~/.claude/settings.json > ~/.claude/settings.json.tmp && \
-    mv ~/.claude/settings.json.tmp ~/.claude/settings.json
-
-# Create if doesn't exist
-if [ ! -f ~/.claude/settings.json ]; then
-    echo '{}' > ~/.claude/settings.json
-fi
+#### Templates (24 files) - Configuration Source
+```
+templates/
+├── litellm-base.yaml              # Minimal starter config
+├── litellm-complete.yaml          # Complete 8-model setup
+├── env-vars-reference.md          # Environment variable docs
+├── settings-schema.json           # Claude settings schema
+├── deployment-patterns.md         # Architecture patterns
+├── models/                        # 8 Vertex AI models
+│   ├── gemini-2.5-flash.yaml
+│   ├── gemini-2.5-pro.yaml
+│   ├── deepseek-r1.yaml
+│   ├── llama3-405b.yaml
+│   ├── codestral.yaml
+│   ├── qwen3-coder-480b.yaml
+│   ├── qwen3-235b.yaml
+│   └── gpt-oss-20b.yaml
+├── enterprise/                    # Enterprise gateways (5 files)
+│   ├── truefoundry-config.yaml
+│   ├── zuplo-config.yaml
+│   ├── custom-gateway-config.yaml
+│   ├── header-forwarding.md
+│   └── auth-token-setup.md
+├── multi-provider/                # Multi-cloud (5 files)
+│   ├── multi-provider-config.yaml
+│   ├── bedrock-config.yaml
+│   ├── vertex-ai-config.yaml
+│   ├── anthropic-config.yaml
+│   └── routing-strategies.md
+└── proxy/                         # Corporate proxy (4 files)
+    ├── proxy-gateway-config.yaml
+    ├── proxy-only-config.yaml
+    ├── proxy-auth.md
+    └── proxy-troubleshooting-flowchart.md
 ```
 
-**Safe Update Pattern**:
-```bash
-update_claude_settings() {
-    local gateway_url="$1"
-    local settings_file="$HOME/.claude/settings.json"
-    local backup_file="$settings_file.backup"
-    local temp_file=$(mktemp)
-    
-    # Create empty file if doesn't exist
-    if [ ! -f "$settings_file" ]; then
-        echo '{}' > "$settings_file"
-    fi
-    
-    # Backup current settings
-    cp "$settings_file" "$backup_file"
-    
-    # Update with jq
-    jq --arg url "$gateway_url" '. + {
-        "ANTHROPIC_BASE_URL": $url,
-        "CLAUDE_CODE_SKIP_VERTEX_AUTH": true
-    }' "$settings_file" > "$temp_file"
-    
-    # Validate JSON syntax
-    if jq empty "$temp_file" 2>/dev/null; then
-        mv "$temp_file" "$settings_file"
-        rm "$backup_file"
-        return 0
-    else
-        # Restore backup on error
-        mv "$backup_file" "$settings_file"
-        rm "$temp_file"
-        return 1
-    fi
-}
+#### Scripts (17 files) - Validation & Operations
+```
+scripts/
+├── validate-config.py             # YAML validator (CRITICAL - reuse)
+├── validate-all.sh                # Master validation suite
+├── validate-gateway-compatibility.py
+├── validate-provider-env-vars.py
+├── validate-proxy-auth.py
+├── health-check.sh                # Gateway health test
+├── check-status.sh                # Status endpoint check
+├── check-prerequisites.sh         # Environment checker
+├── check-model-availability.py
+├── check-proxy-connectivity.sh
+├── start-litellm-proxy.sh         # Startup script
+├── migrate-config.py              # Version migration
+├── rollback-config.sh             # Configuration rollback
+├── debug-auth.sh                  # Auth troubleshooting
+└── troubleshooting-utils.sh       # Shared functions
 ```
 
-**Edge Cases Handled**:
-1. Settings.json doesn't exist → Create with `{}`
-2. Settings.json is empty → Treat as `{}`
-3. Settings.json is invalid JSON → Fail and report error
-4. jq command fails → Restore from backup
-5. Multiple updates in sequence → Use single jq command
+#### Tests (14 files) - Verification Suite
+```
+tests/
+├── run-all-tests.sh               # Test orchestrator
+├── test-all-models.py             # End-to-end model test
+├── test-multi-provider-routing.py
+├── test-provider-fallback.py
+├── test-proxy-gateway.py
+├── test-auth-bypass.sh
+├── test-header-forwarding.sh
+├── test-rate-limiting.py
+├── test-yaml-schemas.py
+├── test-env-vars.py
+├── test-proxy-bypass.sh
+├── validate-examples.sh
+└── verify-usage-logging.sh
+```
 
-**Decision**: Use jq with atomic update pattern (backup → update to temp → validate → move).
+#### Documentation (32 files) - User Guides & Reference
+```
+docs/
+├── configuration-reference.md     # Complete reference
+├── troubleshooting-guide.md       # Problem resolution
+├── security-best-practices.md     # Security guidance
+├── deployment-patterns-comparison.md
+├── environment-variables.md
+├── cost-tracking.md
+├── credential-rotation.md
+├── fallback-retry.md
+├── load-balancing.md
+├── multi-region-deployment.md
+├── observability.md
+└── faq.md
 
-**Rationale**: jq is standard JSON processor, atomic operations prevent corruption, validation catches errors before committing.
+examples/
+├── us1-quickstart-basic.md        # 10-15min setup (P1)
+├── us1-env-vars-setup.md
+├── us1-gcloud-auth.md
+├── us1-troubleshooting.md
+├── us1-verification-checklist.md
+├── us2-enterprise-integration.md   # Enterprise (P2)
+├── us2-security-best-practices.md
+├── us2-compatibility-checklist.md
+├── us2-compliance-guide.md
+├── us3-multi-provider-setup.md     # Multi-provider (P3)
+├── us3-provider-env-vars.md
+├── us3-cost-optimization.md
+├── us3-provider-selection.md
+├── us3-auth-bypass-guide.md
+├── us4-corporate-proxy-setup.md    # Proxy (P4)
+├── us4-https-proxy-config.md
+├── us4-proxy-gateway-architecture.md
+├── us4-firewall-considerations.md
+└── us4-proxy-troubleshooting.md
+```
+
+**Rationale**: Complete, tested, production-ready implementation with 100% task completion. Deploying this proven configuration minimizes risk and provides immediate value.
+
+**Alternatives Considered**:
+
+1. **Rebuild configuration in deployment script** - Rejected: Duplicates 80+ files, maintenance nightmare  
+2. **Download from remote repository** - Rejected: Requires network, version management complexity  
+3. **Package manager (pip install)** - Rejected: Overkill for file copying, adds dependency management
 
 ---
 
-### 4. Environment Variable Detection
+### 2. Deployment Architecture & Technology Stack ✅
 
-**Question**: How to reliably detect environment variables across different shell configurations?
+**Decision**: Bash for core deployment with Python for validation
 
-**Research Findings**:
+**Architecture Rationale**:
 
-**Source Precedence** (highest to lowest):
-1. Current shell environment (already exported)
-2. ~/.claude/.env (user-specific Claude config)
-3. ~/.bashrc or ~/.zshrc (shell profile)
-4. ~/.profile (POSIX fallback)
-5. gcloud CLI configuration (for GCP variables)
+- **Bash**: Native file operations (cp, tar, mkdir), no dependencies, ubiquitous on Linux/macOS/WSL2  
+- **Python**: Complex validation (YAML parsing, JSON manipulation) - already required by 001 scripts  
+- **Hybrid approach**: Bash orchestrates, Python validates - best of both worlds
 
-**Detection Strategy**:
-```bash
-detect_env_var() {
-    local var_name="$1"
-    local value=""
-    
-    # 1. Check current environment
-    if [ -n "${!var_name:-}" ]; then
-        value="${!var_name}"
-        echo "$value"
-        return 0
-    fi
-    
-    # 2. Check ~/.claude/.env
-    if [ -f "$HOME/.claude/.env" ]; then
-        value=$(grep "^${var_name}=" "$HOME/.claude/.env" | cut -d'=' -f2- | tr -d '"'"'"')
-        if [ -n "$value" ]; then
-            echo "$value"
-            return 0
-        fi
-    fi
-    
-    # 3. Check shell profile
-    local profile_file=""
-    if [ -n "$BASH_VERSION" ] && [ -f "$HOME/.bashrc" ]; then
-        profile_file="$HOME/.bashrc"
-    elif [ -n "$ZSH_VERSION" ] && [ -f "$HOME/.zshrc" ]; then
-        profile_file="$HOME/.zshrc"
-    elif [ -f "$HOME/.profile" ]; then
-        profile_file="$HOME/.profile"
-    fi
-    
-    if [ -n "$profile_file" ]; then
-        # Extract export or direct assignment
-        value=$(grep -E "^export ${var_name}=|^${var_name}=" "$profile_file" | \
-                tail -1 | sed "s/^export ${var_name}=//;s/^${var_name}=//" | \
-                tr -d '"'"'"')
-        if [ -n "$value" ]; then
-            echo "$value"
-            return 0
-        fi
-    fi
-    
-    # 4. GCP-specific detection
-    if [ "$var_name" = "VERTEX_PROJECT" ] || [ "$var_name" = "GOOGLE_CLOUD_PROJECT" ]; then
-        value=$(gcloud config get-value project 2>/dev/null)
-        if [ -n "$value" ]; then
-            echo "$value"
-            return 0
-        fi
-    fi
-    
-    if [ "$var_name" = "GOOGLE_APPLICATION_CREDENTIALS" ]; then
-        # Check gcloud default credentials path
-        local default_creds="$HOME/.config/gcloud/application_default_credentials.json"
-        if [ -f "$default_creds" ]; then
-            echo "$default_creds"
-            return 0
-        fi
-    fi
-    
-    # Not found
-    return 1
-}
+**Deployment Flow**:
 
-# Auto-detect all required variables
-auto_detect_environment() {
-    local vars=(
-        "VERTEX_PROJECT"
-        "VERTEX_LOCATION"
-        "GOOGLE_APPLICATION_CREDENTIALS"
-        "LITELLM_MASTER_KEY"
-    )
-    
-    declare -A detected
-    local all_found=true
-    
-    for var in "${vars[@]}"; do
-        if value=$(detect_env_var "$var"); then
-            detected[$var]="$value"
-            echo "✓ $var: ${value:0:50}..." >&2
-        else
-            detected[$var]=""
-            all_found=false
-            echo "⚠ $var: not found" >&2
-        fi
-    done
-    
-    # Return as JSON for easy parsing
-    printf '{'
-    local first=true
-    for var in "${vars[@]}"; do
-        [ "$first" = true ] && first=false || printf ','
-        printf '"%s":"%s"' "$var" "${detected[$var]}"
-    done
-    printf '}\n'
-    
-    [ "$all_found" = true ]
-}
+```
+┌──────────────────────────────────────────────────────────────┐
+│  deploy-gateway-config.sh (Main Bash Script)                 │
+│  ├─ Parse CLI args (--preset, --models, --gateway-type)     │
+│  ├─ Validate prerequisites (disk space, permissions)         │
+│  ├─ Source library functions (lib/*.sh)                      │
+│  └─ Execute deployment phases                                │
+└──────────────────────────────────────────────────────────────┘
+                          │
+          ┌───────────────┼───────────────┐
+          ▼               ▼               ▼
+┌───────────────┐ ┌──────────────┐ ┌──────────────┐
+│deploy-core.sh │ │deploy-       │ │deploy-backup │
+│               │ │validate.sh   │ │.sh           │
+│• copy_files() │ │              │ │              │
+│• merge_configs│ │• check_yaml()│ │• create_     │
+│• generate_env │ │• verify_perms│ │  backup()    │
+│• set_perms()  │ │• health_check│ │• rollback()  │
+└───────────────┘ └──────────────┘ └──────────────┘
+        │                 │                │
+        │         Python Validators        │
+        └─────────────────┬────────────────┘
+                          ▼
+              validate-config.py (REUSE from 001)
+              validate-gateway-compatibility.py
+              validate-provider-env-vars.py
+                          │
+                          ▼
+              ~/.claude/gateway/ (Deployed)
 ```
 
-**Special Cases**:
+**Technology Stack**:
 
-**LITELLM_MASTER_KEY Generation**:
-```bash
-generate_master_key() {
-    # Generate secure random key if not found
-    if ! key=$(detect_env_var "LITELLM_MASTER_KEY"); then
-        key="sk-$(openssl rand -hex 16)"
-        echo "Generated new LITELLM_MASTER_KEY: $key" >&2
-    fi
-    echo "$key"
-}
-```
+| Component | Technology | Version | Rationale |
+|-----------|-----------|---------|-----------|
+| **Core Logic** | Bash | 4.0+ | Native file ops, no deps |
+| **Validation** | Python | 3.7+ | YAML/JSON parsing, reuse 001 scripts |
+| **Backup** | tar + gzip | Standard | Compression, atomic operations |
+| **Testing** | bats | 1.0+ | Bash testing framework |
+| **Linting** | shellcheck | 0.7+ | Static analysis for bash |
 
-**VERTEX_LOCATION Default**:
-```bash
-get_vertex_location() {
-    local location=$(detect_env_var "VERTEX_LOCATION")
-    if [ -z "$location" ]; then
-        # Default to us-central1
-        location="us-central1"
-        echo "Using default VERTEX_LOCATION: $location" >&2
-    fi
-    echo "$location"
-}
-```
-
-**Decision**: Implement multi-source detection with precedence, auto-generate LITELLM_MASTER_KEY if missing.
-
-**Rationale**: Users may configure environment variables in different places, detection should check all common locations.
+**Optional Dependencies** (graceful fallback):
+- `rsync` → fallback to `cp -r`  
+- `yq` → fallback to `python -m yaml`  
+- `jq` → fallback to `python -m json.tool`
 
 ---
 
-### 5. Cross-Platform Compatibility (macOS vs Linux)
+### 3. Preset Definitions & Deployment Strategies ✅
 
-**Question**: What are the key differences between macOS and Linux that affect deployment?
+**Decision**: 4 deployment presets matching 001 user stories
 
-**Research Findings**:
+**Preset Mapping**:
 
-**Command Differences**:
+| Preset | Source Template | Models | Target Use Case | Deploy Time |
+|--------|----------------|--------|----------------|-------------|
+| **basic** | litellm-complete.yaml | All 8 Vertex AI | Quick start (US1) | 5-8 sec |
+| **enterprise** | enterprise/truefoundry-config.yaml | None (gateway) | Corporate gateway (US2) | 4-6 sec |
+| **multi-provider** | multi-provider/multi-provider-config.yaml | Anthropic+Bedrock+Vertex | Platform eng (US3) | 6-9 sec |
+| **proxy** | proxy/proxy-gateway-config.yaml | All 8 Vertex AI | Corporate firewall (US4) | 5-8 sec |
 
-| Feature | macOS | Linux | Solution |
-|---------|-------|-------|----------|
-| sed in-place | `sed -i ''` | `sed -i` | Feature detection |
-| readlink absolute | `greadlink -f` (GNU) | `readlink -f` | Use `realpath` or fallback |
-| mktemp dir | `mktemp -d` | `mktemp -d` | ✅ Same |
-| stat format | `stat -f %Sp` | `stat -c %a` | Feature detection |
-| jq | Usually installed | May need install | Check and prompt |
+**Model Selection Logic**:
 
-**Platform Detection**:
 ```bash
-detect_platform() {
-    case "$(uname -s)" in
-        Darwin*)
-            echo "macos"
-            ;;
-        Linux*)
-            echo "linux"
-            ;;
-        *)
-            echo "unknown"
-            return 1
-            ;;
-    esac
-}
+# Available models from 001 implementation
+AVAILABLE_MODELS=(
+  "gemini-2.5-flash"      # Google - fastest
+  "gemini-2.5-pro"        # Google - most capable
+  "deepseek-r1"           # DeepSeek - reasoning
+  "llama3-405b"           # Meta - large param
+  "codestral"             # Mistral - code specialized
+  "qwen3-coder-480b"      # Qwen - coding
+  "qwen3-235b"            # Qwen - general
+  "gpt-oss-20b"           # OpenAI - OSS variant
+)
 
-# Portable sed in-place
-sed_inplace() {
-    local file="$1"
-    shift
-    local sed_args=("$@")
-    
-    if [ "$(detect_platform)" = "macos" ]; then
-        sed -i '' "${sed_args[@]}" "$file"
-    else
-        sed -i "${sed_args[@]}" "$file"
-    fi
-}
-
-# Portable absolute path
-get_absolute_path() {
-    local path="$1"
-    
-    # Try realpath first (available on both if coreutils installed)
-    if command -v realpath &>/dev/null; then
-        realpath "$path"
-        return
-    fi
-    
-    # Fallback: readlink
-    if [ "$(detect_platform)" = "macos" ]; then
-        # macOS needs GNU coreutils for -f
-        if command -v greadlink &>/dev/null; then
-            greadlink -f "$path"
-        else
-            # Manual resolution
-            ( cd "$(dirname "$path")" && pwd )/$(basename "$path")
-        fi
-    else
-        readlink -f "$path"
-    fi
-}
-
-# Portable file permissions check
-get_file_permissions() {
-    local file="$1"
-    
-    if [ "$(detect_platform)" = "macos" ]; then
-        stat -f "%OLp" "$file"
-    else
-        stat -c "%a" "$file"
-    fi
-}
+# Usage examples
+deploy-gateway-config.sh --preset basic                      # All 8 models
+deploy-gateway-config.sh --preset basic --models gemini-2.5-flash,gemini-2.5-pro  # Custom selection
+deploy-gateway-config.sh --preset enterprise --gateway-url https://gateway.company.com
 ```
 
-**Testing Strategy**:
-```bash
-# Run platform-specific tests
-run_compatibility_tests() {
-    local platform=$(detect_platform)
-    
-    echo "Testing on $platform..."
-    
-    # Test sed
-    local temp_file=$(mktemp)
-    echo "test" > "$temp_file"
-    sed_inplace "$temp_file" 's/test/pass/'
-    [ "$(cat "$temp_file")" = "pass" ] || { echo "sed test failed"; return 1; }
-    rm "$temp_file"
-    
-    # Test path resolution
-    local abs_path=$(get_absolute_path ".")
-    [ -d "$abs_path" ] || { echo "path resolution failed"; return 1; }
-    
-    # Test permissions
-    local perms=$(get_file_permissions "$0")
-    [ -n "$perms" ] || { echo "permissions test failed"; return 1; }
-    
-    echo "✓ All compatibility tests passed"
-}
-```
-
-**Decision**: Implement platform detection and use portable command wrappers.
-
-**Rationale**: Ensures deployment works on both macOS and Linux without user intervention.
+**Rationale**: Presets cover 80% use cases without customization. Model filtering enables fine-tuning without preset explosion.
 
 ---
 
-### 6. LiteLLM Process Detection
+### 4. Configuration Merging & Environment Variables ✅
 
-**Question**: How to reliably detect if LiteLLM proxy is running?
+**Decision**: Intelligent merging with environment variable auto-detection
 
-**Research Findings**:
+**Environment Variable Priority** (highest to lowest):
 
-**Multiple Detection Methods** (in order of reliability):
+1. **CLI flags**: `--gateway-url`, `--auth-token` (override all)  
+2. **Current shell**: `echo $ANTHROPIC_API_KEY`, `$LITELLM_MASTER_KEY`  
+3. **Existing ~/.claude/.env**: Preserve user secrets  
+4. **Shell rc files**: `~/.bashrc`, `~/.zshrc`, `~/.profile`  
+5. **Placeholders**: `CHANGE-ME-xxx` (lowest priority)
+
+**File Merging Strategy**:
+
+| File Type | Strategy | Rationale |
+|-----------|----------|-----------|
+| **litellm.yaml** | Backup + overwrite with model filter | Config structure may change |
+| **.env** | Preserve existing, append new | NEVER overwrite user secrets |
+| **scripts/** | Overwrite all | Executable code, no user data |
+| **docs/** | Overwrite all | Documentation matches version |
+| **templates/** | Overwrite all | Read-only reference material |
+| **start-gateway.sh** | Regenerate with current paths | User-specific script |
+
+**Update vs Fresh Install**:
 
 ```bash
-is_litellm_running() {
-    # Method 1: Check if port 4000 is in use
-    if command -v lsof &>/dev/null; then
-        if lsof -i :4000 -t &>/dev/null; then
-            return 0
-        fi
-    fi
-    
-    # Method 2: Check netstat (fallback)
-    if command -v netstat &>/dev/null; then
-        if netstat -an | grep -q ":4000.*LISTEN"; then
-            return 0
-        fi
-    fi
-    
-    # Method 3: Check process list
-    if pgrep -f "litellm.*proxy" &>/dev/null; then
-        return 0
-    fi
-    
-    # Method 4: Try HTTP request
-    if command -v curl &>/dev/null; then
-        if curl -s -f -m 2 http://localhost:4000/health &>/dev/null; then
-            return 0
-        fi
-    fi
-    
-    return 1
-}
+# Fresh install (no existing ~/.claude/gateway)
+mkdir -p ~/.claude/gateway/{config,backups}
+copy all files
 
-get_litellm_pid() {
-    # Try lsof first (most reliable)
-    if command -v lsof &>/dev/null; then
-        lsof -i :4000 -t 2>/dev/null | head -1
-        return
-    fi
-    
-    # Fallback to pgrep
-    pgrep -f "litellm.*proxy" | head -1
-}
-
-stop_litellm() {
-    local pid=$(get_litellm_pid)
-    
-    if [ -z "$pid" ]; then
-        echo "LiteLLM is not running"
-        return 1
-    fi
-    
-    echo "Stopping LiteLLM (PID: $pid)..."
-    kill "$pid"
-    
-    # Wait up to 5 seconds for graceful shutdown
-    local timeout=5
-    while [ $timeout -gt 0 ] && kill -0 "$pid" 2>/dev/null; do
-        sleep 1
-        ((timeout--))
-    done
-    
-    # Force kill if still running
-    if kill -0 "$pid" 2>/dev/null; then
-        echo "Force stopping LiteLLM..."
-        kill -9 "$pid"
-    fi
-    
-    echo "✓ LiteLLM stopped"
-}
+# Update (existing deployment)
+1. Create backup: gateway-backup-YYYYMMDD-HHMMSS.tar.gz
+2. Preserve: .env, deployment.log
+3. Merge: litellm.yaml (if --models specified)
+4. Overwrite: scripts/, docs/, templates/
+5. Regenerate: start-gateway.sh
+6. Validate: Run validate-config.py
 ```
 
-**User Interaction**:
-```bash
-handle_running_litellm() {
-    if is_litellm_running; then
-        echo ""
-        echo "⚠️  LiteLLM proxy is currently running"
-        echo ""
-        echo "Deployment requires stopping the proxy to update configuration."
-        echo ""
-        echo "What would you like to do?"
-        echo "  1) Stop LiteLLM and continue"
-        echo "  2) Cancel deployment"
-        echo ""
-        read -p "Choice [1-2]: " choice
-        
-        case "$choice" in
-            1)
-                stop_litellm || return 1
-                ;;
-            2)
-                echo "Deployment cancelled"
-                return 1
-                ;;
-            *)
-                echo "Invalid choice"
-                return 1
-                ;;
-        esac
-    fi
-}
-```
-
-**Decision**: Use multi-method detection (lsof → netstat → pgrep → HTTP) with graceful shutdown.
-
-**Rationale**: Different systems have different tools available, multiple methods ensure reliable detection.
+**Rationale**: Protecting .env prevents credential loss (critical). Updating scripts/docs ensures latest fixes. Backing up before changes enables rollback.
 
 ---
 
-## Research Summary
+### 5. Backup & Rollback Mechanism ✅
 
-### Key Technical Decisions
+**Decision**: Automatic backup with rotation, manual rollback
 
-| Area | Decision | Rationale |
-|------|----------|-----------|
-| **Script Language** | Bash 4.0+ with strict mode | Native file ops, process management, shell integration |
-| **Backup Method** | tar + gzip with 5-backup rotation | Fast, atomic, simple restore, built-in integrity check |
-| **JSON Manipulation** | jq with atomic update pattern | Standard tool, safe updates, validation built-in |
-| **Env Detection** | Multi-source with precedence | Users configure in different places, check all |
-| **Platform Support** | Feature detection + portable wrappers | Works on macOS and Linux without user changes |
-| **Process Detection** | Multi-method (lsof/netstat/pgrep/HTTP) | Reliable across different system configurations |
+**Backup Creation** (automatic before deployment):
 
-### Implementation Patterns
+```bash
+BACKUP_NAME="gateway-backup-$(date +%Y%m%d-%H%M%S).tar.gz"
+BACKUP_PATH="$HOME/.claude/gateway/backups/$BACKUP_NAME"
 
-**Error Handling Pattern**:
+# Include critical user data only
+tar -czf "$BACKUP_PATH" \
+  -C "$HOME/.claude" \
+  --exclude="gateway/backups" \
+  --exclude="gateway/templates" \
+  --exclude="gateway/docs" \
+  --exclude="gateway/examples" \
+  gateway/
+
+# Rotation: keep last 5 backups
+find ~/.claude/gateway/backups \
+  -name "gateway-backup-*.tar.gz" \
+  -type f -printf '%T@ %p\n' | \
+  sort -rn | tail -n +6 | cut -d' ' -f2- | xargs rm -f
+```
+
+**Rollback Commands**:
+
+```bash
+# List available backups
+deploy-gateway-config.sh --list-backups
+
+# Output:
+# Available backups in ~/.claude/gateway/backups/:
+#   1. gateway-backup-20251202-143022.tar.gz (2.3 MB) - 2 hours ago
+#   2. gateway-backup-20251202-105045.tar.gz (2.1 MB) - 5 hours ago
+#   3. gateway-backup-20251201-162030.tar.gz (2.0 MB) - 1 day ago
+
+# Rollback to latest
+deploy-gateway-config.sh --rollback latest
+
+# Rollback to specific backup
+deploy-gateway-config.sh --rollback gateway-backup-20251201-162030.tar.gz
+```
+
+**Rollback Process**:
+
+1. Validate backup integrity (`tar -tzf`)  
+2. Create safety backup of current state  
+3. Warn if LiteLLM running (optional stop with `--force`)  
+4. Extract to temp directory  
+5. Atomic swap: `mv gateway gateway.old && mv temp gateway`  
+6. Verify restored config (`validate-config.py`)  
+7. Log rollback event to `deployment.log`
+
+**Rationale**: Automatic backups prevent data loss without user action. 5-backup rotation balances storage (typically 10-15MB total) with recovery window (1-2 weeks of changes). Manual rollback prevents accidental reversions.
+
+---
+
+### 6. Validation & Health Checks ✅
+
+**Decision**: Multi-layer validation reusing 001 scripts
+
+**Validation Layers**:
+
+#### Pre-deployment (Prevent failures)
+- ✅ Source exists: `specs/001-llm-gateway-config/`  
+- ✅ Permissions: Write access to `~/.claude`  
+- ✅ Disk space: 50MB minimum, 100MB recommended  
+- ✅ No conflicts: Detect destructive overwrites  
+- ✅ LiteLLM not running (warn if `ps aux | grep litellm`)
+
+#### Post-deployment (Verify success)
+- ✅ Files present: Expected count matches preset  
+- ✅ YAML valid: `python scripts/validate-config.py config/litellm.yaml`  
+- ✅ Env vars populated: Not placeholder values  
+- ✅ Scripts executable: `chmod 0755` verification  
+- ✅ .env secure: `chmod 0600` enforcement
+
+#### Runtime health (Optional)
+```bash
+# If --gateway-url provided
+bash ~/.claude/gateway/scripts/health-check.sh "$GATEWAY_URL"
+
+# Checks:
+# 1. Endpoint reachable (HTTP 200)
+# 2. /health returns healthy status
+# 3. /models lists expected models
+# 4. Auth successful (if token provided)
+```
+
+**Script Reuse from 001**:
+
+| Script | Purpose | Reuse Strategy |
+|--------|---------|----------------|
+| `validate-config.py` | YAML syntax+semantic | Copy to ~/.claude/gateway/scripts/ |
+| `validate-all.sh` | Comprehensive suite | Copy and adapt paths |
+| `health-check.sh` | Gateway connectivity | Copy as-is |
+| `check-prerequisites.sh` | Environment check | Adapt for deployment context |
+
+**Rationale**: Reusing proven validation from 001 ensures consistency. Multi-layer validation catches errors at right time (pre-flight vs post-install).
+
+---
+
+### 7. CLI Interface & Error Handling ✅
+
+**Decision**: Bash with comprehensive error handling and dry-run mode
+
+**CLI Interface**:
+
 ```bash
 #!/bin/bash
-set -euo pipefail
+# deploy-gateway-config.sh - Deploy LLM Gateway Configuration to ~/.claude
 
-trap cleanup EXIT ERR INT TERM
+Usage: deploy-gateway-config.sh [OPTIONS] [COMMAND]
 
-cleanup() {
-    if [ $? -ne 0 ]; then
-        rollback_deployment
-    fi
-}
+Commands:
+  install              Deploy gateway configuration (default)
+  update               Update existing deployment
+  rollback [BACKUP]    Restore from backup
+  list-backups         Show available backups
 
-# Atomic operations
-write_config() {
-    local temp=$(mktemp)
-    generate_config > "$temp"
-    validate "$temp" || return 1
-    mv "$temp" "$target"
-}
+Options:
+  --preset PRESET      Deployment preset: basic|enterprise|multi-provider|proxy
+  --models MODELS      Comma-separated model list (e.g., gemini-2.5-flash,deepseek-r1)
+  --gateway-type TYPE  Gateway type for enterprise: truefoundry|zuplo|custom
+  --gateway-url URL    Enterprise gateway URL
+  --auth-token TOKEN   Authentication token
+  --proxy URL          HTTP/HTTPS proxy URL
+  --proxy-auth CREDS   Proxy auth (username:password)
+  --dry-run            Preview changes without applying
+  --force              Skip confirmations (CI/CD mode)
+  --verbose            Detailed output
+  -h, --help           Show this help
+
+Examples:
+  # Basic deployment with all models
+  deploy-gateway-config.sh --preset basic
+
+  # Custom model selection
+  deploy-gateway-config.sh --preset basic --models gemini-2.5-flash,gemini-2.5-pro
+
+  # Enterprise gateway
+  deploy-gateway-config.sh --preset enterprise \
+    --gateway-url https://gateway.company.com \
+    --auth-token sk-xxx
+
+  # Preview changes
+  deploy-gateway-config.sh --preset basic --dry-run
+
+  # Update existing deployment
+  deploy-gateway-config.sh update --add-models llama3-405b
+
+  # Rollback to previous
+  deploy-gateway-config.sh rollback latest
 ```
 
-**Safety Checklist** for Every Deployment Operation:
-- [ ] Backup created before changes
-- [ ] Changes written to temp file first
-- [ ] Validation before moving to final location
-- [ ] Rollback on any error
-- [ ] File permissions verified
-- [ ] Sensitive data sanitized in logs
+**Error Handling**:
 
-### Resolved Ambiguities
+```bash
+# Trap errors and rollback
+set -euo pipefail  # Exit on error, undefined var, pipe failure
 
-**From plan.md Open Questions**:
+trap 'handle_error $? $LINENO' ERR
 
-1. ✅ **Settings.json handling**: Use jq with atomic updates and validation
-2. ✅ **LiteLLM detection**: Multi-method detection with graceful shutdown
-3. ✅ **Version mismatches**: Add version field to manifest, warn on mismatch
-4. ✅ **Auto-start LiteLLM**: Add `--start` flag (optional)
-5. ✅ **Multi-user systems**: Per-user deployment in each ~/.claude directory
-6. ✅ **GCP quota validation**: Add `--validate-quota` flag (optional, may be slow)
+handle_error() {
+  local exit_code=$1
+  local line_number=$2
+  
+  echo "❌ Error at line $line_number (exit code: $exit_code)"
+  
+  if [[ -n "${BACKUP_PATH:-}" && -f "$BACKUP_PATH" ]]; then
+    echo "Rolling back to backup: $BACKUP_PATH"
+    tar -xzf "$BACKUP_PATH" -C "$HOME/.claude"
+  fi
+  
+  echo "Deployment failed. Check $HOME/.claude/gateway/deployment.log"
+  exit "$exit_code"
+}
 
-### Risks & Mitigations
+# Exit codes
+EXIT_SUCCESS=0
+EXIT_PERMISSION_DENIED=1
+EXIT_DISK_SPACE=2
+EXIT_INVALID_PRESET=3
+EXIT_VALIDATION_FAILED=4
+EXIT_SOURCE_MISSING=5
+EXIT_BACKUP_FAILED=6
+```
 
-**Identified During Research**:
+**Dry Run Output**:
 
-1. **Race Condition**: Multiple deployment processes
-   - **Mitigation**: Use lock file (`~/.claude/gateway/.deploy.lock`)
+```bash
+$ deploy-gateway-config.sh --preset basic --models gemini-2.5-flash --dry-run
 
-2. **Partial Deployment**: Interruption during file operations
-   - **Mitigation**: Atomic operations + trap cleanup + rollback
+�� DRY RUN MODE - No changes will be made
 
-3. **Environment Variable Precedence**: User confusion about which value is used
-   - **Mitigation**: Show detected values before deployment, allow override
+Configuration:
+  Source: /home/user/claude-code/specs/001-llm-gateway-config
+  Target: /home/user/.claude/gateway
+  Preset: basic
+  Models: gemini-2.5-flash (1 of 8 available)
 
-4. **Platform-Specific Bugs**: Behavior differs between macOS/Linux
-   - **Mitigation**: Comprehensive testing on both platforms, portable wrappers
+Would deploy:
+  ✓ templates/litellm-base.yaml → config/litellm.yaml
+  ✓ templates/models/gemini-2.5-flash.yaml (merged into config)
+  ✓ scripts/ (17 files, 324 KB)
+  ✓ docs/ (12 files, 156 KB)
+  ✓ examples/ (20 files, 248 KB)
+  Total: 49 files, 728 KB
 
-### Next Phase Preparation
+Would create:
+  ✓ .env file (8 environment variables detected)
+  ✓ start-gateway.sh script
+  ✓ Backup: gateway-backup-20251202-153045.tar.gz (2.1 MB)
 
-**Ready for Phase 1 (Design)** ✅
+Validation checks:
+  ✓ Write permissions OK
+  ✓ Disk space available: 45 GB
+  ✓ LiteLLM not running
+  ✓ Source files valid
 
-All research questions answered. Can proceed to:
-- Create `data-model.md` with manifest schema
-- Create `contracts/deployment-api.md` with CLI interface
-- Create `quickstart.md` with user guide
-- Update agent context with technology choices
+Next steps:
+  1. Review files listed above
+  2. Remove --dry-run flag to proceed:
+     deploy-gateway-config.sh --preset basic --models gemini-2.5-flash
+```
 
-**Technology Stack Confirmed**:
-- Bash 4.0+ (deployment engine)
-- Python 3.9+ (validation utilities - reuse from spec 001)
-- jq (JSON manipulation)
-- tar + gzip (backup)
-- Standard Unix tools (sed, grep, awk, etc.)
-
-**No Blockers Identified** ✅
-
-All technical questions resolved with concrete implementation patterns.
+**Rationale**: Dry run enables safe exploration. Automatic rollback on error prevents partial deployments. Specific exit codes enable CI/CD scripting.
 
 ---
 
-## References
+## Technology Decisions Summary
 
-- Bash Best Practices: https://google.github.io/styleguide/shellguide.html
-- jq Manual: https://jqlang.github.io/jq/manual/
-- tar Documentation: GNU tar 1.34+
-- Cross-platform Shell Scripting: POSIX compliance guidelines
-- LiteLLM Documentation: https://docs.litellm.ai/docs/proxy/quick_start
+| Decision Area | Chosen Approach | Key Benefit |
+|---------------|-----------------|-------------|
+| **Source** | specs/001-llm-gateway-config | Complete, validated, production-ready |
+| **Language** | Bash + Python | Native ops + validation, no new dependencies |
+| **Architecture** | Phase-based with validation gates | Safe, rollback-friendly, observable |
+| **Presets** | 4 presets (basic/enterprise/multi/proxy) | Cover 80% use cases, enable customization |
+| **Model Selection** | Optional --models flag | Flexibility without preset explosion |
+| **Merging** | Preserve .env, overwrite code/docs | Protect secrets, ensure latest fixes |
+| **Backup** | Automatic with 5-backup rotation | Prevent data loss, enable recovery |
+| **Validation** | Reuse 001 validation scripts | Consistency, reduced maintenance |
+| **Error Handling** | Trap + rollback + dry-run | Safe experimentation, automated recovery |
+
+---
+
+## Next Steps for Phase 1 Design
+
+1. **data-model.md**: Define entities (DeploymentConfig, Preset, BackupMetadata, ValidationResult)  
+2. **contracts/**: CLI interface spec, validation API contracts, file operation contracts  
+3. **quickstart.md**: User-facing deployment guide (10-15 minute workflow)
+

@@ -1,0 +1,41 @@
+# ShellCheck Configuration
+# For LLM Gateway Configuration Deployment Tool
+# Feature: 002-gateway-config-deploy
+
+# Disable specific warnings that are acceptable in this project
+
+# SC1090: Can't follow non-constant source. Use a directive to specify location.
+# We source library files dynamically, so this is expected
+disable=SC1090
+
+# SC1091: Not following: file not included in mock
+# Library files are sourced at runtime
+disable=SC1091
+
+# SC2034: Variable appears unused. Verify use (or export if used externally).
+# Some variables are exported for use in sourced scripts
+disable=SC2034
+
+# SC2154: Variable is referenced but not assigned
+# Variables may be assigned in sourced files
+disable=SC2154
+
+# Enable optional checks
+enable=add-default-case
+enable=avoid-nullary-conditions
+enable=check-unassigned-uppercase
+
+# Set shell directive (bash 4.0+)
+shell=bash
+
+# External sources (library files that will be created)
+# These will be in scripts/lib/
+source=scripts/lib/deploy-output.sh
+source=scripts/lib/deploy-perms.sh
+source=scripts/lib/deploy-env.sh
+source=scripts/lib/deploy-presets.sh
+source=scripts/lib/deploy-models.sh
+source=scripts/lib/deploy-backup.sh
+source=scripts/lib/deploy-validate.sh
+source=scripts/lib/deploy-core.sh
+source=scripts/lib/deploy-log.sh

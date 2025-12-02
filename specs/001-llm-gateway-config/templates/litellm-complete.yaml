@@ -28,7 +28,7 @@ model_list:
   # === Tier 2: Balanced Models (Priority 5) ===
   # Use for: Code generation, analysis, translation, medium complexity
   # Estimated: 15-20% of requests
-  
+
   - model_name: gemini-2.5-pro
     litellm_params:
       model: vertex_ai/gemini-2.5-pro
@@ -68,7 +68,7 @@ model_list:
     rpm: 15
     tpm: 800000
     priority: 1  # Large model - use sparingly
-
+  
   - model_name: qwen3-coder-480b
     litellm_params:
       model: vertex_ai/qwen/qwen3-coder-480b-a35b-instruct-maas
