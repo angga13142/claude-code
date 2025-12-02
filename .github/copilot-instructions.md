@@ -6,11 +6,14 @@ This repository contains **configuration, plugins, and workflows** for Claude Co
 
 **Core Architecture:**
 
-- `plugins/` - Plugin ecosystem with 12 official plugins
+- `plugins/` - Plugin ecosystem (12 official plugins with auto-discovery)
 - `.claude/commands/` - Markdown command definitions (agentic workflow source code)
 - `.specify/` - Speckit specification-driven development framework
-- `.github/` - CI/CD, agent definitions, issue automation
-- `specs/` - Feature specification implementations (e.g., `001-llm-gateway-config`)
+  - `memory/constitution.md` - JARVIS persona, coding standards, test requirements
+  - `scripts/bash/` - Setup automation (check-prerequisites.sh, setup-plan.sh)
+  - `templates/` - Spec/plan/task markdown templates
+- `.github/` - CI/CD, agent definitions (`*.agent.md`), issue automation
+- `specs/` - Feature specification implementations (e.g., `001-llm-gateway-config`, `002-gateway-config-deploy`)
 
 ## Plugin System Pattern
 
@@ -52,15 +55,24 @@ Reference: `plugins/hookify/hooks/hooks.json`, `plugins/code-review/commands/cod
 
 ## Speckit Workflow (Spec-Driven Development)
 
-Custom command-based workflow in `.claude/commands/` implementing rigorous feature development:
+Custom command-based workflow in `.claude/commands/` implementing rigorous feature development with enforced quality gates:
 
 **Command Sequence:**
 
-1. `/speckit.specify` → Creates `specs/{ID}/spec.md` with technical requirements
-2. `/speckit.clarify` → Resolves ambiguities via structured Q&A
+1. `/speckit.specify` → Creates `specs/{ID}/spec.md` with user stories and acceptance criteria
+2. `/speckit.clarify` → Resolves spec ambiguities via structured Q&A
 3. `/speckit.plan` → Generates `plan.md`, `data-model.md`, `contracts/`, executes research agents
 4. `/speckit.tasks` → Breaks plan into actionable tasks in `tasks.md`
-5. `/speckit.implement` → Executes tasks with test-first approach
+5. `/speckit.checklist` → Generates quality checklists (requirements, security, test coverage)
+6. `/speckit.implement` → Executes tasks with TDD approach, validates checklists
+
+**Critical Script Pattern:** All speckit commands run `.specify/scripts/bash/check-prerequisites.sh --json` to get absolute paths:
+
+```bash
+# Returns: {"FEATURE_DIR":"/path/to/specs/002-feature","AVAILABLE_DOCS":["spec.md","plan.md"]}
+PREREQ_OUTPUT=$(bash .specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks)
+FEATURE_DIR=$(echo "$PREREQ_OUTPUT" | jq -r '.FEATURE_DIR')
+```
 
 **Constitution Enforcement:** All agents governed by `.specify/memory/constitution.md`:
 
@@ -70,7 +82,9 @@ Custom command-based workflow in `.claude/commands/` implementing rigorous featu
 - Performance: <3s page load, <200KB gzipped bundles
 - Accessibility: WCAG 2.1 Level AA minimum
 
-Reference specs: `specs/001-llm-gateway-config/` shows complete implementation (quickstart, templates, scripts, tests)
+**Gate Pattern:** Every `plan.md` includes "Constitution Check" section validating against quality standards before implementation.
+
+Reference specs: `specs/001-llm-gateway-config/` (complete gateway setup), `specs/002-gateway-config-deploy/` (deployment automation)
 
 ## Agent Development Pattern
 
@@ -164,15 +178,29 @@ Complete multi-provider setup in `specs/001-llm-gateway-config/`:
 
 ## Development Conventions
 
-**Runtime:** Bun for TypeScript scripts (`scripts/*.ts`), Python 3.7+ for hooks  
+**Runtime:** Bun for TypeScript scripts (`scripts/*.ts` with `#!/usr/bin/env bun` shebang), Python 3.7+ for hooks  
+**Shell Scripts:** Bash 4.0+ following Google Shell Style Guide with ShellCheck validation  
 **Testing:** Run plugin validators before committing: `bash plugins/plugin-dev/skills/{component}/scripts/validate-*.sh`  
 **Frontmatter Required:** All commands/agents/skills need YAML frontmatter with `name` and `description`  
 **Handoffs in Commands:** Use handoffs array to link related commands/agents (see `speckit.plan.md`)  
-**Auto-Discovery:** Place components in standard directories - no explicit registration needed beyond manifest
+**Auto-Discovery:** Place components in standard directories - no explicit registration needed beyond manifest  
+**Task Tracking:** All tasks in `tasks.md` use checkbox format `- [ ] T001 Description` and MUST be marked `- [X] T001` upon completion
+
+**Path Variables Pattern:** Never hardcode paths to specs/ or plugins/ - always derive from setup scripts:
+
+```bash
+# Correct - derives absolute paths
+OUTPUT=$(bash .specify/scripts/bash/check-prerequisites.sh --json)
+FEATURE_DIR=$(echo "$OUTPUT" | jq -r '.FEATURE_DIR')
+
+# Wrong - fragile relative paths
+FEATURE_DIR="specs/002-feature"
+```
 
 ## Critical Files to Check Before Major Changes
 
 - `.specify/memory/constitution.md` - Coding standards, testing requirements, persona
+- `.github/instructions/research.instructions.md` - Context7 MCP usage mandate (auto-fetch library docs)
 - `plugins/plugin-dev/skills/plugin-structure/SKILL.md` - Plugin architecture rules
 - `plugins/plugin-dev/skills/hook-development/SKILL.md` - Hook event types, execution model
 - `.claude/commands/speckit.*.md` - Workflow command implementations
@@ -183,4 +211,6 @@ Complete multi-provider setup in `specs/001-llm-gateway-config/`:
 **Reading Spec Files:** Use `${SPECS_DIR}/{feature-id}/spec.md` (set by setup scripts)  
 **Branch Creation:** `git checkout -b {feature-id}` from setup scripts  
 **Constitution Checks:** All specs include "Constitution Check" section validating against `.specify/memory/constitution.md`  
-**Parallel Agents:** Launch independent agents together (see `code-review.md` - 5 parallel Sonnet agents with confidence scoring)
+**Parallel Agents:** Launch independent agents together (see `code-review.md` - 5 parallel Sonnet agents with confidence scoring)  
+**Library Documentation:** Auto-invoke Context7 MCP for setup/config/API docs (per `research.instructions.md`)  
+**Task Completion:** Mark tasks `[X]` immediately in `tasks.md` - never batch completions

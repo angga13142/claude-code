@@ -32,16 +32,16 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 [P] Implement color output functions in scripts/lib/deploy-output.sh (echo_success, echo_error, echo_warning, echo_info)
-- [ ] T006 [P] Implement file permission functions in scripts/lib/deploy-perms.sh (set_file_perms, validate_perms)
-- [ ] T007 [P] Implement environment variable detection in scripts/lib/deploy-env.sh (detect_env_vars, merge_env_sources)
-- [ ] T008 Implement core preset loading in scripts/lib/deploy-presets.sh (load_preset_definition, validate_preset)
-- [ ] T009 Implement model validation in scripts/lib/deploy-models.sh (validate_model_names, filter_models_by_preset)
-- [ ] T010 Implement FR-036 validation: backup functions in scripts/lib/deploy-backup.sh (create_backup, list_backups, validate_backup_integrity)
-- [ ] T011 Implement rollback functions in scripts/lib/deploy-backup.sh (rollback_from_backup, create_safety_backup)
-- [ ] T012 Implement FR-030 validation: pre-deployment validation in scripts/lib/deploy-validate.sh (validate_source_directory, validate_disk_space, validate_permissions, validate_preset, validate_models)
-- [ ] T013 Implement FR-030 validation: post-deployment validation in scripts/lib/deploy-validate.sh (validate_yaml_config, validate_file_count, validate_env_file_permissions)
-- [ ] T014 Implement FR-033 validation: deployment logging in scripts/lib/deploy-log.sh (write_deployment_log to ~/.claude/gateway/deployment.log, append_to_log)
+- [X] T005 [P] Implement color output functions in scripts/lib/deploy-output.sh (echo_success, echo_error, echo_warning, echo_info)
+- [X] T006 [P] Implement file permission functions in scripts/lib/deploy-perms.sh (set_file_perms, validate_perms)
+- [X] T007 [P] Implement environment variable detection in scripts/lib/deploy-env.sh (detect_env_vars, merge_env_sources)
+- [X] T008 Implement core preset loading in scripts/lib/deploy-presets.sh (load_preset_definition, validate_preset)
+- [X] T009 Implement model validation in scripts/lib/deploy-models.sh (validate_model_names, filter_models_by_preset)
+- [X] T010 Implement FR-036 validation: backup functions in scripts/lib/deploy-backup.sh (create_backup, list_backups, validate_backup_integrity)
+- [X] T011 Implement rollback functions in scripts/lib/deploy-backup.sh (rollback_from_backup, create_safety_backup)
+- [X] T012 Implement FR-030 validation: pre-deployment validation in scripts/lib/deploy-validate.sh (validate_source_directory, validate_disk_space, validate_permissions, validate_preset, validate_models)
+- [X] T013 Implement FR-030 validation: post-deployment validation in scripts/lib/deploy-validate.sh (validate_yaml_config, validate_file_count, validate_env_file_permissions)
+- [X] T014 Implement FR-033 validation: deployment logging in scripts/lib/deploy-log.sh (write_deployment_log to ~/.claude/gateway/deployment.log, append_to_log)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -55,21 +55,21 @@
 
 ### Implementation for User Story 1
 
-- [ ] T015 [P] [US1] Create main CLI entry point in scripts/deploy-gateway-config.sh with FR-031, FR-032 validation: argument parsing (--preset, --models, --dry-run, --force, --verbose, --help)
-- [ ] T016 [P] [US1] Implement install command handler in scripts/deploy-gateway-config.sh (calls deploy_basic function)
-- [ ] T017 [US1] Implement deploy_basic function in scripts/lib/deploy-core.sh (orchestrates: validate pre → backup → copy files → generate config → validate post)
-- [ ] T018 [US1] Implement copy_template_files function in scripts/lib/deploy-core.sh (copy templates/, scripts/, docs/, examples/ from source to target)
-- [ ] T019 [US1] Implement generate_env_file function in scripts/lib/deploy-core.sh (detect env vars, write to ~/.claude/gateway/.env with 0600 permissions)
-- [ ] T020 [US1] Implement generate_startup_script function in scripts/lib/deploy-core.sh (create ~/.claude/gateway/start-gateway.sh with correct paths)
-- [ ] T021 [US1] Implement create_directory_structure function in scripts/lib/deploy-core.sh (mkdir -p config/, templates/, scripts/, docs/, examples/, backups/)
-- [ ] T022 [US1] Add FR-001 validation: verify all template files copied to ~/.claude/gateway/templates/
-- [ ] T023 [US1] Add FR-002 validation: verify ~/.claude/gateway/ created with 0700 permissions
-- [ ] T024 [US1] Add FR-003 validation: run validate-config.py on deployed litellm.yaml
-- [ ] T025 [US1] Add FR-004 validation: verify environment variables detected from shell, rc files, existing .env
-- [ ] T026 [US1] Add FR-005 validation: verify ~/.claude/gateway/.env created with required variables (LITELLM_MASTER_KEY, GOOGLE_APPLICATION_CREDENTIALS)
-- [ ] T026b [US1] Add FR-006 validation: verify ~/.claude/settings.json updated with gateway endpoint URL
-- [ ] T027 [US1] Add FR-007 validation: verify start-gateway.sh generated and executable (0755)
-- [ ] T028 [US1] Add FR-008 validation: verify backup created in ~/.claude/gateway/backups/ as gateway-backup-YYYYMMDD-HHMMSS.tar.gz
+- [X] T015 [P] [US1] Create main CLI entry point in scripts/deploy-gateway-config.sh with FR-031, FR-032 validation: argument parsing (--preset, --models, --dry-run, --force, --verbose, --help)
+- [X] T016 [P] [US1] Implement install command handler in scripts/deploy-gateway-config.sh (calls deploy_basic function)
+- [X] T017 [US1] Implement deploy_basic function in scripts/lib/deploy-core.sh (orchestrates: validate pre → backup → copy files → generate config → validate post)
+- [X] T018 [US1] Implement copy_template_files function in scripts/lib/deploy-core.sh (copy templates/, scripts/, docs/, examples/ from source to target)
+- [X] T019 [US1] Implement generate_env_file function in scripts/lib/deploy-core.sh (detect env vars, write to ~/.claude/gateway/.env with 0600 permissions)
+- [X] T020 [US1] Implement generate_startup_script function in scripts/lib/deploy-core.sh (create ~/.claude/gateway/start-gateway.sh with correct paths)
+- [X] T021 [US1] Implement create_directory_structure function in scripts/lib/deploy-core.sh (mkdir -p config/, templates/, scripts/, docs/, examples/, backups/)
+- [X] T022 [US1] Add FR-001 validation: verify all template files copied to ~/.claude/gateway/templates/
+- [X] T023 [US1] Add FR-002 validation: verify ~/.claude/gateway/ created with 0700 permissions
+- [X] T024 [US1] Add FR-003 validation: run validate-config.py on deployed litellm.yaml
+- [X] T025 [US1] Add FR-004 validation: verify environment variables detected from shell, rc files, existing .env
+- [X] T026 [US1] Add FR-005 validation: verify ~/.claude/gateway/.env created with required variables (LITELLM_MASTER_KEY, GOOGLE_APPLICATION_CREDENTIALS)
+- [X] T026b [US1] Add FR-006 validation: verify ~/.claude/settings.json updated with gateway endpoint URL
+- [X] T027 [US1] Add FR-007 validation: verify start-gateway.sh generated and executable (0755)
+- [X] T028 [US1] Add FR-008 validation: verify backup created in ~/.claude/gateway/backups/ as gateway-backup-YYYYMMDD-HHMMSS.tar.gz
 
 **Checkpoint**: User Story 1 complete - basic deployment working end-to-end
 
@@ -83,14 +83,14 @@
 
 ### Implementation for User Story 2
 
-- [ ] T029 [P] [US2] Add --models flag parsing to scripts/deploy-gateway-config.sh CLI argument parser
-- [ ] T030 [US2] Implement filter_models_by_selection function in scripts/lib/deploy-models.sh (parse comma-separated list, validate against AVAILABLE_MODELS)
-- [ ] T031 [US2] Implement merge_model_configs function in scripts/lib/deploy-core.sh (read model YAML files from templates/models/, merge into litellm.yaml)
-- [ ] T032 [US2] Add model validation to deploy_basic: if --models specified, filter before copying
-- [ ] T033 [US2] Add FR-009 validation: warn about invalid model names but proceed with valid ones
-- [ ] T034 [US2] Add FR-010 validation: validate model names against available model list
-- [ ] T034b [US2] Add FR-011 validation: show available model list with descriptions on invalid model error
-- [ ] T035 [US2] Add FR-012 validation: update generate_config function to merge selected model configs into single litellm.yaml
+- [X] T029 [P] [US2] Add --models flag parsing to scripts/deploy-gateway-config.sh CLI argument parser
+- [X] T030 [US2] Implement filter_models_by_selection function in scripts/lib/deploy-models.sh (parse comma-separated list, validate against AVAILABLE_MODELS)
+- [X] T031 [US2] Implement merge_model_configs function in scripts/lib/deploy-core.sh (read model YAML files from templates/models/, merge into litellm.yaml)
+- [X] T032 [US2] Add model validation to deploy_basic: if --models specified, filter before copying
+- [X] T033 [US2] Add FR-009 validation: warn about invalid model names but proceed with valid ones
+- [X] T034 [US2] Add FR-010 validation: validate model names against available model list
+- [X] T034b [US2] Add FR-011 validation: show available model list with descriptions on invalid model error
+- [X] T035 [US2] Add FR-012 validation: update generate_config function to merge selected model configs into single litellm.yaml
 
 **Checkpoint**: User Story 2 complete - model selection working
 
@@ -104,15 +104,15 @@
 
 ### Implementation for User Story 3
 
-- [ ] T036 [P] [US3] Add --preset enterprise support to load_preset_definition in scripts/lib/deploy-presets.sh
-- [ ] T037 [P] [US3] Add --gateway-type, --gateway-url, --auth-token flags to scripts/deploy-gateway-config.sh CLI parser
-- [ ] T038 [US3] Implement deploy_enterprise function in scripts/lib/deploy-core.sh (copy enterprise templates, skip local LiteLLM setup)
-- [ ] T039 [US3] Implement update_claude_settings function in scripts/lib/deploy-core.sh (update ~/.claude/settings.json with gateway URL)
-- [ ] T040 [US3] Implement copy_enterprise_templates function in scripts/lib/deploy-core.sh (copy from templates/enterprise/ based on gateway type)
-- [ ] T041 [US3] Add FR-014 validation: verify enterprise gateway URL is valid HTTPS
-- [ ] T042 [US3] Add FR-015 validation: verify auth token is non-empty when gateway-url provided
-- [ ] T043 [US3] Add FR-016 validation: update settings.json with enterprise gateway endpoint
-- [ ] T043b [US3] Add FR-017 validation: run health check against gateway URL /health endpoint if reachable
+- [X] T036 [P] [US3] Add --preset enterprise support to load_preset_definition in scripts/lib/deploy-presets.sh
+- [X] T037 [P] [US3] Add --gateway-type, --gateway-url, --auth-token flags to scripts/deploy-gateway-config.sh CLI parser
+- [X] T038 [US3] Implement deploy_enterprise function in scripts/lib/deploy-core.sh (copy enterprise templates, skip local LiteLLM setup)
+- [X] T039 [US3] Implement update_claude_settings function in scripts/lib/deploy-core.sh (update ~/.claude/settings.json with gateway URL)
+- [X] T040 [US3] Implement copy_enterprise_templates function in scripts/lib/deploy-core.sh (copy from templates/enterprise/ based on gateway type)
+- [X] T041 [US3] Add FR-014 validation: verify enterprise gateway URL is valid HTTPS
+- [X] T042 [US3] Add FR-015 validation: verify auth token is non-empty when gateway-url provided
+- [X] T043 [US3] Add FR-016 validation: update settings.json with enterprise gateway endpoint
+- [X] T043b [US3] Add FR-017 validation: run health check against gateway URL /health endpoint if reachable
 
 **Checkpoint**: User Story 3 complete - enterprise gateway deployment working
 
