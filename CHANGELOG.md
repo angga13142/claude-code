@@ -10,6 +10,8 @@
   - Corporate proxy setup and troubleshooting guides
   - CI/CD and Docker Compose examples for automated deployments
   - See [specs/001-llm-gateway-config/README.md](specs/001-llm-gateway-config/README.md) for full documentation
+- Added setting to enable/disable terminal progress bar (OSC 9;4)
+- VSCode Extension: Added support for VS Code's secondary sidebar (VS Code 1.97+), allowing Claude Code to be displayed in the right sidebar while keeping the file explorer on the left. Requires setting sidebar as Preferred Location in the config.
 
 ## 2.0.55
 
