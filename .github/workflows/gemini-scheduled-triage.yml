@@ -71,6 +71,14 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN || github.token }}'
         run: |-
           echo '🔍 Finding unlabeled issues and issues marked for triage...'
+          
+          # Check if issues are enabled by attempting to list them
+          if ! gh issue list --state 'open' --limit 1 --repo "${GITHUB_REPOSITORY}" &>/dev/null; then
+            echo "⚠️ Issues are disabled in this repository. Skipping triage."
+            echo "issues_to_triage=[]" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          
           ISSUES="$(gh issue list \
             --state 'open' \
             --search 'no:label label:"status/needs-triage"' \
