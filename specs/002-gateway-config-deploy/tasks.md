@@ -126,12 +126,12 @@
 
 ### Implementation for User Story 4
 
-- [ ] T044 [P] [US4] Add --preset multi-provider support to load_preset_definition in scripts/lib/deploy-presets.sh
-- [ ] T045 [US4] Implement deploy_multi_provider function in scripts/lib/deploy-core.sh (copy multi-provider templates)
-- [ ] T046 [US4] Implement copy_multi_provider_templates function in scripts/lib/deploy-core.sh (copy from templates/multi-provider/)
-- [ ] T047 [US4] Add multi-provider env var detection: ANTHROPIC_API_KEY, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
-- [ ] T048 [US4] Add FR-020 validation: set provider-specific environment variables for each provider
-- [ ] T049 [US4] Add FR-021 validation: configure auth bypass flags when appropriate (e.g., ANTHROPIC_VERTEX_AUTH_BYPASS=1)
+- [X] T044 [P] [US4] Add --preset multi-provider support to load_preset_definition in scripts/lib/deploy-presets.sh
+- [X] T045 [US4] Implement deploy_multi_provider function in scripts/lib/deploy-core.sh (copy multi-provider templates)
+- [X] T046 [US4] Implement copy_multi_provider_templates function in scripts/lib/deploy-core.sh (copy from templates/multi-provider/)
+- [X] T047 [US4] Add multi-provider env var detection: ANTHROPIC_API_KEY, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+- [X] T048 [US4] Add FR-020 validation: set provider-specific environment variables for each provider
+- [X] T049 [US4] Add FR-021 validation: configure auth bypass flags when appropriate (e.g., ANTHROPIC_VERTEX_AUTH_BYPASS=1)
 
 **Checkpoint**: User Story 4 complete - multi-provider deployment working
 
@@ -145,14 +145,14 @@
 
 ### Implementation for User Story 5
 
-- [ ] T050 [P] [US5] Add update command to scripts/deploy-gateway-config.sh CLI (separate from install)
-- [ ] T051 [P] [US5] Add --add-models and --remove-models flags to update command parser
-- [ ] T052 [US5] Implement deploy_update function in scripts/lib/deploy-core.sh (detect existing, merge changes)
-- [ ] T053 [US5] Implement merge_existing_config function in scripts/lib/deploy-core.sh (read existing litellm.yaml, add/remove models, preserve custom settings)
-- [ ] T054 [US5] Implement preserve_custom_settings function in scripts/lib/deploy-core.sh (detect user modifications in .env, preserve during update)
-- [ ] T055 [US5] Add FR-022 validation: verify --update flag and detect existing deployment before update
-- [ ] T056 [US5] Add FR-025 validation: create incremental backup before any update operation
-- [ ] T057 [US5] Add FR-024 validation: preserve user customizations in config files during updates
+- [X] T050 [P] [US5] Add update command to scripts/deploy-gateway-config.sh CLI (separate from install)
+- [X] T051 [P] [US5] Add --add-models and --remove-models flags to update command parser
+- [X] T052 [US5] Implement deploy_update function in scripts/lib/deploy-core.sh (detect existing, merge changes)
+- [X] T053 [US5] Implement merge_existing_config function in scripts/lib/deploy-core.sh (read existing litellm.yaml, add/remove models, preserve custom settings)
+- [X] T054 [US5] Implement preserve_custom_settings function in scripts/lib/deploy-core.sh (detect user modifications in .env, preserve during update)
+- [X] T055 [US5] Add FR-022 validation: verify --update flag and detect existing deployment before update
+- [X] T056 [US5] Add FR-025 validation: create incremental backup before any update operation
+- [X] T057 [US5] Add FR-024 validation: preserve user customizations in config files during updates
 
 **Checkpoint**: User Story 5 complete - updates working without data loss
 
@@ -166,14 +166,14 @@
 
 ### Implementation for User Story 6
 
-- [ ] T058 [P] [US6] Add --preset proxy support to load_preset_definition in scripts/lib/deploy-presets.sh
-- [ ] T059 [P] [US6] Add --proxy and --proxy-auth flags to scripts/deploy-gateway-config.sh CLI parser
-- [ ] T060 [US6] Implement deploy_proxy function in scripts/lib/deploy-core.sh (copy proxy templates, configure HTTPS_PROXY)
-- [ ] T061 [US6] Implement copy_proxy_templates function in scripts/lib/deploy-core.sh (copy from templates/proxy/)
-- [ ] T062 [US6] Add FR-028 validation: set HTTP_PROXY, HTTPS_PROXY environment variables in deployed configs
-- [ ] T063 [US6] Add FR-026 validation: verify proxy URL is valid HTTP/HTTPS
-- [ ] T064 [US6] Add FR-027 validation: warn if proxy credentials in URL (security risk), support --proxy-auth flag
-- [ ] T065 [US6] Add FR-029 validation: configure LiteLLM to use proxy for upstream provider connections
+- [X] T058 [P] [US6] Add --preset proxy support to load_preset_definition in scripts/lib/deploy-presets.sh
+- [X] T059 [P] [US6] Add --proxy and --proxy-auth flags to scripts/deploy-gateway-config.sh CLI parser
+- [X] T060 [US6] Implement deploy_proxy function in scripts/lib/deploy-core.sh (copy proxy templates, configure HTTPS_PROXY)
+- [X] T061 [US6] Implement copy_proxy_templates function in scripts/lib/deploy-core.sh (copy from templates/proxy/)
+- [X] T062 [US6] Add FR-028 validation: set HTTP_PROXY, HTTPS_PROXY environment variables in deployed configs
+- [X] T063 [US6] Add FR-026 validation: verify proxy URL is valid HTTP/HTTPS
+- [X] T064 [US6] Add FR-027 validation: warn if proxy credentials in URL (security risk), support --proxy-auth flag
+- [X] T065 [US6] Add FR-029 validation: configure LiteLLM to use proxy for upstream provider connections
 
 **Checkpoint**: User Story 6 complete - proxy deployment working
 
@@ -183,17 +183,17 @@
 
 **Purpose**: Rollback, list-backups, dry-run mode, and error handling
 
-- [ ] T066 [P] Add FR-034 validation: add rollback command to scripts/deploy-gateway-config.sh (rollback [BACKUP_NAME])
-- [ ] T067 [P] Add FR-035 validation: add list-backups command to scripts/deploy-gateway-config.sh (shows all backups with metadata)
-- [ ] T068 Add FR-031 validation: implement dry_run mode in scripts/lib/deploy-core.sh (show would-be actions without executing)
-- [ ] T069 Implement print_dry_run_summary function in scripts/lib/deploy-output.sh (display deployment preview for FR-031)
-- [ ] T070 Add --force flag support to skip all confirmation prompts (CI/CD mode - enhancement feature)
-- [ ] T071 Implement interactive confirmations for: existing deployment overwrite, LiteLLM running warning
-- [ ] T072 Add error trapping with trap 'handle_error $? $LINENO' ERR in main script
-- [ ] T073 Implement handle_error function in scripts/lib/deploy-core.sh (automatic rollback on failure)
-- [ ] T074 Add exit code constants (0-6) for different failure modes per contracts/cli-interface.md
-- [ ] T075 Implement print_help function in scripts/deploy-gateway-config.sh (comprehensive help text)
-- [ ] T076 Implement print_version function in scripts/deploy-gateway-config.sh (show version info)
+- [X] T066 [P] Add FR-034 validation: add rollback command to scripts/deploy-gateway-config.sh (rollback [BACKUP_NAME])
+- [X] T067 [P] Add FR-035 validation: add list-backups command to scripts/deploy-gateway-config.sh (shows all backups with metadata)
+- [X] T068 Add FR-031 validation: implement dry_run mode in scripts/lib/deploy-core.sh (show would-be actions without executing)
+- [X] T069 Implement print_dry_run_summary function in scripts/lib/deploy-output.sh (display deployment preview for FR-031)
+- [X] T070 Add --force flag support to skip all confirmation prompts (CI/CD mode - enhancement feature)
+- [X] T071 Implement interactive confirmations for: existing deployment overwrite, LiteLLM running warning
+- [X] T072 Add error trapping with trap 'handle_error $? $LINENO' ERR in main script
+- [X] T073 Implement handle_error function in scripts/lib/deploy-core.sh (automatic rollback on failure)
+- [X] T074 Add exit code constants (0-6) for different failure modes per contracts/cli-interface.md
+- [X] T075 Implement print_help function in scripts/deploy-gateway-config.sh (comprehensive help text)
+- [X] T076 Implement print_version function in scripts/deploy-gateway-config.sh (show version info)
 
 ---
 
@@ -201,16 +201,16 @@
 
 **Purpose**: Handle all edge cases from spec.md
 
-- [ ] T077 [P] Handle ~/.claude directory missing: create with 0700 permissions (edge case 1)
-- [ ] T078 [P] Handle existing gateway config: prompt user (overwrite/backup/merge) or --force (edge case 2)
-- [ ] T079 Handle GCP credentials missing: show error with authentication guide link (edge case 3)
-- [ ] T080 Handle invalid YAML in deployed config: validate before write, rollback on error (edge case 4)
-- [ ] T081 Handle LiteLLM already running: warn user to stop service first or offer restart (edge case 5)
-- [ ] T082 Handle permission denied to ~/.claude: show clear error with chmod suggestion (edge case 6)
-- [ ] T083 Handle model not available in user's GCP region: warn but allow deployment with comment in config (edge case 7)
-- [ ] T084 Handle network unavailable during validation: skip online checks, warn to validate manually (edge case 8)
-- [ ] T085 Handle disk space insufficient: check before deployment, fail with clear error (edge case 9)
-- [ ] T086 Handle source directory missing/corrupted: validate source integrity before starting (edge case 10)
+- [X] T077 [P] Handle ~/.claude directory missing: create with 0700 permissions (edge case 1)
+- [X] T078 [P] Handle existing gateway config: prompt user (overwrite/backup/merge) or --force (edge case 2)
+- [X] T079 Handle GCP credentials missing: show error with authentication guide link (edge case 3)
+- [X] T080 Handle invalid YAML in deployed config: validate before write, rollback on error (edge case 4)
+- [X] T081 Handle LiteLLM already running: warn user to stop service first or offer restart (edge case 5)
+- [X] T082 Handle permission denied to ~/.claude: show clear error with chmod suggestion (edge case 6)
+- [X] T083 Handle model not available in user's GCP region: warn but allow deployment with comment in config (edge case 7)
+- [X] T084 Handle network unavailable during validation: skip online checks, warn to validate manually (edge case 8)
+- [X] T085 Handle disk space insufficient: check before deployment, fail with clear error (edge case 9)
+- [X] T086 Handle source directory missing/corrupted: validate source integrity before starting (edge case 10)
 
 ---
 
@@ -218,17 +218,17 @@
 
 **Purpose**: Final touches for production readiness
 
-- [ ] T087 [P] Add shellcheck linting to all bash scripts (fix warnings)
-- [ ] T088 [P] Add comprehensive function header comments to all library functions (purpose, params, returns, example)
-- [ ] T089 [P] Create deployment example output in docs/ showing successful deployment
-- [ ] T090 [P] Create error message examples in docs/ for all error codes
-- [ ] T091 Add progress indicators: spinner during file copy, "Validating..." during checks
-- [ ] T092 Add deployment summary output: files copied count, models deployed, backup location
-- [ ] T093 Add color-coded validation output: green ✓ for pass, red ✗ for fail, yellow ⚠ for warn
-- [ ] T094 Verify all error messages follow contract format from contracts/cli-interface.md
-- [ ] T095 Add timing information: log deployment duration, validation duration
-- [ ] T096 Verify quickstart.md instructions match actual CLI behavior
-- [ ] T097 Test all 4 presets end-to-end: basic, enterprise, multi-provider, proxy
+- [X] T087 [P] Add shellcheck linting to all bash scripts (fix warnings)
+- [X] T088 [P] Add comprehensive function header comments to all library functions (purpose, params, returns, example)
+- [X] T089 [P] Create deployment example output in docs/ showing successful deployment
+- [X] T090 [P] Create error message examples in docs/ for all error codes
+- [X] T091 Add progress indicators: spinner during file copy, "Validating..." during checks
+- [X] T092 Add deployment summary output: files copied count, models deployed, backup location
+- [X] T093 Add color-coded validation output: green ✓ for pass, red ✗ for fail, yellow ⚠ for warn
+- [X] T094 Verify all error messages follow contract format from contracts/cli-interface.md
+- [X] T095 Add timing information: log deployment duration, validation duration
+- [X] T096 Verify quickstart.md instructions match actual CLI behavior
+- [X] T097 Test all 4 presets end-to-end: basic, enterprise, multi-provider, proxy
 - [ ] T098 Test all edge cases manually: missing dirs, invalid configs, permission errors
 - [ ] T099 Run complete deployment → rollback → re-deploy cycle to verify backup integrity
 - [ ] T100 Update README.md with deployment tool usage and examples
