@@ -1,0 +1,240 @@
+# Anthropic Direct Provider Configuration
+# Purpose: Direct connection to Anthropic API (no intermediary cloud provider)
+# Usage: litellm --config anthropic-config.yaml --port 4000
+# User Story: US3 - Multi-Provider Gateway Configuration (Priority: P3)
+# Provider: Anthropic Direct (api.anthropic.com)
+
+model_list:
+  # === Claude 3.5 Sonnet (Latest) ===
+  # Enhanced performance, extended context, improved coding capabilities
+
+  - model_name: claude-3-5-sonnet-20241022
+    litellm_params:
+      model: anthropic/claude-3-5-sonnet-20241022
+      api_key: os.environ/ANTHROPIC_API_KEY
+      # api_base: https://api.anthropic.com  # Default, can be overridden
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      supports_prompt_caching: true
+      max_tokens: 8192
+      max_input_tokens: 200000
+    rpm: 50
+    tpm: 2000000
+
+  # === Claude 3 Opus (Most Capable) ===
+  # Best for complex reasoning, analysis, and code generation
+
+  - model_name: claude-3-opus-20240229
+    litellm_params:
+      model: anthropic/claude-3-opus-20240229
+      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      supports_prompt_caching: true
+      max_tokens: 4096
+      max_input_tokens: 200000
+    rpm: 30
+    tpm: 1500000
+
+  # === Claude 3 Sonnet (Balanced) ===
+  # Balance between intelligence, speed, and cost
+
+  - model_name: claude-3-sonnet-20240229
+    litellm_params:
+      model: anthropic/claude-3-sonnet-20240229
+      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      supports_prompt_caching: true
+      max_tokens: 4096
+      max_input_tokens: 200000
+    rpm: 60
+    tpm: 2000000
+
+  # === Claude 3 Haiku (Fast & Efficient) ===
+  # Fastest model for high-volume, low-latency use cases
+
+  - model_name: claude-3-haiku-20240307
+    litellm_params:
+      model: anthropic/claude-3-haiku-20240307
+      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      supports_prompt_caching: true
+      max_tokens: 4096
+      max_input_tokens: 200000
+    rpm: 100
+    tpm: 3000000
+
+  # === Claude 3.5 Haiku (Latest Fast Model) ===
+  # Upgraded Haiku with enhanced capabilities
+
+  - model_name: claude-3-5-haiku-20241022
+    litellm_params:
+      model: anthropic/claude-3-5-haiku-20241022
+      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      supports_prompt_caching: true
+      max_tokens: 8192
+      max_input_tokens: 200000
+    rpm: 100
+    tpm: 3000000
+
+# LiteLLM Settings
+litellm_settings:
+  # Drop unsupported parameters gracefully
+  drop_params: true
+
+  # Enable debug logging for troubleshooting (set to false in production)
+  set_verbose: false
+
+  # Global timeout and retries
+  num_retries: 3
+  timeout: 30
+
+  # Anthropic-specific settings
+  # anthropic_beta: "prompt-caching-2024-07-31"  # Enable prompt caching beta
+
+  # Request logging (optional - requires database)
+  # success_callback: ["langfuse"]
+  # failure_callback: ["langfuse"]
+
+# Router Settings
+router_settings:
+  # Routing strategy
+  routing_strategy: least-busy # Options: simple-shuffle, least-busy, usage-based-routing
+
+  # Retry policy
+  retry_policy:
+    TimeoutErrorRetries: 2
+    RateLimitErrorRetries: 3
+    InternalServerErrorRetries: 2
+
+  # Fallback configuration
+  allowed_fails: 3 # Number of failures before marking model unhealthy
+  cooldown_time: 60 # Seconds before retrying failed model
+
+# General Settings
+general_settings:
+  # API Configuration
+  master_key: os.environ/LITELLM_MASTER_KEY # Required for proxy authentication
+
+  # Enable Admin UI
+  ui: true
+
+  # Set port
+  port: 4000
+# Anthropic Authentication:
+#
+# Required Environment Variable:
+#   export ANTHROPIC_API_KEY="sk-ant-..."
+#
+# Obtain API Key:
+#   1. Visit https://console.anthropic.com/settings/keys
+#   2. Click "Create Key"
+#   3. Copy the key (starts with "sk-ant-")
+#   4. Set environment variable before starting LiteLLM
+
+# Claude Code Integration:
+#
+# 1. Set Claude Code environment variables:
+#    export ANTHROPIC_BASE_URL="http://localhost:4000"
+#    export ANTHROPIC_API_KEY="<litellm-master-key>"
+#
+# 2. Or add to ~/.claude/settings.json:
+#    {
+#      "anthropicBaseUrl": "http://localhost:4000",
+#      "anthropicAuthToken": "<litellm-master-key>"
+#    }
+#
+# 3. Verify with: claude /status
+#
+# See examples/us3-provider-env-vars.md for complete environment variable reference
+
+# Rate Limits (as of 2024):
+#
+# Free Tier:
+# - 5 requests per minute across all models
+# - No guaranteed uptime
+# - Best effort support
+#
+# Build Tier ($5 monthly spend):
+# - 50 requests per minute (Claude 3 Haiku)
+# - 50 requests per minute (Claude 3 Sonnet)
+# - 20 requests per minute (Claude 3 Opus)
+# - 10 requests per minute (Claude 3.5 Sonnet)
+# - Higher quotas available on request
+#
+# Scale Tier ($1000+ monthly spend):
+# - Custom rate limits
+# - Dedicated support
+# - Priority access to new models
+#
+# Check current limits: https://console.anthropic.com/settings/limits
+
+# Advanced Features:
+#
+# Prompt Caching:
+#   - Reduces costs by caching repeated prompt prefixes
+#   - Enable with anthropic_beta header
+#   - Supported on Claude 3.5 Sonnet, Claude 3 Opus, Claude 3 Haiku
+#
+# Streaming:
+#   - Real-time token-by-token responses
+#   - Automatically handled by LiteLLM
+#   - Set stream=true in API requests
+#
+# Extended Thinking (Coming Soon):
+#   - Multi-step reasoning for complex tasks
+#   - Access via anthropic_beta header when available
+#
+# Function Calling:
+#   - Structured outputs with tool use
+#   - Define tools in messages API request
+#   - Supported on all Claude 3+ models
+
+# Troubleshooting:
+# - 401 Unauthorized: Check ANTHROPIC_API_KEY is set correctly
+# - 429 Rate Limit: Reduce rpm/tpm values or upgrade tier
+# - 500 Internal Error: Anthropic API issue, retry with exponential backoff
+# - Connection errors: Verify network connectivity to api.anthropic.com
+# - SSL errors: Update CA certificates or check corporate proxy
+#
+# Debug Commands:
+#   curl -X POST https://api.anthropic.com/v1/messages \
+#     -H "x-api-key: $ANTHROPIC_API_KEY" \
+#     -H "anthropic-version: 2023-06-01" \
+#     -H "content-type: application/json" \
+#     -d '{"model":"claude-3-5-sonnet-20241022","max_tokens":10,"messages":[{"role":"user","content":"Hi"}]}'
+#
+# See examples/us3-multi-provider-setup.md for detailed troubleshooting guide
+
+# Security Best Practices:
+# - NEVER commit API keys to version control
+# - Use environment variables or secret managers (AWS Secrets Manager, GCP Secret Manager)
+# - Rotate API keys regularly (quarterly recommended)
+# - Monitor API usage in Anthropic Console for anomalies
+# - Set up billing alerts to prevent unexpected charges
+# - Use separate API keys for dev/staging/production environments
+# - Implement rate limiting at application layer to prevent abuse
+# - Log API requests (without sensitive data) for audit trails
+
+# Performance Optimization:
+# - Use Claude 3 Haiku for simple, high-volume tasks
+# - Use Claude 3.5 Sonnet for balanced performance
+# - Use Claude 3 Opus only for most complex reasoning
+# - Enable prompt caching for repeated prompts (can reduce costs by 90%)
+# - Batch similar requests to maximize cache hits
+# - Use streaming for better user experience
+# - Monitor latency via LiteLLM analytics dashboard

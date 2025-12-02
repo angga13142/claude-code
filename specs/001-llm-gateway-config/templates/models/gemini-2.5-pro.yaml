@@ -1,0 +1,36 @@
+# Gemini 2.5 Pro Model Configuration
+# Model: gemini-2.5-pro
+# Publisher: Google
+# Priority: P1
+# Use Case: Most capable Gemini model for production workloads
+
+model_name: gemini-2.5-pro
+litellm_params:
+  model: vertex_ai/gemini-2.5-pro
+  vertex_project: YOUR_PROJECT_ID        # Replace with your GCP project ID
+  vertex_location: us-central1           # Supported: us-central1, us-east1, europe-west1
+  
+  # Authentication (choose one)
+  # Option 1: Use gcloud auth (recommended for development)
+  # vertex_credentials: default
+  
+  # Option 2: Use service account JSON (recommended for production)
+  # vertex_credentials: /path/to/service-account-key.json
+
+# Model capabilities
+model_info:
+  supports_function_calling: true
+  supports_vision: true
+  supports_system_messages: true
+  supports_json_mode: true
+  supports_grounding: true               # Google Search grounding
+  supports_prompt_caching: true          # 50-90% cost reduction
+  max_input_tokens: 2097152              # 2M context window
+  max_output_tokens: 8192
+
+# Rate limiting (optional)
+# rpm: 30                                # Lower rate for higher capacity model
+# tpm: 2000000                           # Tokens per minute
+
+# Load balancing (optional)
+# priority: 9                            # High priority for quality

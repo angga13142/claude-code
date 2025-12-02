@@ -1,0 +1,152 @@
+# LiteLLM Proxy Configuration: Corporate Proxy + Gateway Pattern
+# Deployment Pattern 4: Claude Code → Corporate Proxy → LiteLLM Gateway → Provider APIs
+#
+# Use Case: Enterprise environments with both corporate proxy requirements AND LLM gateway needs
+# - Corporate network policies require HTTP/HTTPS proxy for outbound traffic
+# - Need centralized cost tracking, multi-provider routing, or team management
+# - Gateway handles provider authentication while proxy handles network routing
+#
+# Prerequisites:
+# - Corporate proxy URL and credentials (if authenticated)
+# - Provider API keys/credentials for gateway
+# - Network policies allow proxy → gateway → provider chain
+
+model_list:
+  # Example: Claude 3.5 Sonnet via Anthropic Direct
+  - model_name: claude-3-5-sonnet-20241022
+    litellm_params:
+      model: anthropic/claude-3-5-sonnet-20241022
+      api_key: os.environ/ANTHROPIC_API_KEY
+      # Proxy settings for outbound requests from gateway to Anthropic API
+      proxy: os.environ/HTTPS_PROXY # Gateway uses corporate proxy to reach Anthropic
+
+  # Example: Claude 3.5 Sonnet via AWS Bedrock
+  - model_name: claude-3-5-sonnet-bedrock
+    litellm_params:
+      model: bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0
+      aws_region_name: os.environ/AWS_REGION
+      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+      # Proxy settings for Bedrock API calls
+      proxy: os.environ/HTTPS_PROXY
+
+  # Example: Vertex AI models through corporate proxy
+  - model_name: gemini-2.5-pro
+    litellm_params:
+      model: vertex_ai/gemini-2.5-pro
+      vertex_project: os.environ/VERTEX_PROJECT_ID
+      vertex_location: os.environ/VERTEX_LOCATION
+      # Proxy settings for Vertex AI API calls
+      proxy: os.environ/HTTPS_PROXY
+
+# Gateway server configuration
+litellm_settings:
+  # Master key for gateway authentication
+  master_key: os.environ/LITELLM_MASTER_KEY
+
+  # Proxy configuration for gateway's outbound requests
+  # Gateway will use this proxy to reach all provider APIs
+  proxy:
+    http_proxy: os.environ/HTTP_PROXY
+    https_proxy: os.environ/HTTPS_PROXY
+    no_proxy: os.environ/NO_PROXY # Optional: comma-separated list of hosts to bypass proxy
+
+  # Success/failure logging
+  success_callback: ["langfuse"] # Optional: for observability
+
+  # Database for usage tracking (optional)
+  # database_url: os.environ/DATABASE_URL
+
+  # Drop unmapped params to avoid provider errors
+  drop_params: true
+
+  # Set timeout for proxy connections
+  request_timeout: 600 # 10 minutes for long-running requests through proxy
+
+# Router settings (optional - for multi-provider routing)
+router_settings:
+  routing_strategy: simple-shuffle # Options: simple-shuffle, least-busy, usage-based-routing
+  model_group_alias:
+    claude-3-5-sonnet:
+      - claude-3-5-sonnet-20241022
+      - claude-3-5-sonnet-bedrock
+
+  # Fallback logic
+  allowed_fails: 3
+  num_retries: 2
+  retry_after: 5 # seconds
+  timeout: 300 # 5 minutes per provider attempt
+
+# General settings
+general_settings:
+  # Master key (also set in litellm_settings for consistency)
+  master_key: os.environ/LITELLM_MASTER_KEY
+
+  # Alerting on failures (optional)
+  # alerting: ["slack", "email"]
+  # alerting_threshold: 5  # Alert after 5 consecutive failures
+# Environment Variables Required:
+# ================================
+# Corporate Proxy (Required):
+#   HTTPS_PROXY=http://proxy.company.com:8080
+#   HTTP_PROXY=http://proxy.company.com:8080
+#   NO_PROXY=localhost,127.0.0.1,*.internal  # Optional
+#
+# Proxy Authentication (if required):
+#   HTTPS_PROXY=http://username:password@proxy.company.com:8080
+#   Or use .netrc file for credentials
+#
+# Gateway Authentication:
+#   LITELLM_MASTER_KEY=sk-1234...  # Generate with: python -c "import secrets; print(secrets.token_urlsafe(32))"
+#
+# Provider Credentials:
+#   ANTHROPIC_API_KEY=sk-ant-...
+#   AWS_REGION=us-east-1
+#   AWS_ACCESS_KEY_ID=AKIA...
+#   AWS_SECRET_ACCESS_KEY=...
+#   VERTEX_PROJECT_ID=my-gcp-project
+#   VERTEX_LOCATION=us-central1
+#   GOOGLE_APPLICATION_CREDENTIALS=/path/to/sa-key.json
+#
+# Claude Code Configuration:
+#   ANTHROPIC_BASE_URL=http://localhost:4000  # LiteLLM gateway URL
+#   ANTHROPIC_API_KEY=$LITELLM_MASTER_KEY  # Same as gateway master key
+#   HTTPS_PROXY=http://proxy.company.com:8080  # Claude Code also uses proxy to reach gateway
+#   CLAUDE_CODE_SKIP_BEDROCK_AUTH=1  # If using Bedrock through gateway
+#   CLAUDE_CODE_SKIP_VERTEX_AUTH=1   # If using Vertex AI through gateway
+
+# Verification Steps:
+# ===================
+# 1. Test proxy connectivity:
+#    curl -x $HTTPS_PROXY https://api.anthropic.com/v1/messages
+#
+# 2. Start gateway with proxy:
+#    HTTPS_PROXY=$HTTPS_PROXY litellm --config proxy-gateway-config.yaml --port 4000
+#
+# 3. Test gateway through proxy:
+#    curl -x $HTTPS_PROXY -H "Authorization: Bearer $LITELLM_MASTER_KEY" http://localhost:4000/health
+#
+# 4. Test Claude Code:
+#    export ANTHROPIC_BASE_URL=http://localhost:4000
+#    export ANTHROPIC_API_KEY=$LITELLM_MASTER_KEY
+#    export HTTPS_PROXY=http://proxy.company.com:8080
+#    claude /status
+
+# Troubleshooting:
+# ================
+# - Proxy connection refused: Check proxy URL, port, and firewall rules
+# - Proxy authentication failed: Verify username/password in HTTPS_PROXY or .netrc
+# - Gateway can't reach providers: Check NO_PROXY settings, ensure providers not blocked
+# - SSL certificate errors: Proxy may intercept HTTPS traffic (add proxy CA cert to trust store)
+# - Timeout errors: Increase request_timeout, check network latency
+# - 407 Proxy Authentication Required: Set proxy credentials in HTTPS_PROXY URL
+
+# Security Considerations:
+# ========================
+# - Never commit proxy credentials to version control
+# - Use secret managers for proxy passwords in production
+# - Consider certificate pinning if proxy intercepts HTTPS
+# - Monitor proxy logs for anomalous access patterns
+# - Rotate proxy credentials regularly
+# - Use separate proxy credentials for different environments (dev/staging/prod)
+# - Ensure proxy doesn't log sensitive data (API keys, request/response bodies)

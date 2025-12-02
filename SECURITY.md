@@ -1,4 +1,5 @@
 # Security Policy
+
 Thank you for helping us keep Claude Code secure!
 
 ## Reporting Security Issues

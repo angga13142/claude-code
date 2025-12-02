@@ -1,0 +1,425 @@
+# Zuplo API Gateway Configuration for Claude Code
+# Purpose: API management gateway with edge caching, rate limiting, and developer portal
+# Documentation: https://zuplo.com/docs
+# Usage: Configure Claude Code to route through Zuplo-managed endpoints
+
+# ===================================================================
+# QUICK START
+# ===================================================================
+# 1. Deploy Zuplo gateway with Anthropic API integration
+# 2. Set environment variables:
+#    export ANTHROPIC_BASE_URL="https://your-gateway.zuplo.app"
+#    export ANTHROPIC_AUTH_TOKEN="zpka_your_api_key"
+# 3. Verify connection: claude /status
+# 4. Test: claude "Hello world"
+#
+# ⚠️ THIRD-PARTY NOTICE
+# Zuplo is a third-party solution not developed or maintained by Anthropic.
+# - Anthropic does not provide support for Zuplo
+# - Configuration may change without notice
+# - For issues, contact Zuplo support at support@zuplo.com
+# - Review Zuplo security and privacy policies before use
+# ===================================================================
+
+model_list:
+  # === Anthropic Models via Zuplo Gateway ===
+  
+  - model_name: claude-3-5-sonnet-20241022
+    litellm_params:
+      model: anthropic/claude-3-5-sonnet-20241022
+      api_base: ${ANTHROPIC_BASE_URL}  # Zuplo gateway endpoint
+      api_key: ${ANTHROPIC_AUTH_TOKEN}  # Zuplo API key (zpka_*)
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 200000
+      max_output_tokens: 8192
+    rpm: 100  # Adjust based on Zuplo rate limit policies
+    tpm: 400000
+
+  - model_name: claude-3-5-haiku-20241022
+    litellm_params:
+      model: anthropic/claude-3-5-haiku-20241022
+      api_base: ${ANTHROPIC_BASE_URL}
+      api_key: ${ANTHROPIC_AUTH_TOKEN}
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      max_tokens: 200000
+      max_output_tokens: 8192
+    rpm: 200
+    tpm: 800000
+
+  - model_name: claude-3-opus-20240229
+    litellm_params:
+      model: anthropic/claude-3-opus-20240229
+      api_base: ${ANTHROPIC_BASE_URL}
+      api_key: ${ANTHROPIC_AUTH_TOKEN}
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 200000
+      max_output_tokens: 4096
+    rpm: 50
+    tpm: 200000
+
+# ===================================================================
+# GENERAL SETTINGS
+# ===================================================================
+
+general_settings:
+  master_key: ${LITELLM_MASTER_KEY}
+  
+  # Zuplo-specific headers
+  custom_headers:
+    # Required Anthropic headers - Zuplo MUST forward these
+    - anthropic-version: "2023-06-01"
+    - anthropic-beta: "messages-2025-01-01"
+    
+    # Zuplo tracking headers (optional)
+    - x-zuplo-request-id: "${REQUEST_ID}"  # Populated by Zuplo
+    - x-zuplo-environment: "${ENVIRONMENT}"  # e.g., production, staging
+  
+  # Logging
+  log_level: INFO
+  
+  # Cost tracking (Zuplo provides analytics)
+  enable_cost_tracking: true
+  
+  # Callbacks for Zuplo webhooks
+  success_callback:
+    - zuplo_webhook
+    - prometheus
+  
+  failure_callback:
+    - zuplo_webhook
+    - slack_webhook
+
+# ===================================================================
+# ZUPLO API KEY CONFIGURATION
+# ===================================================================
+
+# Zuplo API Keys format: zpka_<environment>_<random>
+#
+# Key Types:
+#   - Public Keys (zpka_*): For client-side applications
+#   - Secret Keys (zpks_*): For server-side applications (NOT for Claude Code)
+#   - Consumer Keys (zpkc_*): For identified users
+#
+# Claude Code uses Public Keys (zpka_*) for authentication
+#
+# Generate keys in Zuplo Portal:
+#   1. Navigate to Settings → API Keys
+#   2. Click "Create API Key"
+#   3. Select "Public Key" type
+#   4. Set name: "Claude Code Production"
+#   5. Configure rate limits and quotas
+#   6. Copy key and set as ANTHROPIC_AUTH_TOKEN
+
+# ===================================================================
+# RATE LIMITING (Zuplo Edge Policies)
+# ===================================================================
+
+# Zuplo manages rate limiting at the edge via policies
+# Configure in Zuplo Portal: Routes → Select Route → Policies → Rate Limiting
+#
+# Example Zuplo Rate Limit Policy (configured in portal, not this file):
+# {
+#   "export": "RateLimitInboundPolicy",
+#   "module": "$import(@zuplo/runtime)",
+#   "options": {
+#     "rateLimitBy": "consumer",
+#     "requestsPerMinute": 100,
+#     "requestsPerHour": 5000
+#   }
+# }
+#
+# Best Practices:
+# - Set per-consumer limits for team isolation
+# - Configure burst allowances for spiky traffic
+# - Set up alerts when approaching limits
+
+# ===================================================================
+# HEADER FORWARDING & REQUEST TRANSFORMATION
+# ===================================================================
+
+# Zuplo Request Handler Configuration (routes.oas.json):
+#
+# {
+#   "paths": {
+#     "/v1/messages": {
+#       "post": {
+#         "x-zuplo-route": {
+#           "corsPolicy": "anything-goes",
+#           "handler": {
+#             "export": "urlForwardHandler",
+#             "module": "$import(@zuplo/runtime)",
+#             "options": {
+#               "baseUrl": "https://api.anthropic.com",
+#               "forwardSearch": true
+#             }
+#           },
+#           "policies": {
+#             "inbound": [
+#               "api-key-inbound",
+#               "rate-limit-inbound",
+#               "add-anthropic-headers-inbound"
+#             ]
+#           }
+#         }
+#       }
+#     }
+#   }
+# }
+#
+# Required Inbound Policy (add-anthropic-headers-inbound.ts):
+#
+# import { ZuploContext, ZuploRequest } from "@zuplo/runtime";
+#
+# export default async function(request: ZuploRequest, context: ZuploContext) {
+#   // Forward Anthropic-specific headers
+#   const requiredHeaders = [
+#     'anthropic-version',
+#     'anthropic-beta',
+#     'anthropic-client-version'
+#   ];
+#   
+#   requiredHeaders.forEach(header => {
+#     if (request.headers.has(header)) {
+#       // Header already present, preserve it
+#       return request;
+#     }
+#   });
+#   
+#   // Add default anthropic-version if missing
+#   if (!request.headers.has('anthropic-version')) {
+#     request.headers.set('anthropic-version', '2023-06-01');
+#   }
+#   
+#   return request;
+# }
+
+# ===================================================================
+# AUTHENTICATION FLOWS
+# ===================================================================
+
+# Option 1: API Key Authentication (Recommended)
+#   - User sets ANTHROPIC_AUTH_TOKEN=zpka_xxxxx
+#   - Zuplo validates API key via api-key-inbound policy
+#   - Zuplo forwards request to Anthropic with provider API key
+#
+# Option 2: OAuth 2.0 + API Key
+#   - User authenticates via OAuth (Zuplo Dev Portal)
+#   - Zuplo issues JWT token
+#   - User sets ANTHROPIC_AUTH_TOKEN to JWT
+#   - Zuplo validates JWT and forwards to Anthropic
+#
+# Option 3: Consumer Key (for identified users)
+#   - Admin creates consumer in Zuplo (user@example.com)
+#   - Consumer gets dedicated API key (zpkc_xxxxx)
+#   - Usage tracked per consumer for billing/quotas
+
+# ===================================================================
+# SECURITY CONFIGURATION
+# ===================================================================
+
+litellm_settings:
+  # Disable telemetry for compliance
+  telemetry: false
+  
+  # Request timeout (Zuplo default: 120s, max: 600s)
+  request_timeout: 600
+  
+  # Retry configuration (Zuplo handles retries at edge)
+  num_retries: 0  # Let Zuplo handle retries
+  
+  # TLS verification (Zuplo enforces TLS 1.3)
+  ssl_verify: true
+
+# Zuplo Security Features (configure in portal):
+# - API Key Rotation: Enable auto-rotation every 90 days
+# - IP Allowlisting: Restrict access to corporate IP ranges
+# - Request Signing: Enable HMAC signatures for request integrity
+# - Audit Logging: Enable logging for compliance (SOC2, HIPAA)
+# - DDoS Protection: Enabled by default at Cloudflare edge
+
+# ===================================================================
+# ROUTING STRATEGY
+# ===================================================================
+
+router_settings:
+  routing_strategy: simple-shuffle  # LiteLLM-level routing
+  
+  # Zuplo handles routing via environment-based endpoints:
+  # - Production: https://your-gateway.zuplo.app
+  # - Staging: https://your-gateway-staging.zuplo.app
+  # - Development: https://your-gateway-dev.zuplo.app
+  
+  # Fallback chain (if Zuplo fails, fallback to direct)
+  model_group_alias:
+    production:
+      - claude-3-5-sonnet-20241022
+      - claude-3-5-haiku-20241022
+    
+    development:
+      - claude-3-5-haiku-20241022
+
+# ===================================================================
+# OBSERVABILITY & MONITORING
+# ===================================================================
+
+# Zuplo Observability Features:
+#
+# 1. Analytics Dashboard (Zuplo Portal)
+#    - Request volume and latency
+#    - Status code distribution
+#    - Top consumers and routes
+#    - Geographic distribution
+#
+# 2. Logs (Zuplo Portal → Logs)
+#    - Request/response logs (last 7 days)
+#    - Filter by status code, consumer, route
+#    - Export logs to S3, CloudWatch, Datadog
+#
+# 3. Metrics Export (Prometheus)
+#    GET https://your-gateway.zuplo.app/metrics
+#
+# 4. Webhooks (for custom alerting)
+#    Configure in Zuplo Portal → Webhooks:
+#    - On 5xx errors → Slack/PagerDuty
+#    - On rate limit exceeded → Email
+#    - On new consumer → CRM integration
+
+# Custom metrics export to Prometheus:
+# - zuplo_requests_total{route, status_code, consumer}
+# - zuplo_request_duration_seconds{route}
+# - zuplo_rate_limit_exceeded_total{consumer}
+
+# ===================================================================
+# EDGE CACHING (Zuplo Superchache)
+# ===================================================================
+
+# Zuplo Supercache Configuration (routes.oas.json):
+#
+# {
+#   "policies": {
+#     "inbound": [
+#       {
+#         "export": "CacheInboundPolicy",
+#         "module": "$import(@zuplo/runtime)",
+#         "options": {
+#           "cacheKey": "${request.url}:${request.body}",
+#           "ttl": 3600,
+#           "varyHeaders": ["anthropic-version"]
+#         }
+#       }
+#     ]
+#   }
+# }
+#
+# Note: Caching is NOT recommended for Claude Code requests
+# because responses are typically unique per prompt.
+# Enable caching only for idempotent, repeated requests.
+
+# ===================================================================
+# DEVELOPER PORTAL INTEGRATION
+# ===================================================================
+
+# Zuplo provides a self-service developer portal for:
+# - API key generation and management
+# - Usage analytics and billing
+# - API documentation (auto-generated from OpenAPI)
+# - Interactive API explorer
+#
+# Enable Developer Portal:
+#   1. Zuplo Portal → Dev Portal → Enable
+#   2. Configure branding (logo, colors, domain)
+#   3. Set up authentication (OAuth, SSO)
+#   4. Share portal URL: https://your-gateway.zuplo.dev
+#
+# Users can self-register and generate API keys without admin intervention
+
+# ===================================================================
+# TROUBLESHOOTING
+# ===================================================================
+
+# Common Issues:
+#
+# 1. Invalid API Key (401 Unauthorized)
+#    Solution:
+#    - Verify ANTHROPIC_AUTH_TOKEN starts with "zpka_"
+#    - Check key is active in Zuplo Portal
+#    - Regenerate key if expired
+#
+# 2. Rate Limit Exceeded (429 Too Many Requests)
+#    Solution:
+#    - Check rate limit policy in Zuplo Portal
+#    - Request quota increase from admin
+#    - Implement exponential backoff in client
+#
+# 3. Missing Headers (400 Bad Request)
+#    Solution:
+#    - Verify add-anthropic-headers-inbound policy is active
+#    - Test with curl to isolate issue:
+#      curl -H "anthropic-version: 2023-06-01" \
+#           -H "Authorization: Bearer zpka_xxxxx" \
+#           https://your-gateway.zuplo.app/v1/messages
+#
+# 4. Gateway Timeout (504 Gateway Timeout)
+#    Solution:
+#    - Increase Zuplo timeout in routes.oas.json
+#    - Check Anthropic API status
+#    - Review Zuplo logs for upstream errors
+#
+# 5. CORS Errors (browser only)
+#    Solution:
+#    - Configure corsPolicy in routes.oas.json
+#    - Add allowed origins: ["https://your-app.example.com"]
+#    - Enable preflight caching
+
+# Debug Command:
+# ANTHROPIC_LOG=debug claude /status
+
+# ===================================================================
+# COMPLIANCE & CERTIFICATIONS
+# ===================================================================
+
+# Zuplo Compliance:
+# - SOC2 Type II Certified
+# - GDPR Compliant (EU data residency available)
+# - HIPAA: BAA available for Enterprise plans
+# - ISO 27001 Certified
+#
+# Data Residency:
+# - US: Cloudflare edge locations (default)
+# - EU: Configure EU-only edge locations in Zuplo Portal
+# - APAC: Available on Enterprise plans
+
+# ===================================================================
+# COST OPTIMIZATION
+# ===================================================================
+
+# Zuplo Pricing Tiers:
+# - Free: 100K requests/month, 1 environment
+# - Pro: $99/month, 1M requests, 3 environments
+# - Enterprise: Custom pricing, unlimited requests
+#
+# Cost Reduction Strategies:
+# 1. Enable request compression (gzip/brotli)
+# 2. Use edge caching for repeated requests (if applicable)
+# 3. Implement client-side caching with cache headers
+# 4. Monitor per-consumer usage to identify optimization opportunities
+# 5. Set up budget alerts in Zuplo Portal
+
+# ===================================================================
+# ADDITIONAL RESOURCES
+# ===================================================================
+
+# Zuplo Documentation: https://zuplo.com/docs
+# Zuplo Examples: https://github.com/zuplo/zuplo-examples
+# Zuplo Support: support@zuplo.com
+# Zuplo Discord: https://discord.gg/zuplo
+# Claude Code Docs: https://docs.anthropic.com/claude-code
+# Anthropic API Reference: https://docs.anthropic.com/api

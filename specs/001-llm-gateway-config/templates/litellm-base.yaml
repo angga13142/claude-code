@@ -1,0 +1,37 @@
+# LiteLLM Base Configuration Template
+# Purpose: Minimal working configuration for LiteLLM proxy
+# Usage: Copy this file and customize with your project details
+
+model_list:
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: vertex_ai/gemini-2.5-flash
+      vertex_project: YOUR_PROJECT_ID  # Replace with your GCP project ID
+      vertex_location: us-central1     # Replace with your preferred region
+
+litellm_settings:
+  # Proxy server settings
+  drop_params: true                    # Ignore unsupported parameters
+  set_verbose: false                   # Enable for debugging (true)
+  
+  # Router settings for reliability
+  num_retries: 3
+  timeout: 30
+  
+  # Success callback (optional - for logging/monitoring)
+  # success_callback: ["langfuse"]
+  
+router_settings:
+  # Retry policy
+  retry_policy:
+    TimeoutErrorRetries: 2
+    RateLimitErrorRetries: 3
+    AuthenticationErrorRetries: 0      # Don't retry auth failures
+  
+  # Routing strategy
+  routing_strategy: simple-shuffle     # Options: simple-shuffle, least-busy, usage-based-routing
+
+# General settings
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY  # Required: Set via environment variable
+  # database_url: postgresql://...            # Optional: For request logging

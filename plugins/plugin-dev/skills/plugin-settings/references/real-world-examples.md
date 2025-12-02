@@ -86,6 +86,7 @@ exit 0
 ```
 
 **Key patterns:**
+
 1. **Quick exit** (line 7-9): Returns immediately if file doesn't exist
 2. **Field extraction** (lines 11-17): Parses each frontmatter field
 3. **Enabled check** (lines 19-21): Respects enabled flag
@@ -219,6 +220,7 @@ exit 0
 ```
 
 **Key patterns:**
+
 1. **Quick exit** (line 7-9): Skip if not active
 2. **Iteration tracking** (lines 11-20): Count and enforce max iterations
 3. **Promise detection** (lines 25-33): Check for completion signal in output
@@ -386,6 +388,7 @@ awk '/^---$/{i++; next} i>=2'  # For body
 ## Conclusion
 
 The `.claude/plugin-name.local.md` pattern provides:
+
 - Simple, human-readable configuration
 - Version-control friendly (gitignored)
 - Per-project settings

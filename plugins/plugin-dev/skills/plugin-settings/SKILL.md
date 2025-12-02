@@ -11,6 +11,7 @@ version: 0.1.0
 Plugins can store user-configurable settings and state in `.claude/plugin-name.local.md` files within the project directory. This pattern uses YAML frontmatter for structured configuration and markdown content for prompts or additional context.
 
 **Key characteristics:**
+
 - File location: `.claude/plugin-name.local.md` in project root
 - Structure: YAML frontmatter + markdown body
 - Purpose: Per-project plugin configuration and state
@@ -42,6 +43,7 @@ This markdown body can contain:
 ### Example: Plugin State File
 
 **.claude/my-plugin.local.md:**
+
 ```markdown
 ---
 enabled: true
@@ -145,17 +147,20 @@ FRONTMATTER=$(sed -n '/^---$/,/^---$/{ /^---$/d; p; }' "$FILE")
 ### Read Individual Fields
 
 **String fields:**
+
 ```bash
 VALUE=$(echo "$FRONTMATTER" | grep '^field_name:' | sed 's/field_name: *//' | sed 's/^"\(.*\)"$/\1/')
 ```
 
 **Boolean fields:**
+
 ```bash
 ENABLED=$(echo "$FRONTMATTER" | grep '^enabled:' | sed 's/enabled: *//')
 # Compare: if [[ "$ENABLED" == "true" ]]; then
 ```
 
 **Numeric fields:**
+
 ```bash
 MAX=$(echo "$FRONTMATTER" | grep '^max_value:' | sed 's/max_value: *//')
 # Use: if [[ $MAX -gt 100 ]]; then
@@ -204,6 +209,7 @@ fi
 Store agent-specific state and configuration:
 
 **.claude/multi-agent-swarm.local.md:**
+
 ```markdown
 ---
 agent_name: auth-agent
@@ -237,6 +243,7 @@ tmux send-keys -t "$COORDINATOR" "Agent $AGENT_NAME completed task" Enter
 ### Pattern 3: Configuration-Driven Behavior
 
 **.claude/my-plugin.local.md:**
+
 ```markdown
 ---
 validation_level: strict
@@ -315,11 +322,13 @@ After creating or editing, restart Claude Code for changes to take effect.
 ### File Naming
 
 ✅ **DO:**
+
 - Use `.claude/plugin-name.local.md` format
 - Match plugin name exactly
 - Use `.local.md` suffix for user-local files
 
 ❌ **DON'T:**
+
 - Use different directory (not `.claude/`)
 - Use inconsistent naming
 - Use `.md` without `.local` (might be committed)
@@ -417,6 +426,7 @@ fi
 ### Permissions
 
 Settings files should be:
+
 - Readable by user only (`chmod 600`)
 - Not committed to git
 - Not shared between users
@@ -426,6 +436,7 @@ Settings files should be:
 ### multi-agent-swarm Plugin
 
 **.claude/multi-agent-swarm.local.md:**
+
 ```markdown
 ---
 agent_name: auth-implementation
@@ -444,6 +455,7 @@ Coordinate with auth-agent on shared types.
 ```
 
 **Hook usage (agent-stop-notification.sh):**
+
 - Checks if file exists (line 15-18: quick exit if not)
 - Parses frontmatter to get coordinator_session, agent_name, enabled
 - Sends notifications to coordinator if enabled
@@ -452,6 +464,7 @@ Coordinate with auth-agent on shared types.
 ### ralph-wiggum Plugin
 
 **.claude/ralph-loop.local.md:**
+
 ```markdown
 ---
 iteration: 1
@@ -464,6 +477,7 @@ Make sure tests pass after each fix.
 ```
 
 **Hook usage (stop-hook.sh):**
+
 - Checks if file exists (line 15-18: quick exit if not active)
 - Reads iteration count and max_iterations
 - Extracts completion_promise for loop termination

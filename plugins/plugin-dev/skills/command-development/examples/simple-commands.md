@@ -35,6 +35,7 @@ Provide specific feedback with file and line references.
 ```
 
 **Usage:**
+
 ```
 > /review
 ```
@@ -78,6 +79,7 @@ Prioritize issues by severity.
 ```
 
 **Usage:**
+
 ```
 > /security-review
 ```
@@ -109,6 +111,7 @@ If failures found, suggest fixes based on error messages.
 ```
 
 **Usage:**
+
 ```
 > /test-file src/utils/helpers.test.ts
 ```
@@ -154,6 +157,7 @@ Format as Markdown suitable for project documentation.
 ```
 
 **Usage:**
+
 ```
 > /document src/api/users.ts
 ```
@@ -187,6 +191,7 @@ Provide:
 ```
 
 **Usage:**
+
 ```
 > /git-status
 ```
@@ -225,6 +230,7 @@ Proceed with deployment? (yes/no)
 ```
 
 **Usage:**
+
 ```
 > /deploy staging v1.2.3
 ```
@@ -270,6 +276,7 @@ Present as structured comparison report.
 ```
 
 **Usage:**
+
 ```
 > /compare-files src/old-api.ts src/new-api.ts
 ```
@@ -305,6 +312,7 @@ Provide code changes with file paths and line numbers.
 ```
 
 **Usage:**
+
 ```
 > /quick-fix button not responding to clicks
 > /quick-fix typo in error message
@@ -350,6 +358,7 @@ Provide actionable guidance based on research.
 ```
 
 **Usage:**
+
 ```
 > /research error handling in async operations
 > /research API authentication patterns
@@ -400,6 +409,7 @@ Explain at level appropriate for junior engineer.
 ```
 
 **Usage:**
+
 ```
 > /explain src/utils/cache.ts
 > /explain AuthService.login

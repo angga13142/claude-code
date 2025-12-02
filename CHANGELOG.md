@@ -2,6 +2,14 @@
 
 ## 2.0.56
 
+- Added LLM Gateway Configuration Assistant feature (specs/001-llm-gateway-config/)
+  - Complete documentation and templates for integrating Claude Code with LiteLLM gateway
+  - Support for 8 Vertex AI models (Gemini, DeepSeek, Llama, Codestral, Qwen, GPT-OSS)
+  - Enterprise gateway integration guides (TrueFoundry, Zuplo, custom)
+  - Multi-provider configuration (Anthropic, AWS Bedrock, Google Vertex AI)
+  - Corporate proxy setup and troubleshooting guides
+  - CI/CD and Docker Compose examples for automated deployments
+  - See [specs/001-llm-gateway-config/README.md](specs/001-llm-gateway-config/README.md) for full documentation
 - Added setting to enable/disable terminal progress bar (OSC 9;4)
 - VSCode Extension: Added support for VS Code's secondary sidebar (VS Code 1.97+), allowing Claude Code to be displayed in the right sidebar while keeping the file explorer on the left. Requires setting sidebar as Preferred Location in the config.
 
@@ -531,7 +539,7 @@
 
 ## 1.0.62
 
-- Added @-mention support with typeahead for custom agents. @<your-custom-agent> to invoke it
+- Added @-mention support with typeahead for custom agents. `@your-custom-agent` to invoke it
 - Hooks: Added SessionStart hook for new session initialization
 - /add-dir command now supports typeahead for directory paths
 - Improved network connectivity check reliability

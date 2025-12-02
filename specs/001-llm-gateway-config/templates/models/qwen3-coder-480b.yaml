@@ -1,0 +1,34 @@
+# Qwen 3 Coder 480B Model Configuration
+# Model: qwen3-coder-480b-a35b-instruct-maas
+# Publisher: Qwen (Alibaba Cloud)
+# Priority: P3
+# Use Case: Large coding-specialized model for complex development tasks
+
+model_name: qwen3-coder-480b
+litellm_params:
+  model: vertex_ai/qwen/qwen3-coder-480b-a35b-instruct-maas
+  vertex_project: YOUR_PROJECT_ID        # Replace with your GCP project ID
+  vertex_location: us-central1           # Check availability in your region
+  
+  # Authentication (choose one)
+  # Option 1: Use gcloud auth (recommended for development)
+  # vertex_credentials: default
+  
+  # Option 2: Use service account JSON (recommended for production)
+  # vertex_credentials: /path/to/service-account-key.json
+
+# Model capabilities
+model_info:
+  supports_function_calling: true
+  optimized_for: code_generation
+  supports_multilingual_code: true       # Multiple programming languages
+  max_input_tokens: 32768                # 32K context window
+  max_output_tokens: 4096
+  parameter_count: 480B                  # Coding-specialized large model
+
+# Rate limiting (optional)
+# rpm: 10                                # Very large model = slower
+# tpm: 500000                            # Tokens per minute
+
+# Load balancing (optional)
+# priority: 6                            # Medium priority

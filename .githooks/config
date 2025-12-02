@@ -1,0 +1,47 @@
+# Git Hooks Configuration
+# Customize hook behavior by modifying these values
+
+# Code Quality Standards
+PYLINT_MIN_SCORE=7.0
+MYPY_STRICT=false
+MAX_FILE_SIZE_MB=1
+
+# Branch Protection
+PROTECTED_BRANCHES="main master production"
+
+# Commit Message
+MIN_SUBJECT_LENGTH=10
+MAX_SUBJECT_LENGTH=72
+MAX_SUBJECT_LENGTH_HARD=100
+
+# Security Scanning
+BANDIT_SEVERITY="medium"  # low, medium, high
+SCAN_FOR_SECRETS=true
+
+# Testing
+RUN_TESTS_ON_PUSH=true
+MIN_CODE_COVERAGE=70
+
+# Documentation
+REQUIRE_DOCS_FOR_CODE_CHANGES=true
+CODE_CHANGE_THRESHOLD=5  # Number of code files changed
+
+# Notifications
+SHOW_PUSH_SUMMARY=true
+SHOW_CLEANUP_RECOMMENDATIONS=true
+SHOW_PR_REMINDER=true
+
+# Performance
+PARALLEL_CHECKS=false
+CACHE_RESULTS=false
+
+# Bypass Options (use with caution)
+ALLOW_BYPASS_PRECOMMIT=true
+ALLOW_BYPASS_PREPUSH=true
+
+# Tools
+USE_SHELLCHECK=true
+USE_MARKDOWNLINT=true
+USE_BANDIT=true
+USE_MYPY=true
+USE_PYLINT=true

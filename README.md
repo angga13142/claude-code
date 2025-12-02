@@ -1,6 +1,6 @@
 # Claude Code
 
-![](https://img.shields.io/badge/Node.js-18%2B-brightgreen?style=flat-square) [![npm]](https://www.npmjs.com/package/@anthropic-ai/claude-code)
+![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-brightgreen?style=flat-square) [![npm]](https://www.npmjs.com/package/@anthropic-ai/claude-code)
 
 [npm]: https://img.shields.io/npm/v/@anthropic-ai/claude-code.svg?style=flat-square
 
@@ -8,39 +8,47 @@ Claude Code is an agentic coding tool that lives in your terminal, understands y
 
 **Learn more in the [official documentation](https://docs.anthropic.com/en/docs/claude-code/overview)**.
 
-<img src="./demo.gif" />
+<img src="./demo.gif" alt="Claude Code Demo" />
 
 ## Get started
 
 1. Install Claude Code:
 
 **MacOS/Linux:**
+
 ```bash
 curl -fsSL https://claude.ai/install.sh | bash
 ```
 
 **Homebrew (MacOS):**
+
 ```bash
 brew install --cask claude-code
 ```
 
 **Windows:**
+
 ```powershell
 irm https://claude.ai/install.ps1 | iex
 ```
 
 **NPM:**
+
 ```bash
 npm install -g @anthropic-ai/claude-code
 ```
 
 NOTE: If installing with NPM, you also need to install [Node.js 18+](https://nodejs.org/en/download/)
 
-2. Navigate to your project directory and run `claude`.
+1. Navigate to your project directory and run `claude`.
 
 ## Plugins
 
 This repository includes several Claude Code plugins that extend functionality with custom commands and agents. See the [plugins directory](./plugins/README.md) for detailed documentation on available plugins.
+
+## LLM Gateway Configuration
+
+Configure Claude Code to use LiteLLM gateway with Vertex AI models, enterprise gateways, or multi-provider setups. See the [LLM Gateway Configuration Assistant documentation](./specs/001-llm-gateway-config/README.md) for complete setup guides, templates, and troubleshooting.
 
 ## Reporting Bugs
 

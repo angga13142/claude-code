@@ -1,0 +1,13 @@
+# Markdownlint ignore file
+# Files and patterns to exclude from markdownlint checking
+
+# CHANGELOG files often have bare URLs which are acceptable
+CHANGELOG.md
+
+# Generated or auto-formatted files
+*.generated.md
+*.auto.md
+
+# Large documentation files with intentional formatting
+specs/**/tasks.md
+

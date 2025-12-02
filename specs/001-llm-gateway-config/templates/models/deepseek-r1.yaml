@@ -1,0 +1,33 @@
+# DeepSeek R1 Model Configuration
+# Model: deepseek-r1-0528-maas
+# Publisher: DeepSeek AI
+# Priority: P2
+# Use Case: Reasoning model with thinking process for complex problems
+
+model_name: deepseek-r1
+litellm_params:
+  model: vertex_ai/deepseek-ai/deepseek-r1-0528-maas
+  vertex_project: YOUR_PROJECT_ID        # Replace with your GCP project ID
+  vertex_location: us-central1           # Check availability in your region
+  
+  # Authentication (choose one)
+  # Option 1: Use gcloud auth (recommended for development)
+  # vertex_credentials: default
+  
+  # Option 2: Use service account JSON (recommended for production)
+  # vertex_credentials: /path/to/service-account-key.json
+
+# Model capabilities
+model_info:
+  supports_reasoning: true               # Exposes reasoning_content separate from answer
+  supports_function_calling: true
+  max_input_tokens: 32768                # 32K context window
+  max_output_tokens: 4096
+  reasoning_efforts: [low, medium, high] # Configurable thinking depth
+
+# Rate limiting (optional)
+# rpm: 20                                # Reasoning models are slower
+# tpm: 500000                            # Tokens per minute
+
+# Load balancing (optional)
+# priority: 7                            # Medium-high priority

@@ -1,0 +1,192 @@
+# Multi-Provider LiteLLM Configuration
+# Purpose: Support multiple providers (Anthropic, Bedrock, Vertex AI) with automatic fallback
+# Usage: litellm --config multi-provider-config.yaml --port 4000
+# User Story: US3 - Multi-Provider Gateway Configuration (Priority: P3)
+
+model_list:
+  # === Anthropic Direct (Primary Provider) ===
+  # Uses direct Anthropic API with high priority for performance
+
+  - model_name: claude-3-5-sonnet-20241022
+    litellm_params:
+      model: anthropic/claude-3-5-sonnet-20241022
+      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 8192
+    rpm: 50
+    tpm: 2000000
+
+  - model_name: claude-3-opus-20240229
+    litellm_params:
+      model: anthropic/claude-3-opus-20240229
+      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 4096
+    rpm: 30
+    tpm: 1500000
+
+  # === AWS Bedrock (Secondary Provider - Fallback) ===
+  # Lower priority, activates when Anthropic Direct is unavailable
+
+  - model_name: claude-3-5-sonnet-bedrock
+    litellm_params:
+      model: bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0
+      aws_region_name: os.environ/AWS_REGION
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 8192
+    rpm: 40
+    tpm: 1500000
+
+  - model_name: claude-3-opus-bedrock
+    litellm_params:
+      model: bedrock/anthropic.claude-3-opus-20240229-v1:0
+      aws_region_name: os.environ/AWS_REGION
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 4096
+    rpm: 25
+    tpm: 1000000
+
+  # === Google Vertex AI (Tertiary Provider - Additional Models) ===
+  # Provides access to non-Anthropic models for specialized tasks
+
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: vertex_ai/gemini-2.5-flash
+      vertex_project: os.environ/VERTEX_PROJECT_ID
+      vertex_location: os.environ/VERTEX_LOCATION
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 8192
+    rpm: 60
+    tpm: 1000000
+
+  - model_name: gemini-2.5-pro
+    litellm_params:
+      model: vertex_ai/gemini-2.5-pro
+      vertex_project: os.environ/VERTEX_PROJECT_ID
+      vertex_location: os.environ/VERTEX_LOCATION
+    model_info:
+      mode: chat
+      supports_function_calling: true
+      supports_vision: true
+      max_tokens: 8192
+    rpm: 30
+    tpm: 2000000
+
+  - model_name: deepseek-r1
+    litellm_params:
+      model: vertex_ai/deepseek-ai/deepseek-r1-0528-maas
+      vertex_project: os.environ/VERTEX_PROJECT_ID
+      vertex_location: os.environ/VERTEX_LOCATION
+    model_info:
+      mode: chat
+      supports_reasoning: true
+      max_tokens: 8192
+    rpm: 20
+    tpm: 500000
+
+# LiteLLM Settings
+litellm_settings:
+  # Drop unsupported parameters gracefully
+  drop_params: true
+
+  # Enable debug logging for troubleshooting (set to false in production)
+  set_verbose: false
+
+  # Global timeout and retries
+  num_retries: 3
+  timeout: 30
+
+  # Request logging (optional - requires database)
+  # success_callback: ["langfuse"]
+  # failure_callback: ["langfuse"]
+
+# Router Settings
+router_settings:
+  # Routing strategy
+  routing_strategy: simple-shuffle # Options: simple-shuffle, least-busy, usage-based-routing
+
+  # Retry policy - automatically fallback to other providers on failure
+  retry_policy:
+    TimeoutErrorRetries: 2
+    RateLimitErrorRetries: 3
+    InternalServerErrorRetries: 2
+
+  # Fallback configuration
+  allowed_fails: 3 # Number of failures before marking model unhealthy
+  cooldown_time: 60 # Seconds before retrying failed model
+
+  # Enable cross-provider fallback
+  enable_pre_call_check: true # Check model health before routing
+
+# Environment Settings (Optional)
+environment_variables:
+  # Cache settings
+  REDIS_HOST: os.environ/REDIS_HOST
+  REDIS_PORT: os.environ/REDIS_PORT
+  REDIS_PASSWORD: os.environ/REDIS_PASSWORD
+
+  # Logging
+  ANTHROPIC_LOG: os.environ/ANTHROPIC_LOG # Set to "debug" for detailed logs
+
+# General Settings
+general_settings:
+  # API Configuration
+  master_key: os.environ/LITELLM_MASTER_KEY # Required for proxy authentication
+
+  # Database (optional - for request logging and analytics)
+  # database_url: os.environ/DATABASE_URL
+
+  # Enable Admin UI
+  ui: true
+
+  # Set port
+  port: 4000
+# Provider-Specific Authentication Notes:
+#
+# Anthropic Direct:
+#   - Set ANTHROPIC_API_KEY environment variable
+#   - No base URL override needed (uses api.anthropic.com)
+#
+# AWS Bedrock:
+#   - Set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
+#   - Or use IAM role-based authentication
+#   - Optional: Set ANTHROPIC_BEDROCK_BASE_URL for custom endpoints
+#   - Optional: Set CLAUDE_CODE_SKIP_BEDROCK_AUTH=1 to bypass Claude Code auth
+#
+# Google Vertex AI:
+#   - Set VERTEX_PROJECT_ID and VERTEX_LOCATION
+#   - Authentication via gcloud: `gcloud auth application-default login`
+#   - Or set GOOGLE_APPLICATION_CREDENTIALS to service account JSON path
+#   - Optional: Set ANTHROPIC_VERTEX_BASE_URL for custom endpoints
+#   - Optional: Set CLAUDE_CODE_SKIP_VERTEX_AUTH=1 to bypass Claude Code auth
+
+# Claude Code Integration:
+#
+# 1. Set environment variables in shell:
+#    export ANTHROPIC_BASE_URL="http://localhost:4000"
+#    export ANTHROPIC_API_KEY="<litellm-master-key>"
+#
+# 2. Or add to ~/.claude/settings.json:
+#    {
+#      "anthropicBaseUrl": "http://localhost:4000",
+#      "anthropicAuthToken": "<litellm-master-key>"
+#    }
+#
+# 3. Verify with: claude /status
+#
+# See examples/us3-multi-provider-setup.md for detailed setup guide
